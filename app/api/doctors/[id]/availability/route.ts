@@ -4,10 +4,12 @@ import { prisma } from "@/lib/prisma"
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
-    const doctorId = params.id
+    // Handle params (Next.js 16 compatibility)
+    const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params))
+    const doctorId = resolvedParams.id
 
     const availability = await prisma.doctorAvailability.findUnique({
       where: { doctorId },
@@ -25,7 +27,7 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
   try {
     const session = await auth()
@@ -34,7 +36,10 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const doctorId = params.id
+    // Handle params (Next.js 16 compatibility)
+    const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params))
+    const doctorId = resolvedParams.id
+
     const data = await req.json()
 
     // Verify doctor owns this profile
@@ -74,4 +79,3 @@ export async function PUT(
     )
   }
 }
-
