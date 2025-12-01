@@ -1,12 +1,29 @@
-import Razorpay from "razorpay"
 import crypto from "crypto"
 
 const PLATFORM_FEE_PERCENTAGE = 20 // 20% platform fee
 
-export const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-})
+// Lazy initialization of Razorpay to avoid build-time errors
+let razorpayInstance: any | null = null
+
+async function getRazorpayInstance() {
+  if (!razorpayInstance) {
+    const keyId = process.env.RAZORPAY_KEY_ID
+    const keySecret = process.env.RAZORPAY_KEY_SECRET
+    
+    if (!keyId || !keySecret) {
+      throw new Error("Razorpay credentials not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables.")
+    }
+    
+    // Dynamic import to avoid build-time initialization
+    const Razorpay = (await import("razorpay")).default
+    razorpayInstance = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    })
+  }
+  
+  return razorpayInstance
+}
 
 export interface PaymentDetails {
   amount: number
@@ -30,6 +47,7 @@ export function calculatePlatformFee(amount: number): {
 
 export async function createRazorpayOrder(details: PaymentDetails) {
   const { amount, appointmentId } = details
+  const razorpay = await getRazorpayInstance()
   
   const order = await razorpay.orders.create({
     amount: Math.round(amount * 100), // Razorpay expects amount in paise
@@ -50,8 +68,14 @@ export function verifyRazorpaySignature(
   paymentId: string,
   signature: string
 ): boolean {
+  const keySecret = process.env.RAZORPAY_KEY_SECRET
+  if (!keySecret) {
+    console.error("RAZORPAY_KEY_SECRET not configured")
+    return false
+  }
+  
   const generatedSignature = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+    .createHmac("sha256", keySecret)
     .update(`${orderId}|${paymentId}`)
     .digest("hex")
 
