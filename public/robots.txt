@@ -1,0 +1,20 @@
+# Robots.txt for Attrangi - Mental Healthcare
+
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+
+# Allow public pages
+Allow: /
+Allow: /blogs
+Allow: /resources
+Allow: /services
+Allow: /about
+Allow: /aids
+
+# Sitemap location
+Sitemap: https://attrangi.com/sitemap.xml
+

@@ -1,0 +1,419 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth User model
+model User {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(PATIENT)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  patient       Patient?
+  caregiver     Caregiver?
+  doctor        Doctor?
+  admin         Admin?
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.String
+  access_token      String? @db.String
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.String
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+enum UserRole {
+  PATIENT
+  CAREGIVER
+  DOCTOR
+  ADMIN
+}
+
+// Patient Model
+model Patient {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  age             Int?
+  gender          String?
+  healthConcerns  String[] @default([])
+  emergencyContact String?
+  emergencyPhone  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+  tasks       DailyTask[]
+  resourceAccess ResourceAccess[]
+  caregivers  Caregiver[]
+  
+  @@map("patients")
+}
+
+// Caregiver Model
+model Caregiver {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  relationship    String?  // Relationship to patient
+  patientId       String?  @db.ObjectId
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient     Patient?     @relation(fields: [patientId], references: [id])
+  appointments Appointment[]
+  
+  @@map("caregivers")
+}
+
+// Doctor Model
+model Doctor {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String          @unique @db.ObjectId
+  
+  // Personal Information (Section 1)
+  fullName          String?         // Full name as per license
+  profilePhoto      String?         // URL to uploaded photo
+  gender            String?
+  dateOfBirth       DateTime?
+  mobileNumber      String?
+  mobileVerified    Boolean         @default(false)
+  mobileOTP         String?
+  emailAddress      String?         // Already in User model, but keeping for reference
+  currentAddress    String?         @db.String
+  city              String?
+  state             String?
+  country           String?         @default("India")
+  
+  // Professional Verification (Section 2)
+  licenseNumber     String?
+  issuingCouncil    String?         // MCI/NMC, State Medical Council
+  licenseDocument   String?         // URL to uploaded license document
+  digiLockerId      String?
+  digiLockerVerified Boolean        @default(false)
+  yearsOfExperience Int?
+  primarySpecialization String?
+  secondarySpecializations String[] @default([]) // Array of specializations
+  highestQualification String?
+  degreeCertificates String[]       @default([]) // URLs to uploaded certificates
+  bio               String?         @db.String   // Professional bio (150-500 words)
+  
+  // Practice Details (Section 3)
+  languagesSpoken   String[]        @default([])
+  preferredAgeGroups String[]       @default([]) // Kids, Teens, Adults, Seniors
+  consultationTypes String[]        @default([]) // Video, Chat, Voice, In-person
+  notAcceptingCases String[]        @default([]) // Emergency/crisis, controlled substances, etc.
+  
+  // Availability & Scheduling (Section 4) - Handled by DoctorAvailability model
+  appointmentDuration Int?          @default(30) // in minutes
+  
+  // Payment Details (Section 5)
+  consultationFee   Float           @default(0)
+  payoutMode        String?         // UPI or BANK
+  paymentUPI        String?
+  bankAccountName   String?
+  bankAccountNumber String?
+  bankIFSC          String?
+  bankName          String?
+  
+  // Compliance & Legal (Section 6)
+  telemedicineConsent Boolean       @default(false)
+  privacyAgreement   Boolean        @default(false)
+  dataSharingPolicy  Boolean        @default(false)
+  platformTerms      Boolean        @default(false)
+  declarationSigned  Boolean        @default(false)
+  digitalSignature   String?        // Full name typed for digital signature
+  
+  // Status and Relations
+  specialization    String?         // Keeping for backward compatibility
+  experience        Int?            // Keeping for backward compatibility
+  licenseVerified   Boolean         @default(false)
+  status            DoctorStatus    @default(PENDING)
+  availability      DoctorAvailability?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  appointments      Appointment[]
+  timeSlots         TimeSlot[]
+  
+  @@map("doctors")
+}
+
+enum DoctorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+// Doctor Availability
+model DoctorAvailability {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId    String   @unique @db.ObjectId
+  availableDays String[] // ["MONDAY", "TUESDAY", etc.]
+  startTime   String?  // "09:00"
+  endTime     String?  // "17:00"
+  breaks      Json?    // Array of break times
+  isAvailable Boolean  @default(true) // Toggle to stop accepting appointments
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  
+  @@map("doctor_availability")
+}
+
+// Time Slots for appointments
+model TimeSlot {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  doctorId    String   @db.ObjectId
+  date        DateTime
+  startTime   DateTime
+  endTime     DateTime
+  isBooked    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  appointment Appointment?
+  
+  @@map("time_slots")
+}
+
+// Admin Model
+model Admin {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @unique @db.ObjectId
+  phoneNumber   String?
+  otpEnabled    Boolean  @default(false)
+  permissions   String[] @default([])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("admins")
+}
+
+// Appointment Model
+model Appointment {
+  id              String            @id @default(auto()) @map("_id") @db.ObjectId
+  patientId       String?           @db.ObjectId
+  caregiverId     String?           @db.ObjectId
+  doctorId        String            @db.ObjectId
+  timeSlotId      String?           @unique @db.ObjectId
+  appointmentDate DateTime
+  status          AppointmentStatus @default(PENDING)
+  paymentStatus   PaymentStatus     @default(PENDING)
+  meetingLink     String?
+  chatChannelId   String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  patient         Patient?          @relation(fields: [patientId], references: [id])
+  caregiver       Caregiver?        @relation(fields: [caregiverId], references: [id])
+  doctor          Doctor            @relation(fields: [doctorId], references: [id])
+  timeSlot        TimeSlot?         @relation(fields: [timeSlotId], references: [id])
+  payment         Payment?
+  session         SessionRecording?
+  
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// Payment Model
+model Payment {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  appointmentId     String        @unique @db.ObjectId
+  amount            Float
+  platformFee       Float
+  doctorAmount      Float
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  status            PaymentStatus @default(PENDING)
+  paymentMethod     String?
+  settlementStatus  SettlementStatus @default(PENDING)
+  settledAt         DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  appointment       Appointment   @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("payments")
+}
+
+enum SettlementStatus {
+  PENDING
+  PROCESSING
+  SETTLED
+  FAILED
+}
+
+// Session Recording (Video/Chat)
+model SessionRecording {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  appointmentId String   @unique @db.ObjectId
+  recordingUrl  String?
+  transcriptUrl String?
+  transcript    String?  @db.String
+  duration      Int?     // in seconds
+  startedAt     DateTime?
+  endedAt       DateTime?
+  createdAt     DateTime @default(now())
+  
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  
+  @@map("session_recordings")
+}
+
+// Resource Library
+model Resource {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?       @db.String
+  type        ResourceType
+  category    String?
+  contentUrl  String?
+  thumbnailUrl String?
+  isPremium   Boolean       @default(false)
+  price       Float         @default(0)
+  status      ResourceStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  access      ResourceAccess[]
+  
+  @@map("resources")
+}
+
+enum ResourceType {
+  ARTICLE
+  VIDEO
+  AUDIO
+  PDF
+  WORKSHEET
+  EXERCISE
+}
+
+enum ResourceStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+// Resource Access
+model ResourceAccess {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId  String   @db.ObjectId
+  resourceId String   @db.ObjectId
+  purchased  Boolean  @default(false)
+  accessedAt DateTime @default(now())
+  expiresAt  DateTime?
+  
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  
+  @@unique([patientId, resourceId])
+  @@map("resource_access")
+}
+
+// Daily Tasks/Activities
+model DailyTask {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  patientId   String       @db.ObjectId
+  title       String
+  description String?      @db.String
+  type        TaskType
+  difficulty  TaskDifficulty @default(EASY)
+  points      Int          @default(10)
+  completed   Boolean      @default(false)
+  completedAt DateTime?
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("daily_tasks")
+}
+
+enum TaskType {
+  MINDFULNESS
+  EXERCISE
+  JOURNALING
+  READING
+  MEDITATION
+  SKILL_BUILDING
+  CUSTOM
+}
+
+enum TaskDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}

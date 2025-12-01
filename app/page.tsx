@@ -1,65 +1,121 @@
-import Image from "next/image";
+import { redirect } from "next/navigation"
+import { auth } from "@/auth.config"
+import Link from "next/link"
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth()
+
+  // Redirect authenticated users to their dashboards
+  if (session?.user) {
+    const role = session.user.role
+    switch (role) {
+      case "PATIENT":
+      case "CAREGIVER":
+        redirect("/patient/dashboard")
+      case "DOCTOR":
+        redirect("/doctor/dashboard")
+      case "ADMIN":
+        redirect("/admin/dashboard")
+      default:
+        redirect("/auth/signin")
+    }
+  }
+
+  // Landing page for unauthenticated users
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center mb-16">
+          <h1 className="text-5xl font-bold text-gray-800 mb-4">
+            Welcome to Attrangi
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            Your trusted mental health and wellness platform connecting patients,
+            caregivers, and therapists for comprehensive support and care.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/auth/signin"
+            className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-xl font-semibold hover:from-teal-600 hover:to-emerald-600 transition-all shadow-lg hover:shadow-xl"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Get Started
+          </Link>
         </div>
-      </main>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <div className="text-4xl mb-4">🧘</div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              For Patients
+            </h3>
+            <p className="text-gray-600">
+              Access therapy, resources, and track your wellness journey with
+              expert support.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <div className="text-4xl mb-4">👩‍⚕️</div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              For Doctors
+            </h3>
+            <p className="text-gray-600">
+              Manage your practice, connect with patients, and provide quality
+              mental health care.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+            <div className="text-4xl mb-4">🤝</div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              For Caregivers
+            </h3>
+            <p className="text-gray-600">
+              Support your loved one's mental health journey with comprehensive
+              tools and resources.
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-16 text-center">
+          <h2 className="text-3xl font-semibold text-gray-800 mb-8">
+            Features
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <h4 className="font-semibold text-gray-800 mb-2">
+                Secure Video Sessions
+              </h4>
+              <p className="text-sm text-gray-600">
+                Connect with therapists via encrypted video calls
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <h4 className="font-semibold text-gray-800 mb-2">
+                Resource Library
+              </h4>
+              <p className="text-sm text-gray-600">
+                Access free and premium mental health resources
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <h4 className="font-semibold text-gray-800 mb-2">
+                Daily Tasks
+              </h4>
+              <p className="text-sm text-gray-600">
+                Track your wellness with daily activities and goals
+              </p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-md border border-gray-100">
+              <h4 className="font-semibold text-gray-800 mb-2">
+                Easy Payments
+              </h4>
+              <p className="text-sm text-gray-600">
+                Secure payment processing with automatic settlement
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

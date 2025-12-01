@@ -1,0 +1,53 @@
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/auth.config"
+import { prisma } from "@/lib/prisma"
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ completed: false })
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        patient: true,
+        caregiver: true,
+        doctor: true,
+        admin: true,
+      },
+    })
+
+    if (!user) {
+      return NextResponse.json({ completed: false })
+    }
+
+    // Check if user has completed onboarding based on role
+    let isCompleted = false
+    switch (user.role) {
+      case "PATIENT":
+        isCompleted = !!user.patient
+        break
+      case "CAREGIVER":
+        isCompleted = !!user.caregiver
+        break
+      case "DOCTOR":
+        isCompleted = !!user.doctor
+        break
+      case "ADMIN":
+        isCompleted = !!user.admin
+        break
+    }
+
+    return NextResponse.json({ 
+      completed: isCompleted,
+      role: user.role 
+    })
+  } catch (error) {
+    console.error("Error checking onboarding:", error)
+    return NextResponse.json({ completed: false })
+  }
+}
+

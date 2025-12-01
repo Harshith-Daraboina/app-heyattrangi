@@ -1,8 +1,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Soft, muted color palette for mental health platform */
+  --background: #fafafa;
+  --foreground: #2d3748;
+  --muted: #f7fafc;
+  --muted-foreground: #718096;
+  
+  /* Accent colors - soft teal/blue-green */
+  --accent: #7dd3c0;
+  --accent-foreground: #234e52;
+  --accent-light: #b2f5ea;
+  
+  /* Secondary accent - muted purple */
+  --secondary: #d6bcfa;
+  --secondary-foreground: #553c9a;
+  
+  /* Tertiary - gentle green */
+  --tertiary: #9ae6b4;
+  --tertiary-foreground: #22543d;
+  
+  /* Border and divider */
+  --border: #e2e8f0;
+  --ring: #7dd3c0;
+  
+  /* Text colors */
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
 }
 
 @theme inline {
@@ -12,15 +37,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.6;
+}
+
+/* Soft shadows and rounded corners for calming feel */
+.card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border);
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 200ms;
+  transition-timing-function: ease-in-out;
 }

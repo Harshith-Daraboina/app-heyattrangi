@@ -9,15 +9,26 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
+    "@prisma/client": "5.20.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
+    "mongodb": "^7.0.0",
     "next": "16.0.4",
+    "next-auth": "^5.0.0-beta.30",
+    "prisma": "5.20.0",
+    "razorpay": "^2.9.6",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "twilio": "^5.10.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.19.25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "baseline-browser-mapping": "^2.8.32",
     "eslint": "^9",
     "eslint-config-next": "16.0.4",
     "tailwindcss": "^4",

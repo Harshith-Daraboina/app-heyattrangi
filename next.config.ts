@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Ensure Prisma works correctly in Next.js
+  serverExternalPackages: ["@prisma/client", "prisma"],
 };
 
 export default nextConfig;
