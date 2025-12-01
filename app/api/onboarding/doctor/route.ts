@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     // Parse boolean values
     const parseBoolean = (value: string | null): boolean => {
       if (!value) return false
-      return value === "true" || value === true || value === "1"
+      return value === "true" || value === "1"
     }
 
     // Extract all form fields
