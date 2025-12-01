@@ -87,8 +87,8 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
 
     const generateTimeSlots = () => {
       const slots: string[] = []
-      const startTime = doctor.availability.startTime || "09:00"
-      const endTime = doctor.availability.endTime || "17:00"
+      const startTime = doctor.availability?.startTime || "09:00"
+      const endTime = doctor.availability?.endTime || "17:00"
       const duration = doctor.appointmentDuration || 30
 
       const [startHour, startMin] = startTime.split(":").map(Number)

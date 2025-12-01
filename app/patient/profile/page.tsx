@@ -53,7 +53,19 @@ export default async function PatientProfilePage() {
           </p>
         </div>
 
-        <ProfileForm user={user} role={user.role} />
+        {user && (
+          <ProfileForm 
+            user={{
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              image: user.image,
+              role: user.role,
+              patient: user.patient || undefined,
+            }} 
+            role={user.role} 
+          />
+        )}
       </main>
     </div>
   )

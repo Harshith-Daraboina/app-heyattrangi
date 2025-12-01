@@ -14,11 +14,7 @@ interface ProfilePictureSectionProps {
     id: string
     profilePhoto: string | null // Uploaded profile photo
   }
-  session: {
-    user: {
-      image: string | null
-    }
-  } | null
+  session: any | null // Session type from NextAuth
 }
 
 export default function ProfilePictureSection({

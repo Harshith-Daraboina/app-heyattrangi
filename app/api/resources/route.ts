@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     const session = await auth()
     const searchParams = req.nextUrl.searchParams
     const category = searchParams.get("category")
-    const isPremium = searchParams.get("premium") === "true"
+    const premiumParam = searchParams.get("premium")
 
     const where: any = {
       status: "ACTIVE",
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
       where.isPremium = false
     } else {
       // Check if user has access to premium resources
-      if (isPremium !== null) {
-        where.isPremium = isPremium === "true"
+      if (premiumParam !== null) {
+        where.isPremium = premiumParam === "true"
       }
     }
 

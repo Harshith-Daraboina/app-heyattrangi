@@ -12,12 +12,8 @@ export default function DoctorOnboarding() {
   const [mobileOTP, setMobileOTP] = useState("")
   const [otpSent, setOtpSent] = useState(false)
 
-  // Set email from session
-  useEffect(() => {
-    if (session?.user?.email) {
-      updateFormData("emailAddress", session.user.email)
-    }
-  }, [session])
+  // Set email from session (stored separately, not in formData)
+  // Email is already available from session.user.email
   
   const [formData, setFormData] = useState({
     // Section 1: Personal Information
@@ -366,7 +362,7 @@ export default function DoctorOnboarding() {
               </label>
               <input
                 type="email"
-                value={formData.emailAddress || ""}
+                value={session?.user?.email || ""}
                 disabled
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500"
               />
