@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma"
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -42,21 +42,65 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Doctor is not accepting appointments" }, { status: 400 })
     }
 
-    // Create appointment
-    const appointment = await prisma.appointment.create({
-      data: {
-        patientId: patient.id,
+
+    // Check for existing appointments at this time
+    const appointmentDateObj = new Date(appointmentDate)
+    const durationInMinutes = doctor.appointmentDuration || 30
+    const endTimeObj = new Date(appointmentDateObj.getTime() + durationInMinutes * 60000)
+
+    // Create a separate date object for the day (normalized to 00:00:00)
+    const dayDateObj = new Date(appointmentDateObj)
+    dayDateObj.setHours(0, 0, 0, 0)
+
+    const existingAppointment = await prisma.appointment.findFirst({
+      where: {
         doctorId: doctorId,
-        appointmentDate: new Date(appointmentDate),
-        status: "PENDING",
-        paymentStatus: "PENDING",
+        appointmentDate: appointmentDateObj,
+        status: {
+          notIn: ["CANCELLED", "NO_SHOW"],
+        },
       },
     })
 
-    return NextResponse.json({ 
+    if (existingAppointment) {
+      return NextResponse.json(
+        { error: "This time slot is already booked" },
+        { status: 409 }
+      )
+    }
+
+    // Use transaction to ensure both TimeSlot and Appointment are created
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Create TimeSlot
+      const timeSlot = await tx.timeSlot.create({
+        data: {
+          doctorId: doctorId,
+          date: dayDateObj,
+          startTime: appointmentDateObj,
+          endTime: endTimeObj,
+          isBooked: true,
+        },
+      })
+
+      // 2. Create Appointment linked to TimeSlot
+      const appointment = await tx.appointment.create({
+        data: {
+          patientId: patient.id,
+          doctorId: doctorId,
+          appointmentDate: appointmentDateObj,
+          status: "PENDING",
+          paymentStatus: "PENDING",
+          timeSlotId: timeSlot.id,
+        },
+      })
+
+      return appointment
+    })
+
+    return NextResponse.json({
       success: true,
-      appointmentId: appointment.id,
-      appointment 
+      appointmentId: result.id,
+      appointment: result
     })
   } catch (error: any) {
     console.error("Error booking appointment:", error)

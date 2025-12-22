@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth"
 import ProfileForm from "@/components/profile/PatientProfileForm"
 import Link from "next/link"
 import SignOutButton from "@/components/auth/SignOutButton"
+import WellnessSummaryCard from "@/components/profile/WellnessSummaryCard"
+import { prisma } from "@/lib/prisma"
 
 export default async function PatientProfilePage() {
   const session = await auth()
@@ -17,6 +19,17 @@ export default async function PatientProfilePage() {
   if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
     redirect("/auth/unauthorized")
   }
+
+
+  const patientData = await prisma.patient.findUnique({
+    where: { userId: user.id },
+    include: {
+      assessments: {
+        orderBy: { createdAt: 'desc' },
+        take: 1
+      }
+    }
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
@@ -53,8 +66,12 @@ export default async function PatientProfilePage() {
           </p>
         </div>
 
+        {patientData?.assessments[0] && (
+          <WellnessSummaryCard assessment={patientData.assessments[0]} />
+        )}
+
         {user && (
-          <ProfileForm 
+          <ProfileForm
             user={{
               id: user.id,
               name: user.name,
@@ -62,8 +79,8 @@ export default async function PatientProfilePage() {
               image: user.image,
               role: user.role,
               patient: user.patient || undefined,
-            }} 
-            role={user.role} 
+            }}
+            role={user.role}
           />
         )}
       </main>

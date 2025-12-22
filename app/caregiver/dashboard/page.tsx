@@ -6,77 +6,119 @@ import Link from "next/link"
 import SignOutButton from "@/components/auth/SignOutButton"
 
 type IconProps = { className?: string }
-
-// Icons and navItems moved to Sidebar component
-
 const iconBase = "h-5 w-5 stroke-[1.6]"
-const StarIcon = ({ className }: { className?: string }) => (
+const HomeIcon = ({ className }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
-    fill="currentColor"
+    fill="none"
     stroke="currentColor"
     className={`${iconBase} ${className ?? ""}`}
   >
-    <path d="M12 3.5 14.6 9l6 .5-4.6 3.9 1.4 6-5.4-3.3L6.6 19l1.4-6L3.4 9.5l6-.5z" />
+    <path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1v-4H10v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" />
+  </svg>
+)
+const CalendarIcon = ({ className }: IconProps) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={`${iconBase} ${className ?? ""}`}
+  >
+    <rect x="4" y="5" width="16" height="15" rx="2" />
+    <path d="M9 3v4M15 3v4M4 10h16" />
+  </svg>
+)
+const ChecklistIcon = ({ className }: IconProps) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={`${iconBase} ${className ?? ""}`}
+  >
+    <path d="m5 12 2 2 3-3M5 6l2 2 3-3M11 6h8M11 12h8M11 18h8" />
+  </svg>
+)
+const UserIcon = ({ className }: IconProps) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={`${iconBase} ${className ?? ""}`}
+  >
+    <circle cx="12" cy="8" r="4" />
+    <path d="M6 20c0-3.314 2.686-6 6-6s6 2.686 6 6" />
+  </svg>
+)
+const BookIcon = ({ className }: IconProps) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    className={`${iconBase} ${className ?? ""}`}
+  >
+    <path d="M5 4h10a3 3 0 0 1 3 3v13H7a3 3 0 0 0-3 3V7a3 3 0 0 1 3-3z" />
+    <path d="M5 18h13" />
   </svg>
 )
 
-const featuredTherapists = [
-  {
-    name: "Dr. Maya Rao",
-    specialty: "Therapist • Anxiety, CBT",
-    rating: "4.97 (55 reviews)",
-    price: "₹1499 / session",
-    accent: "from-orange-200 via-amber-200 to-orange-100",
-  },
-  {
-    name: "Dr. Arjun Sen",
-    specialty: "Therapist • Trauma, Mindfulness",
-    rating: "4.95 (61 reviews)",
-    price: "₹1299 / session",
-    accent: "from-blue-200 via-sky-200 to-cyan-100",
-  },
-  {
-    name: "Dr. Leena Shah",
-    specialty: "Therapist • Couples, Family",
-    rating: "4.93 (48 reviews)",
-    price: "₹1399 / session",
-    accent: "from-emerald-200 via-teal-200 to-green-100",
-  },
+const navItems: { label: string; href: string; icon: ReactNode }[] = [
+  { label: "Dashboard", href: "/caregiver/dashboard", icon: <HomeIcon /> },
+  { label: "Appointments", href: "/patient/appointments", icon: <CalendarIcon /> },
+  { label: "Care tasks", href: "/patient/tasks", icon: <ChecklistIcon /> },
+  { label: "Therapists", href: "/patient/therapists", icon: <UserIcon /> },
+  { label: "Resources", href: "/patient/resources", icon: <BookIcon /> },
+  { label: "Profile", href: "/patient/profile", icon: <UserIcon /> },
 ]
 
 const quickActions = [
   {
-    title: "Find a therapist",
-    description: "Browse experts and book a session",
+    title: "Book a session",
+    description: "Find a therapist for your dependent",
     href: "/patient/therapists",
     accent: "from-teal-500 to-emerald-500",
   },
   {
-    title: "Daily wellness",
-    description: "Light tasks to keep you on track",
+    title: "Manage tasks",
+    description: "Daily care checklist and progress",
     href: "/patient/tasks",
-    accent: "from-purple-500 to-pink-500",
+    accent: "from-indigo-500 to-purple-500",
   },
   {
-    title: "Resource library",
-    description: "Guides, tools, and exercises",
+    title: "Share resources",
+    description: "Guides and tools for support",
     href: "/patient/resources",
     accent: "from-blue-500 to-cyan-500",
   },
   {
-    title: "My appointments",
-    description: "Upcoming and past sessions",
-    href: "/patient/appointments",
-    accent: "from-indigo-500 to-purple-500",
+    title: "Update profile",
+    description: "Contact info and preferences",
+    href: "/patient/profile",
+    accent: "from-orange-500 to-amber-500",
   },
 ]
 
-import Sidebar from "@/components/patient/Sidebar"
+const supportCards = [
+  {
+    title: "Next appointment",
+    subtitle: "Schedule a session for your dependent",
+    status: "No bookings yet",
+    accent: "from-orange-200 via-amber-200 to-orange-100",
+  },
+  {
+    title: "Care plan",
+    subtitle: "Keep tasks and notes in one place",
+    status: "Start with today’s checklist",
+    accent: "from-blue-200 via-sky-200 to-cyan-100",
+  },
+  {
+    title: "Resources to share",
+    subtitle: "Articles, videos, and exercises",
+    status: "Browse the library",
+    accent: "from-emerald-200 via-teal-200 to-green-100",
+  },
+]
 
-// ... imports ...
-
-export default async function PatientDashboard() {
+export default async function CaregiverDashboard() {
   const session = await auth()
 
   if (!session?.user) {
@@ -85,29 +127,52 @@ export default async function PatientDashboard() {
 
   const user = await getCurrentUser()
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
+  if (!user || user.role !== "CAREGIVER") {
     redirect("/auth/unauthorized")
   }
 
-  const displayName = session.user.name || "You"
+  const displayName = session.user.name || "Caregiver"
   const initial = displayName.charAt(0).toUpperCase()
 
   return (
     <div className="min-h-screen bg-slate-50 text-gray-900">
       <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
-        <Sidebar />
+        {/* Side rail */}
+        <aside className="hidden lg:flex flex-col gap-4 border-r border-slate-200 bg-white/90 backdrop-blur px-3 py-6">
+          <Link
+            href="/caregiver/dashboard"
+            className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white font-semibold"
+          >
+            C
+          </Link>
+          <div className="flex-1 space-y-2">
+            {navItems.map(item => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-teal-600 transition-colors"
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="pt-4 border-t border-slate-200 text-center">
+            <SignOutButton />
+          </div>
+        </aside>
 
         {/* Main column */}
         <div className="flex flex-col">
           <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
             <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 gap-4">
               <div className="flex items-center gap-3">
-                <div className="text-sm text-slate-500">Dashboard</div>
+                <div className="text-sm text-slate-500">Caregiver dashboard</div>
                 <div className="hidden sm:block h-4 w-px bg-slate-200" />
                 <div className="relative">
                   <input
                     type="search"
-                    placeholder="Search therapists, sessions, resources"
+                    placeholder="Search therapists, sessions, tasks"
                     className="w-64 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-100"
                   />
                 </div>
@@ -130,21 +195,21 @@ export default async function PatientDashboard() {
           </header>
 
           <main className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            {/* Welcome */}
+            {/* Hero */}
             <div className="rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 text-white p-6 sm:p-8 shadow-lg">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <p className="text-sm uppercase tracking-wide text-white/80">Welcome back</p>
+                  <p className="text-sm uppercase tracking-wide text-white/80">Welcome</p>
                   <h1 className="text-3xl sm:text-4xl font-semibold mt-1">{displayName}</h1>
                   <p className="text-white/80 mt-2">
-                    Pick up where you left off — your next step is one click away.
+                    Support your loved one with clear steps and quick shortcuts.
                   </p>
                 </div>
                 <Link
                   href="/patient/appointments"
                   className="inline-flex items-center justify-center rounded-full bg-white text-teal-700 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 transition-colors"
                 >
-                  View upcoming sessions
+                  View care schedule
                 </Link>
               </div>
             </div>
@@ -152,10 +217,10 @@ export default async function PatientDashboard() {
             {/* Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {[
-                { label: "Upcoming sessions", value: "0", hint: "No bookings yet", color: "text-teal-600" },
-                { label: "Tasks completed", value: "0", hint: "Stay consistent", color: "text-emerald-600" },
-                { label: "Resources viewed", value: "0", hint: "Explore the library", color: "text-blue-600" },
-                { label: "Mood check-ins", value: "—", hint: "Coming soon", color: "text-purple-600" },
+                { label: "Upcoming sessions", value: "0", hint: "Book the next one", color: "text-teal-600" },
+                { label: "Tasks completed", value: "0", hint: "Finish today’s list", color: "text-emerald-600" },
+                { label: "Resources shared", value: "0", hint: "Pick a helpful guide", color: "text-blue-600" },
+                { label: "Notes added", value: "—", hint: "Coming soon", color: "text-purple-600" },
               ].map(card => (
                 <div
                   key={card.label}
@@ -191,42 +256,38 @@ export default async function PatientDashboard() {
               ))}
             </div>
 
-            {/* Featured therapists */}
+            {/* Support cards */}
             <section className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Recommended therapists</h2>
+                  <h2 className="text-xl font-semibold text-slate-900">Care at a glance</h2>
                   <p className="text-sm text-slate-600">
-                    Curated for you based on your preferences
+                    Sessions, tasks, and resources for your dependent
                   </p>
                 </div>
                 <Link
-                  href="/patient/therapists"
+                  href="/patient/profile"
                   className="text-sm font-semibold text-teal-600 hover:text-teal-700"
                 >
-                  View all
+                  Update details
                 </Link>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {featuredTherapists.map(item => (
+                {supportCards.map(card => (
                   <div
-                    key={item.name}
+                    key={card.title}
                     className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow"
                   >
-                    <div className={`h-36 bg-gradient-to-br ${item.accent}`} />
-                    <div className="p-4 space-y-2">
-                      <div className="flex items-center gap-2 text-amber-600 text-sm font-semibold">
-                        <StarIcon className="h-4 w-4 text-amber-500" />
-                        <span className="text-slate-700">{item.rating}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-900">{item.name}</h3>
-                      <p className="text-sm text-slate-600">{item.specialty}</p>
-                      <p className="text-sm font-semibold text-slate-900">{item.price}</p>
+                    <div className={`h-32 bg-gradient-to-br ${card.accent}`} />
+                    <div className="p-4 space-y-1">
+                      <h3 className="text-lg font-semibold text-slate-900">{card.title}</h3>
+                      <p className="text-sm text-slate-600">{card.subtitle}</p>
+                      <p className="text-sm font-semibold text-slate-900">{card.status}</p>
                       <Link
-                        href="/patient/therapists"
-                        className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:from-teal-600 hover:to-emerald-600 transition-colors"
+                        href="/patient/appointments"
+                        className="text-sm font-semibold text-teal-600 hover:text-teal-700"
                       >
-                        Book now
+                        Manage →
                       </Link>
                     </div>
                   </div>
@@ -234,11 +295,11 @@ export default async function PatientDashboard() {
               </div>
             </section>
 
-            {/* Resources + appointments */}
+            {/* Tasks & links */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-slate-900">Your next steps</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Today’s care checklist</h3>
                   <Link
                     href="/patient/tasks"
                     className="text-sm font-semibold text-teal-600 hover:text-teal-700"
@@ -247,25 +308,25 @@ export default async function PatientDashboard() {
                   </Link>
                 </div>
                 <div className="space-y-2 text-sm text-slate-600">
-                  <p>• Complete a 5-minute grounding exercise</p>
-                  <p>• Review progress notes from your last session</p>
-                  <p>• Bookmark one new resource for the week</p>
+                  <p>• Note any mood or behavior changes</p>
+                  <p>• Share one resource for today’s goal</p>
+                  <p>• Plan the next session time</p>
                 </div>
               </div>
               <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <h3 className="text-lg font-semibold text-slate-900 mb-3">Quick links</h3>
                 <div className="space-y-2 text-sm">
                   <Link href="/patient/profile" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Update profile
+                    Update dependent info
                   </Link>
                   <Link href="/patient/appointments" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
                     See all appointments
                   </Link>
+                  <Link href="/patient/therapists" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
+                    Find therapists
+                  </Link>
                   <Link href="/patient/resources" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
                     Explore resources
-                  </Link>
-                  <Link href="/patient/tasks" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Manage daily tasks
                   </Link>
                 </div>
               </div>

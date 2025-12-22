@@ -96,6 +96,7 @@ model Patient {
   tasks       DailyTask[]
   resourceAccess ResourceAccess[]
   caregivers  Caregiver[]
+  assessments MentalWellnessAssessment[]
   
   @@map("patients")
 }
@@ -400,6 +401,39 @@ model DailyTask {
   patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
   
   @@map("daily_tasks")
+}
+
+// Mental Wellness Assessment (AI Bot)
+model MentalWellnessAssessment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId   String   @db.ObjectId
+  
+  // Section 0 - Context
+  userContext Json?    // { status: "STUDENT", ageRange: "18-24" }
+  
+  // Section 1 - Safety (If flagged, assessment stops)
+  safetyFlags Json?    // { harm: false, unsafe: false, psychosis: false }
+  
+  // Section 2 - General Wellbeing
+  wellbeingScore String? // "GOOD", "FAIR", etc.
+  difficultAreas String[] // ["MOOD", "SLEEP"]
+  
+  // Domain Modules (Scores or raw answers)
+  moduleScores   Json?   // { mood: "HIGH", anxiety: "MODERATE" }
+  
+  // Section 3 - Background
+  backgroundFlags Json?
+  
+  // AI Output
+  riskLevel       String? // "LOW", "MILD", "MODERATE", "HIGH"
+  summaryReport   String? @db.String // cached markdown report
+  affectedDomains String[]
+  
+  createdAt   DateTime @default(now())
+  
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("mental_wellness_assessments")
 }
 
 enum TaskType {
