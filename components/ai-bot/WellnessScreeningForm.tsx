@@ -488,7 +488,15 @@ function Section3({ data, updateData }: any) {
     )
 }
 
-function Question({ label, options, selected, onSelect, highlight }: any) {
+type QuestionProps = {
+    label: string
+    options: string[]
+    selected?: string
+    onSelect: (value: string) => void
+    highlight?: string
+}
+
+function Question({ label, options, selected, onSelect, highlight }: QuestionProps) {
     return (
         <div className="space-y-3">
             <label className="block text-lg font-medium text-gray-800">{label}</label>
