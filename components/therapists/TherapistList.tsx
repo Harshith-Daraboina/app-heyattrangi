@@ -20,6 +20,9 @@ interface Doctor {
   } | null
 }
 
+const cardHover =
+  "transition-[border-color,box-shadow] hover:border-[var(--color-brand)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+
 export default function TherapistList() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [loading, setLoading] = useState(true)
@@ -56,13 +59,20 @@ export default function TherapistList() {
     }
   }
 
+  const filterClass =
+    "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-[var(--color-text-primary)] focus:border-[var(--color-brand)] focus:outline-none"
+
   return (
     <div>
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-100">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div
+        className="mb-6 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6"
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="mb-2 block font-medium text-[var(--color-text-primary)]"
+              style={{ fontSize: "var(--text-sm)" }}
+            >
               Search
             </label>
             <input
@@ -70,17 +80,22 @@ export default function TherapistList() {
               placeholder="Search by specialization or keywords..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className={filterClass}
+              style={{ fontSize: "var(--text-sm)" }}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              className="mb-2 block font-medium text-[var(--color-text-primary)]"
+              style={{ fontSize: "var(--text-sm)" }}
+            >
               Specialization
             </label>
             <select
               value={specialization}
               onChange={(e) => setSpecialization(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              className={filterClass}
+              style={{ fontSize: "var(--text-sm)" }}
             >
               <option value="">All Specializations</option>
               {specializations.map((spec) => (
@@ -93,81 +108,108 @@ export default function TherapistList() {
         </div>
       </div>
 
-      {/* Therapist List */}
       {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600">Loading therapists...</p>
+        <div className="py-12 text-center">
+          <p className="text-[var(--color-text-secondary)]" style={{ fontSize: "var(--text-sm)" }}>
+            Loading therapists...
+          </p>
         </div>
       ) : doctors.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-100">
-          <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            No therapists found
+        <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] px-6 py-12 text-center">
+          <h3
+            className="mb-2 font-semibold text-[var(--color-text-primary)]"
+            style={{ fontSize: "var(--text-lg)" }}
+          >
+            {search || specialization ? "Let's try another search" : "More therapists are on the way"}
           </h3>
-          <p className="text-gray-600">
+          <p className="text-[var(--color-text-secondary)]" style={{ fontSize: "var(--text-sm)" }}>
             {search || specialization
-              ? "Try adjusting your search criteria"
-              : "No therapists available at the moment. Please check back later."}
+              ? "Adjust your keywords or filters to see more professionals."
+              : "Check back soon — we're growing our network. You can also try again later."}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {doctors.map((doctor) => (
-            <div
-              key={doctor.id}
-              className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all"
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center text-2xl text-white">
-                  {doctor.user.name?.charAt(0).toUpperCase() || "👤"}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {doctor.user.name || "Dr. Anonymous"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {doctor.specialization || "Therapist"}
-                  </p>
-                </div>
-              </div>
+        <ul className="flex list-none flex-col gap-4 p-0">
+          {doctors.map((doctor) => {
+            const name = doctor.user.name || "Dr. Anonymous"
+            const specialty = doctor.specialization || "Therapist"
+            const initial = name.charAt(0).toUpperCase()
+            const available = doctor.availability?.isAvailable !== false
 
-              {doctor.experience && (
-                <p className="text-sm text-gray-600 mb-2">
-                  {doctor.experience} years of experience
-                </p>
-              )}
-
-              {doctor.bio && (
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {doctor.bio}
-                </p>
-              )}
-
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <p className="text-2xl font-bold text-gray-800">
-                    ₹{doctor.consultationFee}
-                  </p>
-                  <p className="text-xs text-gray-600">per session</p>
-                </div>
-                {doctor.availability?.isAvailable === false && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                    Not accepting
-                  </span>
-                )}
-              </div>
-
-              <Link
-                href={`/patient/therapists/${doctor.id}`}
-                className="block w-full text-center bg-gradient-to-r from-teal-500 to-emerald-500 text-white py-2 px-4 rounded-lg font-medium hover:from-teal-600 hover:to-emerald-600 transition-all"
+            return (
+              <li
+                key={doctor.id}
+                className={`border border-[var(--color-border)] bg-[var(--color-surface)] ${cardHover}`}
+                style={{
+                  borderRadius: "var(--radius-lg)",
+                  padding: "20px",
+                }}
               >
-                View Profile & Book
-              </Link>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-4">
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-[var(--color-brand-light)]">
+                    {doctor.user.image ? (
+                      <Image
+                        src={doctor.user.image}
+                        alt={name}
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <span
+                        className="flex h-full w-full items-center justify-center font-semibold text-[var(--color-brand)]"
+                        style={{ fontSize: "var(--text-lg)" }}
+                        aria-hidden
+                      >
+                        {initial}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1 text-left">
+                    <p
+                      className="truncate font-semibold text-[var(--color-text-primary)]"
+                      style={{ fontSize: "var(--text-base)" }}
+                    >
+                      {name}
+                    </p>
+                    <p
+                      className="truncate text-[var(--color-text-secondary)]"
+                      style={{ fontSize: "var(--text-sm)" }}
+                    >
+                      {specialty}
+                    </p>
+                  </div>
+
+                  {available ? (
+                    <Link
+                      href={`/patient/therapists/${doctor.id}`}
+                      className="inline-flex shrink-0 items-center justify-center font-medium text-white transition-opacity hover:opacity-95"
+                      style={{
+                        background: "var(--color-brand)",
+                        borderRadius: "var(--radius-sm)",
+                        padding: "8px 18px",
+                        fontSize: "var(--text-sm)",
+                        fontWeight: 500,
+                      }}
+                    >
+                      Book
+                    </Link>
+                  ) : (
+                    <span
+                      className="shrink-0 rounded-full border border-[var(--color-border)] px-3 py-1 text-[var(--color-text-muted)]"
+                      style={{ fontSize: "var(--text-xs)" }}
+                    >
+                      Unavailable
+                    </span>
+                  )}
+                </div>
+              </li>
+            )
+          })}
+        </ul>
       )}
     </div>
   )
 }
-

@@ -19,8 +19,8 @@ export default async function TherapistsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+    <div className="min-h-screen bg-[var(--color-bg)]">
+      <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-6">
@@ -58,13 +58,19 @@ export default async function TherapistsPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="mx-auto max-w-[720px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Find a Therapist
+          <h1
+            className="mb-2 font-semibold text-[var(--color-text-primary)]"
+            style={{ fontSize: "var(--text-2xl)", fontWeight: 600 }}
+          >
+            Find your therapist
           </h1>
-          <p className="text-gray-600">
-            Browse qualified therapists and book an appointment
+          <p
+            className="text-[var(--color-text-secondary)]"
+            style={{ fontSize: "var(--text-sm)" }}
+          >
+            Browse our verified mental health professionals
           </p>
         </div>
 
