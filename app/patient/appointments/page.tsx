@@ -26,28 +26,34 @@ export default async function AppointmentsPage() {
 
   if (!patient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-        <nav className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
+      <div className="min-h-screen bg-[var(--color-bg)]">
+        <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex h-16 items-center justify-between">
+              <Link
+                href="/patient/dashboard"
+                className="text-xl font-semibold text-[var(--color-text-primary)]"
+              >
                 Attrangi
               </Link>
               <SignOutButton />
             </div>
           </div>
         </nav>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Profile Not Found</h2>
-            <p className="text-gray-600 mb-6">
-              Please complete your patient profile to view appointments.
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center shadow-sm">
+            <h2 className="mb-4 text-2xl font-semibold text-[var(--color-text-primary)]">
+              Finish setting up your profile
+            </h2>
+            <p className="mb-6 text-[var(--color-text-secondary)]">
+              Add a few details so we can show your appointments here when you book.
             </p>
             <Link
               href="/patient/profile"
-              className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
+              className="inline-block rounded-[var(--radius-md)] px-6 py-3 font-medium text-white transition-opacity hover:opacity-95"
+              style={{ background: "var(--color-brand)" }}
             >
-              Complete Profile
+              Complete profile
             </Link>
           </div>
         </main>
@@ -96,10 +102,10 @@ export default async function AppointmentsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+    <div className="min-h-screen bg-[var(--color-bg)]">
+      <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-6">
               <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
                 Attrangi
@@ -136,16 +142,31 @@ export default async function AppointmentsPage() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            My Appointments
-          </h1>
-          <p className="text-gray-600">
-            Manage your upcoming and past therapy sessions
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+              My Appointments
+            </h1>
+            <p className="text-gray-600">
+              Manage your upcoming and past therapy sessions
+            </p>
+          </div>
+          <Link
+            href="/patient/therapists"
+            className="inline-flex shrink-0 items-center justify-center text-center font-medium text-white transition-opacity hover:opacity-95"
+            style={{
+              background: "var(--color-brand)",
+              borderRadius: "var(--radius-md)",
+              padding: "10px 20px",
+              fontSize: "var(--text-sm)",
+              fontWeight: 500,
+            }}
+          >
+            Book a session
+          </Link>
         </div>
 
-        <AppointmentsList 
+        <AppointmentsList
           upcomingAppointments={upcomingAppointments}
           pastAppointments={pastAppointments}
         />
