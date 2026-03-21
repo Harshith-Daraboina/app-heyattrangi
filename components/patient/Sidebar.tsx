@@ -98,10 +98,10 @@ export default function Sidebar() {
     const pathname = usePathname()
 
     return (
-        <aside className="hidden lg:flex flex-col gap-4 border-r border-slate-200 bg-white/90 backdrop-blur px-3 py-6 h-screen sticky top-0">
+        <aside className="hidden lg:flex flex-col gap-4 border-r border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-6 h-screen sticky top-0">
             <Link
                 href="/"
-                className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-500 text-white font-semibold shadow-md hover:shadow-lg transition-shadow"
+                className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--color-brand)] text-white font-semibold shadow-md hover:opacity-95 transition-opacity"
             >
                 A
             </Link>
@@ -113,14 +113,14 @@ export default function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-xs font-medium transition-all duration-200 group relative
+                            className={`flex flex-col items-center gap-1 rounded-xl px-3 py-3 text-xs transition-all duration-200 group relative
                 ${isActive
-                                    ? "text-teal-600 bg-teal-50 shadow-sm"
-                                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                                    ? "text-[var(--color-brand)] font-medium"
+                                    : "text-[var(--color-text-secondary)] font-normal hover:bg-[var(--color-surface-raised)]"
                                 }`}
                         >
                             {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-teal-500 rounded-r-full" />
+                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-[var(--color-brand)] rounded-r-full" />
                             )}
                             <span className={`text-xl transition-transform duration-200 ${isActive ? "scale-110" : "group-hover:scale-110"}`}>
                                 {item.icon}
@@ -130,7 +130,7 @@ export default function Sidebar() {
                     )
                 })}
             </div>
-            <div className="pt-4 border-t border-slate-200 text-center">
+            <div className="pt-4 border-t border-[var(--color-border)] text-center">
                 <SignOutButton />
             </div>
         </aside>
