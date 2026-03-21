@@ -153,12 +153,6 @@ export default async function AppointmentPaymentPage({
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
-          <Link
-            href="/patient/appointments"
-            className="text-sm text-gray-600 hover:text-gray-800 mb-4 inline-block"
-          >
-            ← Back to Appointments
-          </Link>
           <h1 className="text-3xl font-semibold text-gray-800 mb-2">
             Complete Payment
           </h1>
