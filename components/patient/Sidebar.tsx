@@ -67,6 +67,22 @@ const BookIcon = ({ className }: IconProps) => (
     </svg>
 )
 
+const MoodIcon = ({ className }: IconProps) => (
+    <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={`${iconBase} ${className ?? ""}`}
+    >
+        <circle cx="12" cy="12" r="9" />
+        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+        <circle cx="9" cy="10" r="0.75" fill="currentColor" stroke="none" />
+        <circle cx="15" cy="10" r="0.75" fill="currentColor" stroke="none" />
+    </svg>
+)
+
 const RobotIcon = ({ className }: IconProps) => (
     <svg
         viewBox="0 0 24 24"
@@ -89,6 +105,7 @@ const navItems: { label: string; href: string; icon: ReactNode }[] = [
     { label: "Attrangi Bot", href: "/patient/ai-bot", icon: <RobotIcon /> },
     { label: "Therapists", href: "/patient/therapists", icon: <UserIcon /> },
     { label: "Appointments", href: "/patient/appointments", icon: <CalendarIcon /> },
+    { label: "Mood", href: "/patient/mood", icon: <MoodIcon /> },
     { label: "Tasks", href: "/patient/tasks", icon: <ChecklistIcon /> },
     { label: "Resources", href: "/patient/resources", icon: <BookIcon /> },
     { label: "Profile", href: "/patient/profile", icon: <UserIcon /> },

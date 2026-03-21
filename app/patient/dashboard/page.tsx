@@ -168,7 +168,7 @@ export default async function PatientDashboard() {
 
               <div className="mt-4 flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/patient/ai-bot/screening"
+                  href="/patient/mood"
                   className="flex-1 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 transition-shadow hover:shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-brand)]"
                 >
                   <p
