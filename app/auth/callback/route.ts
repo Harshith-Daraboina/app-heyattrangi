@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     // If user still doesn't exist after retries, redirect to signup
     if (!user) {
       console.error("User not found after retries:", session.user.id)
-      return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+      return NextResponse.redirect(new URL("/auth/signup", req.url))
     }
 
     // If this is a signup and role needs to be set/updated
@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
         default:
           // No role set - send to signup to select role
           console.log("No role set for existing user - redirecting to signup")
-          return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+          return NextResponse.redirect(new URL("/auth/signup", req.url))
       }
     }
 
@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL(`/onboarding?role=${user.role}`, req.url))
       }
       // No role set - redirect to signup to select role
-      return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+      return NextResponse.redirect(new URL("/auth/signup", req.url))
     }
 
     // Onboarding complete for signup - redirect to dashboard

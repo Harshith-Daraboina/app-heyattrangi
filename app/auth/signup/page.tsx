@@ -5,6 +5,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
+type SignupRole = "PATIENT" | "DOCTOR"
+
 function GoogleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden>
@@ -28,7 +30,8 @@ function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
-export default function SignInPage() {
+export default function SignUpPage() {
+  const [selectedRole, setSelectedRole] = useState<SignupRole | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -38,7 +41,6 @@ export default function SignInPage() {
       const timer = setTimeout(() => {
         checkAndRedirect()
       }, 2000)
-
       return () => clearTimeout(timer)
     }
   }, [session, status])
@@ -47,7 +49,6 @@ export default function SignInPage() {
     try {
       const response = await fetch("/api/auth/check-onboarding")
       const data = await response.json()
-
       if (data.completed) {
         const role = data.role
         switch (role) {
@@ -70,57 +71,54 @@ export default function SignInPage() {
     }
   }
 
-  const handleDirectSignIn = async () => {
+  const handleGoogleSignUp = async () => {
+    if (!selectedRole) return
     setIsLoading(true)
     try {
       await signIn("google", {
-        callbackUrl: "/auth/callback",
+        callbackUrl: `/auth/callback?signup=true&role=${selectedRole}`,
         redirect: true,
       })
     } catch (error) {
-      console.error("Sign in error:", error)
+      console.error("Sign up error:", error)
       setIsLoading(false)
     }
   }
 
   const signedIn = status === "authenticated" && !!session?.user
-  const actionsDisabled = isLoading || signedIn
+  const googleDisabled = isLoading || !selectedRole || signedIn
+
+  const cardBase =
+    "cursor-pointer text-left rounded-[var(--radius-md)] p-4 transition-[border-width,background-color,border-color] border-solid"
+  const cardUnselected =
+    "border border-[var(--color-border)] bg-[var(--color-surface)]"
+  const cardSelected =
+    "border-2 border-[var(--color-brand)] bg-[var(--color-brand-light)]"
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center pt-20 px-4 pb-12">
-      <div className="w-full max-w-[480px] flex flex-col items-center text-center">
+    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center px-4 py-12">
+      <div
+        className="w-full max-w-[440px] mx-auto p-10 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-raised)]"
+      >
         <h1
-          className="mb-4 font-bold text-[var(--color-text-primary)]"
-          style={{
-            fontSize: "var(--text-3xl)",
-            fontWeight: 700,
-          }}
+          className="mb-6 text-center text-[var(--color-text-primary)]"
+          style={{ fontSize: "var(--text-2xl)", fontWeight: 600 }}
         >
-          Your mind deserves a companion
+          Create your account
         </h1>
-        <p
-          className="mx-auto mb-8 max-w-[400px] text-[var(--color-text-secondary)]"
-          style={{
-            fontSize: "var(--text-base)",
-            lineHeight: "var(--leading-loose)",
-          }}
-        >
-          Hey Attrangi supports your mental wellbeing — with AI, with therapists,
-          and with you at the centre.
-        </p>
 
         {signedIn && session?.user ? (
-          <div className="mb-6 w-full p-4 bg-amber-50 border border-amber-200 rounded-lg text-left">
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-left">
             <div className="flex items-start gap-3">
               <div className="text-amber-600 text-xl">⚠️</div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-amber-800 mb-1">
+                <h2 className="text-sm font-semibold text-amber-800 mb-1">
                   Already Signed In
-                </h3>
+                </h2>
                 <p className="text-sm text-amber-700 mb-3">
-                  You&apos;re currently signed in as{" "}
-                  <strong>{session.user.email}</strong>. To use a different
-                  account, clear this session first.
+                  You&apos;re signed in as{" "}
+                  <strong>{session.user.email}</strong>. Sign out to create a
+                  different account.
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -138,7 +136,6 @@ export default function SignInPage() {
                     onClick={async () => {
                       const response = await fetch("/api/auth/check-onboarding")
                       const data = await response.json()
-
                       if (data.completed) {
                         const role = data.role
                         switch (role) {
@@ -165,38 +162,90 @@ export default function SignInPage() {
           </div>
         ) : null}
 
-        {!signedIn ? (
-          <>
-            <Link
-              href="/auth/signup"
-              className="w-full inline-flex items-center justify-center gap-3 border-0 text-white cursor-pointer no-underline"
-              style={{
-                backgroundColor: "var(--color-brand)",
-                borderRadius: "var(--radius-md)",
-                padding: "14px 32px",
-                fontSize: "var(--text-base)",
-                fontWeight: 500,
-              }}
-            >
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() =>
+              setSelectedRole((r) => (r === "PATIENT" ? null : "PATIENT"))
+            }
+            className={`${cardBase} ${
+              selectedRole === "PATIENT" ? cardSelected : cardUnselected
+            }`}
+          >
+            <span className="text-[var(--color-text-primary)] font-medium">
+              I am seeking support
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              setSelectedRole((r) => (r === "DOCTOR" ? null : "DOCTOR"))
+            }
+            className={`${cardBase} ${
+              selectedRole === "DOCTOR" ? cardSelected : cardUnselected
+            }`}
+          >
+            <span className="text-[var(--color-text-primary)] font-medium">
+              I am a therapist
+            </span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignUp}
+          disabled={googleDisabled}
+          className="w-full flex items-center justify-center gap-3 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            border: "1px solid var(--color-border)",
+            background: "white",
+            color: "var(--color-text-primary)",
+            borderRadius: "var(--radius-md)",
+            padding: "12px 24px",
+          }}
+        >
+          {isLoading ? (
+            <>
+              <svg
+                className="animate-spin h-5 w-5 shrink-0"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Signing in...
+            </>
+          ) : (
+            <>
               <GoogleIcon className="w-5 h-5 shrink-0" />
-              Get started — it is free
-            </Link>
+              Continue with Google
+            </>
+          )}
+        </button>
 
-            <button
-              type="button"
-              onClick={handleDirectSignIn}
-              disabled={actionsDisabled}
-              className="mt-4 border-0 bg-transparent cursor-pointer p-0 text-[var(--color-accent)] no-underline disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ fontSize: "var(--text-sm)" }}
-            >
-              Already have an account? Sign in
-            </button>
-          </>
-        ) : null}
-
-        <p className="mt-8 text-center text-sm text-[var(--color-text-muted)]">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+        <div className="mt-6 text-center">
+          <Link
+            href="/auth/signin"
+            className="text-[var(--color-accent)] no-underline hover:opacity-90"
+            style={{ fontSize: "var(--text-sm)" }}
+          >
+            Already have an account? Sign in
+          </Link>
+        </div>
       </div>
     </div>
   )
