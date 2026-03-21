@@ -1,42 +1,35 @@
 import Sidebar from "@/components/patient/Sidebar"
-import AIBotCompanionClient from "@/components/ai-bot/AIBotCompanionClient"
+import WellnessScreeningForm from "@/components/ai-bot/WellnessScreeningForm"
 import { auth } from "@/auth.config"
 import { redirect } from "next/navigation"
 
-function firstName(displayName: string | null | undefined): string {
-  if (!displayName?.trim()) return "there"
-  return displayName.trim().split(/\s+/)[0] ?? "there"
-}
-
-export default async function AIBotPage() {
+export default async function AIBotScreeningPage() {
   const session = await auth()
 
   if (!session?.user) {
     redirect("/auth/signin")
   }
 
-  const userName = firstName(session.user.name)
-
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
         <Sidebar />
 
-        <div className="flex min-h-screen min-w-0 flex-col">
+        <div className="flex flex-col">
           <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
-            <div className="mx-auto flex max-w-[680px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
               <div>
                 <h1
                   className="font-semibold text-[var(--color-text-primary)]"
                   style={{ fontSize: "var(--text-xl)" }}
                 >
-                  Attrangi Bot
+                  Wellness screening
                 </h1>
                 <p
                   className="mt-0.5 text-[var(--color-text-secondary)]"
                   style={{ fontSize: "var(--text-sm)" }}
                 >
-                  Your companion
+                  Mind Matrix &amp; support
                 </p>
               </div>
               <div
@@ -48,8 +41,20 @@ export default async function AIBotPage() {
             </div>
           </header>
 
-          <main className="flex min-h-0 flex-1 flex-col px-0 sm:px-6 lg:px-8">
-            <AIBotCompanionClient userName={userName} />
+          <main className="flex-1 bg-[var(--color-bg)] px-4 py-8 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-4xl">
+              <div
+                className="mb-8 rounded-[var(--radius-md)] bg-[var(--color-accent-light)] p-4 text-[var(--color-text-primary)]"
+                style={{ fontSize: "var(--text-sm)" }}
+              >
+                <p className="mb-1 font-semibold">Disclaimer</p>
+                <p>
+                  This tool is for mental wellness screening and self-reflection only. It does not provide medical or psychological diagnoses. If you are in crisis, please seek professional help immediately.
+                </p>
+              </div>
+
+              <WellnessScreeningForm />
+            </div>
           </main>
         </div>
       </div>
