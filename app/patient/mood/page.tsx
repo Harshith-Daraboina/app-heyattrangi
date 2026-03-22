@@ -1,8 +1,10 @@
-import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { computeMoodStreak } from "@/lib/mood/streak"
 import Sidebar from "@/components/patient/Sidebar"
+import MoodTrackerClient, { type MoodEntryRow } from "@/components/patient/mood/MoodTrackerClient"
 
 export default async function MoodTrackerPage() {
   const session = await auth()
@@ -17,6 +19,44 @@ export default async function MoodTrackerPage() {
     redirect("/auth/unauthorized")
   }
 
+  let initialEntries: MoodEntryRow[] = []
+  let initialStreak = 0
+  let initialTotal = 0
+
+  if (user.patient) {
+    const rows = await prisma.moodCheckIn.findMany({
+      where: { patientId: user.patient.id },
+      orderBy: { createdAt: "desc" },
+      take: 60,
+    })
+
+    initialEntries = rows.map((e) => ({
+      id: e.id,
+      mood: e.mood,
+      mood_score: e.moodScore,
+      tags: e.tags,
+      note: e.note,
+      energy_level: e.energyLevel,
+      stress_level: e.stressLevel,
+      sleep_quality: e.sleepQuality,
+      craving: e.craving,
+      craving_intensity: e.cravingIntensity,
+      craving_trigger: e.cravingTriggers,
+      created_at: e.createdAt.toISOString(),
+    }))
+
+    const forStreak = await prisma.moodCheckIn.findMany({
+      where: { patientId: user.patient.id },
+      select: { createdAt: true },
+      orderBy: { createdAt: "desc" },
+      take: 400,
+    })
+    initialStreak = computeMoodStreak(forStreak.map((e) => e.createdAt))
+    initialTotal = await prisma.moodCheckIn.count({
+      where: { patientId: user.patient.id },
+    })
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
       <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
@@ -24,7 +64,7 @@ export default async function MoodTrackerPage() {
 
         <div className="flex min-h-screen min-w-0 flex-col">
           <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+            <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:max-w-4xl lg:px-8">
               <div>
                 <h1
                   className="font-semibold text-[var(--color-text-primary)]"
@@ -49,37 +89,13 @@ export default async function MoodTrackerPage() {
             </div>
           </header>
 
-          <main className="flex flex-1 flex-col items-center justify-center px-4 py-16 sm:px-6 lg:px-8">
-            <div className="mx-auto max-w-md text-center">
-              <p
-                className="font-semibold text-[var(--color-text-primary)]"
-                style={{ fontSize: "var(--text-2xl)" }}
-              >
-                In progress
-              </p>
-              <p
-                className="mt-3 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "var(--text-base)", lineHeight: "var(--leading-loose)" }}
-              >
-                We&apos;re building a gentle way to log your mood. Check back soon, or continue with your
-                wellness screening when you&apos;re ready.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                <Link
-                  href="/patient/dashboard"
-                  className="inline-flex items-center justify-center rounded-[var(--radius-md)] px-5 py-3 font-medium text-white transition-opacity hover:opacity-95"
-                  style={{ background: "var(--color-brand)" }}
-                >
-                  Back to home
-                </Link>
-                <Link
-                  href="/patient/ai-bot/screening"
-                  className="inline-flex items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-accent)] px-5 py-3 font-medium text-[var(--color-accent)] transition-opacity hover:opacity-90"
-                >
-                  Wellness screening
-                </Link>
-              </div>
-            </div>
+          <main className="relative min-h-0 flex-1 overflow-y-auto">
+            <MoodTrackerClient
+              canLog={!!user.patient}
+              initialEntries={initialEntries}
+              initialStreak={initialStreak}
+              initialTotal={initialTotal}
+            />
           </main>
         </div>
       </div>

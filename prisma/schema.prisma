@@ -97,8 +97,31 @@ model Patient {
   resourceAccess ResourceAccess[]
   caregivers  Caregiver[]
   assessments MentalWellnessAssessment[]
+  moodCheckIns MoodCheckIn[]
   
   @@map("patients")
+}
+
+// Daily mood / relapse-prevention check-ins (patient-only)
+model MoodCheckIn {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId        String   @db.ObjectId
+  mood             String
+  moodScore        Int
+  tags             String[] @default([])
+  note             String?  @db.String
+  energyLevel      Int
+  stressLevel      Int
+  sleepQuality     Int
+  craving          Boolean  @default(false)
+  cravingIntensity Int?
+  cravingTriggers  String[] @default([])
+  createdAt        DateTime @default(now())
+
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, createdAt])
+  @@map("mood_check_ins")
 }
 
 // Caregiver Model
