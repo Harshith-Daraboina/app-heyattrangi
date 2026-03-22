@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect, type FormEvent } from "react"
+import { useState, useRef, useEffect, useMemo, type FormEvent } from "react"
 import Image from "next/image"
 
 interface ChatMessage {
@@ -51,7 +51,14 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
   const [inputMessage, setInputMessage] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
+  const [summarizing, setSummarizing] = useState(false)
+  const [summaryOpen, setSummaryOpen] = useState(false)
+  const [summaryReport, setSummaryReport] = useState<string | null>(null)
+  const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [summarizeHint, setSummarizeHint] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const hasUserMessages = useMemo(() => messages.some((m) => m.role === "user"), [messages])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -105,6 +112,54 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
     setSelectedMode(null)
     setMessages([])
     setBotExpression("NEUTRAL")
+    setSummaryOpen(false)
+    setSummaryReport(null)
+    setSummaryError(null)
+    setSummarizeHint(null)
+  }
+
+  const endAndSummarize = async () => {
+    setSummarizeHint(null)
+    if (!hasUserMessages) {
+      setSummarizeHint("Send at least one message so we can summarize your chat.")
+      return
+    }
+    setSummarizing(true)
+    setSummaryError(null)
+    try {
+      const res = await fetch("/api/pragya/summary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      })
+      const data = (await res.json().catch(() => ({}))) as { report?: string; error?: string }
+      if (!res.ok) {
+        setSummaryReport(null)
+        setSummaryError(typeof data.error === "string" ? data.error : "Could not load summary.")
+        setSummaryOpen(true)
+        return
+      }
+      const report = typeof data.report === "string" ? data.report : "No summary returned."
+      setSummaryReport(report)
+      setSummaryOpen(true)
+    } catch {
+      setSummaryReport(null)
+      setSummaryError("Network error. Try again in a moment.")
+      setSummaryOpen(true)
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
+  const closeSummaryOnly = () => {
+    setSummaryOpen(false)
+  }
+
+  const endSessionAfterSummary = () => {
+    setSummaryOpen(false)
+    setSummaryReport(null)
+    setSummaryError(null)
+    resetChat()
   }
 
   return (
@@ -157,9 +212,11 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
             </button>
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded-[16px] border border-orange-500 bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-4 text-[15px] font-medium text-white shadow-md transition-colors hover:from-orange-700 hover:to-orange-600"
+              onClick={endAndSummarize}
+              disabled={summarizing}
+              className="flex w-full items-center justify-center gap-2 rounded-[16px] border border-orange-500 bg-gradient-to-r from-orange-600 to-orange-500 px-4 py-4 text-[15px] font-medium text-white shadow-md transition-colors hover:from-orange-700 hover:to-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <svg className="h-5 w-5 text-orange-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5 shrink-0 text-orange-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -167,8 +224,11 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
                   d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
                 />
               </svg>
-              End & Summarize
+              {summarizing ? "Summarizing…" : "End & Summarize"}
             </button>
+            {summarizeHint && (
+              <p className="text-center text-[12px] font-medium text-orange-700">{summarizeHint}</p>
+            )}
           </div>
 
           <div className="mt-auto max-w-[280px] space-y-1.5 px-4 pb-4 text-center">
@@ -315,6 +375,57 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
           )}
         </div>
       </div>
+
+      {summaryOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="pragya-summary-title"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40 transition-opacity duration-300"
+            aria-label="Close summary"
+            onClick={closeSummaryOnly}
+          />
+          <div className="relative z-10 flex max-h-[min(85vh,720px)] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl duration-300 animate-in fade-in zoom-in-95">
+            <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
+              <h2 id="pragya-summary-title" className="text-lg font-bold text-gray-800">
+                Session summary
+              </h2>
+              <p className="mt-1 text-[13px] text-gray-500">
+                For your reflection only — not a diagnosis or medical record.
+              </p>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 sm:px-6">
+              {summaryError ? (
+                <p className="text-[15px] leading-relaxed text-red-600">{summaryError}</p>
+              ) : (
+                <pre className="whitespace-pre-wrap font-sans text-[14px] leading-relaxed text-gray-800">
+                  {summaryReport}
+                </pre>
+              )}
+            </div>
+            <div className="flex flex-col gap-2 border-t border-gray-100 bg-gray-50/80 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
+              <button
+                type="button"
+                onClick={closeSummaryOnly}
+                className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-[15px] font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={endSessionAfterSummary}
+                className="rounded-xl bg-orange-500 px-4 py-3 text-[15px] font-medium text-white shadow-md transition-colors hover:bg-orange-600"
+              >
+                End session & reset chat
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

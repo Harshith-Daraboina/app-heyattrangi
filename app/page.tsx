@@ -48,7 +48,7 @@ export default async function Home() {
               For Patients
             </h3>
             <p className="text-[var(--color-text-secondary)]">
-              Access therapy, resources, and track your wellness journey with
+              Access therapy, mood check-ins, and your AI companion alongside
               expert support.
             </p>
           </div>
@@ -70,8 +70,8 @@ export default async function Home() {
               For Caregivers
             </h3>
             <p className="text-[var(--color-text-secondary)]">
-              Support your loved one's mental health journey with comprehensive
-              tools and resources.
+              Support your loved one&apos;s mental health journey with scheduling,
+              wellness tools, and clear next steps.
             </p>
           </div>
         </div>
@@ -91,18 +91,18 @@ export default async function Home() {
             </div>
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-6 shadow-md border border-[var(--color-border)]">
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Resource Library
+                Mood tracking
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Access free and premium mental health resources
+                Gentle check-ins to notice patterns in how you feel
               </p>
             </div>
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-6 shadow-md border border-[var(--color-border)]">
               <h4 className="font-semibold text-[var(--color-text-primary)] mb-2">
-                Daily Tasks
+                AI companion
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Track your wellness with daily activities and goals
+                Talk things through with Attrangi Bot between sessions
               </p>
             </div>
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-6 shadow-md border border-[var(--color-border)]">

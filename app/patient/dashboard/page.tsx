@@ -65,16 +65,10 @@ const quickActions = [
     accent: "from-teal-500 to-emerald-500",
   },
   {
-    title: "Daily wellness",
-    description: "Light tasks to keep you on track",
-    href: "/patient/tasks",
+    title: "Mood tracker",
+    description: "Log how you feel over time",
+    href: "/patient/mood",
     accent: "from-purple-500 to-pink-500",
-  },
-  {
-    title: "Resource library",
-    description: "Guides, tools, and exercises",
-    href: "/patient/resources",
-    accent: "from-blue-500 to-cyan-500",
   },
   {
     title: "My appointments",
@@ -218,22 +212,22 @@ export default async function PatientDashboard() {
                         color: "text-teal-600",
                       },
                       {
-                        label: "Tasks completed",
-                        value: "0",
-                        hint: "Stay consistent",
+                        label: "Mood check-ins",
+                        value: "—",
+                        hint: "Log on the Mood page",
+                        color: "text-purple-600",
+                      },
+                      {
+                        label: "Companion chats",
+                        value: "—",
+                        hint: "Talk with Attrangi Bot",
                         color: "text-emerald-600",
                       },
                       {
-                        label: "Resources viewed",
-                        value: "0",
-                        hint: "Explore the library",
-                        color: "text-blue-600",
-                      },
-                      {
-                        label: "Mood check-ins",
+                        label: "Screenings",
                         value: "—",
-                        hint: "Coming soon",
-                        color: "text-purple-600",
+                        hint: "Mind Matrix when ready",
+                        color: "text-blue-600",
                       },
                     ].map((card) => (
                       <div
@@ -253,7 +247,7 @@ export default async function PatientDashboard() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {quickActions.map((action) => (
                       <Link
                         key={action.href}
@@ -338,16 +332,16 @@ export default async function PatientDashboard() {
                           Your next steps
                         </h3>
                         <Link
-                          href="/patient/tasks"
+                          href="/patient/mood"
                           className="text-sm font-semibold text-[var(--color-brand)] hover:opacity-90"
                         >
-                          Open tasks
+                          Log mood
                         </Link>
                       </div>
                       <div className="space-y-2 text-sm text-[var(--color-text-secondary)]">
-                        <p>• Complete a 5-minute grounding exercise</p>
-                        <p>• Review progress notes from your last session</p>
-                        <p>• Bookmark one new resource for the week</p>
+                        <p>• Try a short mood check-in when you have a minute</p>
+                        <p>• Review notes from your last session when available</p>
+                        <p>• Reach out to Attrangi Bot if you want to talk things through</p>
                       </div>
                     </div>
                     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm">
@@ -368,16 +362,16 @@ export default async function PatientDashboard() {
                           See all appointments
                         </Link>
                         <Link
-                          href="/patient/resources"
+                          href="/patient/mood"
                           className="block rounded-lg px-3 py-2 hover:bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
                         >
-                          Explore resources
+                          Open mood tracker
                         </Link>
                         <Link
-                          href="/patient/tasks"
+                          href="/patient/ai-bot"
                           className="block rounded-lg px-3 py-2 hover:bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
                         >
-                          Manage daily tasks
+                          Open Attrangi Bot
                         </Link>
                       </div>
                     </div>

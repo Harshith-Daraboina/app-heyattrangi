@@ -28,16 +28,6 @@ const CalendarIcon = ({ className }: IconProps) => (
     <path d="M9 3v4M15 3v4M4 10h16" />
   </svg>
 )
-const ChecklistIcon = ({ className }: IconProps) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    className={`${iconBase} ${className ?? ""}`}
-  >
-    <path d="m5 12 2 2 3-3M5 6l2 2 3-3M11 6h8M11 12h8M11 18h8" />
-  </svg>
-)
 const UserIcon = ({ className }: IconProps) => (
   <svg
     viewBox="0 0 24 24"
@@ -49,24 +39,10 @@ const UserIcon = ({ className }: IconProps) => (
     <path d="M6 20c0-3.314 2.686-6 6-6s6 2.686 6 6" />
   </svg>
 )
-const BookIcon = ({ className }: IconProps) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    className={`${iconBase} ${className ?? ""}`}
-  >
-    <path d="M5 4h10a3 3 0 0 1 3 3v13H7a3 3 0 0 0-3 3V7a3 3 0 0 1 3-3z" />
-    <path d="M5 18h13" />
-  </svg>
-)
-
 const navItems: { label: string; href: string; icon: ReactNode }[] = [
   { label: "Dashboard", href: "/caregiver/dashboard", icon: <HomeIcon /> },
   { label: "Appointments", href: "/patient/appointments", icon: <CalendarIcon /> },
-  { label: "Care tasks", href: "/patient/tasks", icon: <ChecklistIcon /> },
   { label: "Therapists", href: "/patient/therapists", icon: <UserIcon /> },
-  { label: "Resources", href: "/patient/resources", icon: <BookIcon /> },
   { label: "Profile", href: "/patient/profile", icon: <UserIcon /> },
 ]
 
@@ -78,15 +54,15 @@ const quickActions = [
     accent: "from-teal-500 to-emerald-500",
   },
   {
-    title: "Manage tasks",
-    description: "Daily care checklist and progress",
-    href: "/patient/tasks",
+    title: "Mood tracker",
+    description: "Support mood check-ins together",
+    href: "/patient/mood",
     accent: "from-indigo-500 to-purple-500",
   },
   {
-    title: "Share resources",
-    description: "Guides and tools for support",
-    href: "/patient/resources",
+    title: "Attrangi Bot",
+    description: "AI companion for your dependent",
+    href: "/patient/ai-bot",
     accent: "from-blue-500 to-cyan-500",
   },
   {
@@ -105,15 +81,15 @@ const supportCards = [
     accent: "from-orange-200 via-amber-200 to-orange-100",
   },
   {
-    title: "Care plan",
-    subtitle: "Keep tasks and notes in one place",
-    status: "Start with today’s checklist",
+    title: "Wellness check-ins",
+    subtitle: "Mood logging and companion support",
+    status: "Open mood or Attrangi Bot",
     accent: "from-blue-200 via-sky-200 to-cyan-100",
   },
   {
-    title: "Resources to share",
-    subtitle: "Articles, videos, and exercises",
-    status: "Browse the library",
+    title: "Mind Matrix",
+    subtitle: "Guided screening when they’re ready",
+    status: "Start from the patient dashboard",
     accent: "from-emerald-200 via-teal-200 to-green-100",
   },
 ]
@@ -172,7 +148,7 @@ export default async function CaregiverDashboard() {
                 <div className="relative">
                   <input
                     type="search"
-                    placeholder="Search therapists, sessions, tasks"
+                    placeholder="Search therapists and sessions"
                     className="w-64 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-100"
                   />
                 </div>
@@ -218,8 +194,8 @@ export default async function CaregiverDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
               {[
                 { label: "Upcoming sessions", value: "0", hint: "Book the next one", color: "text-teal-600" },
-                { label: "Tasks completed", value: "0", hint: "Finish today’s list", color: "text-emerald-600" },
-                { label: "Resources shared", value: "0", hint: "Pick a helpful guide", color: "text-blue-600" },
+                { label: "Mood check-ins", value: "—", hint: "Patient mood page", color: "text-emerald-600" },
+                { label: "Companion use", value: "—", hint: "Attrangi Bot", color: "text-blue-600" },
                 { label: "Notes added", value: "—", hint: "Coming soon", color: "text-purple-600" },
               ].map(card => (
                 <div
@@ -262,7 +238,7 @@ export default async function CaregiverDashboard() {
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900">Care at a glance</h2>
                   <p className="text-sm text-slate-600">
-                    Sessions, tasks, and resources for your dependent
+                    Sessions, wellness tools, and care coordination
                   </p>
                 </div>
                 <Link
@@ -295,21 +271,21 @@ export default async function CaregiverDashboard() {
               </div>
             </section>
 
-            {/* Tasks & links */}
+            {/* Care reminders & links */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-slate-900">Today’s care checklist</h3>
+                  <h3 className="text-lg font-semibold text-slate-900">Care reminders</h3>
                   <Link
-                    href="/patient/tasks"
+                    href="/patient/mood"
                     className="text-sm font-semibold text-teal-600 hover:text-teal-700"
                   >
-                    Open tasks
+                    Open mood
                   </Link>
                 </div>
                 <div className="space-y-2 text-sm text-slate-600">
                   <p>• Note any mood or behavior changes</p>
-                  <p>• Share one resource for today’s goal</p>
+                  <p>• Encourage a mood check-in or chat with Attrangi Bot if it helps</p>
                   <p>• Plan the next session time</p>
                 </div>
               </div>
@@ -325,8 +301,8 @@ export default async function CaregiverDashboard() {
                   <Link href="/patient/therapists" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
                     Find therapists
                   </Link>
-                  <Link href="/patient/resources" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Explore resources
+                  <Link href="/patient/ai-bot" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
+                    Open Attrangi Bot
                   </Link>
                 </div>
               </div>

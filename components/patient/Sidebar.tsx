@@ -44,29 +44,6 @@ const CalendarIcon = ({ className }: IconProps) => (
     </svg>
 )
 
-const ChecklistIcon = ({ className }: IconProps) => (
-    <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        className={`${iconBase} ${className ?? ""}`}
-    >
-        <path d="m5 12 2 2 3-3M5 6l2 2 3-3M11 6h8M11 12h8M11 18h8" />
-    </svg>
-)
-
-const BookIcon = ({ className }: IconProps) => (
-    <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        className={`${iconBase} ${className ?? ""}`}
-    >
-        <path d="M5 4h10a3 3 0 0 1 3 3v13H7a3 3 0 0 0-3 3V7a3 3 0 0 1 3-3z" />
-        <path d="M5 18h13" />
-    </svg>
-)
-
 const MoodIcon = ({ className }: IconProps) => (
     <svg
         viewBox="0 0 24 24"
@@ -106,8 +83,6 @@ const navItems: { label: string; href: string; icon: ReactNode }[] = [
     { label: "Therapists", href: "/patient/therapists", icon: <UserIcon /> },
     { label: "Appointments", href: "/patient/appointments", icon: <CalendarIcon /> },
     { label: "Mood", href: "/patient/mood", icon: <MoodIcon /> },
-    { label: "Tasks", href: "/patient/tasks", icon: <ChecklistIcon /> },
-    { label: "Resources", href: "/patient/resources", icon: <BookIcon /> },
     { label: "Profile", href: "/patient/profile", icon: <UserIcon /> },
 ]
 

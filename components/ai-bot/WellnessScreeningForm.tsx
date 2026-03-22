@@ -162,11 +162,11 @@ export default function WellnessScreeningForm() {
                 </div>
                 <button
                     type="button"
-                    onClick={() => { window.location.href = "/patient/resources" }}
+                    onClick={() => { window.location.href = "/patient/dashboard" }}
                     className="w-full rounded-[var(--radius-md)] px-6 py-3 font-medium text-white transition-opacity hover:opacity-95"
                     style={{ background: "var(--color-brand)" }}
                 >
-                    View support resources
+                    Back to dashboard
                 </button>
             </div>
         )
