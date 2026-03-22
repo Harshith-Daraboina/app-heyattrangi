@@ -87,7 +87,7 @@ export default async function DoctorProfilePage() {
                 href="/doctor/dashboard"
                 className="text-sm text-gray-600 hover:text-gray-800"
               >
-                Dashboard
+                Home
               </Link>
               <SignOutButton />
             </div>

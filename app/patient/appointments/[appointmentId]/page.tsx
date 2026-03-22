@@ -90,7 +90,7 @@ export default async function AppointmentDetailPage({
               href="/patient/appointments"
               className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
             >
-              View My Appointments
+              View schedule
             </Link>
           </div>
         </main>
@@ -127,19 +127,19 @@ export default async function AppointmentDetailPage({
                   href="/patient/dashboard"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link
                   href="/patient/therapists"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Find Therapist
+                  Browse
                 </Link>
                 <Link
                   href="/patient/appointments"
                   className="text-sm font-medium text-teal-600"
                 >
-                  Appointments
+                  Schedule
                 </Link>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default async function AppointmentDetailPage({
             href="/patient/appointments"
             className="text-sm text-gray-600 hover:text-gray-800 mb-4 inline-block"
           >
-            ← Back to Appointments
+            ← Back to schedule
           </Link>
           <h1 className="text-3xl font-semibold text-gray-800 mb-2">
             Appointment Details

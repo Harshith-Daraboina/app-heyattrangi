@@ -176,7 +176,7 @@ export default function AppointmentsList({
             className="mb-1 text-[var(--color-text-secondary)]"
             style={{ fontSize: "var(--text-sm)" }}
           >
-            Total Appointments
+            Total sessions
           </p>
           <p
             className="font-bold text-[var(--color-text-primary)]"

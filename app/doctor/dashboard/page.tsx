@@ -76,8 +76,8 @@ const UserIcon = ({ className }: IconProps) => (
 )
 
 const navItems: { label: string; href: string; icon: ReactNode }[] = [
-  { label: "Dashboard", href: "/doctor/dashboard", icon: <HomeIcon /> },
-  { label: "Appointments", href: "/doctor/appointments", icon: <CalendarIcon /> },
+  { label: "Home", href: "/doctor/dashboard", icon: <HomeIcon /> },
+  { label: "Schedule", href: "/doctor/appointments", icon: <CalendarIcon /> },
   { label: "Availability", href: "/doctor/availability", icon: <ClockIcon /> },
   { label: "Documents", href: "/doctor/profile", icon: <FileIcon /> },
   { label: "Patients", href: "/doctor/appointments", icon: <UsersIcon /> },

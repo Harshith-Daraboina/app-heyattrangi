@@ -48,7 +48,7 @@ export default async function PatientProfilePage() {
                 href="/patient/dashboard"
                 className="text-sm text-gray-600 hover:text-gray-800"
               >
-                Dashboard
+                Home
               </Link>
               <SignOutButton />
             </div>

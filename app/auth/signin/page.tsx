@@ -157,7 +157,7 @@ export default function SignInPage() {
                     }}
                     className="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
                   >
-                    Continue to Dashboard
+                    Continue to Home
                   </button>
                 </div>
               </div>

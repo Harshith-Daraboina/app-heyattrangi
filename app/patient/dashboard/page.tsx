@@ -59,7 +59,7 @@ const featuredTherapists = [
 
 const quickActions = [
   {
-    title: "Find a therapist",
+    title: "Browse therapists",
     description: "Browse experts and book a session",
     href: "/patient/therapists",
     accent: "from-teal-500 to-emerald-500",
@@ -71,7 +71,7 @@ const quickActions = [
     accent: "from-purple-500 to-pink-500",
   },
   {
-    title: "My appointments",
+    title: "Schedule",
     description: "Upcoming and past sessions",
     href: "/patient/appointments",
     accent: "from-indigo-500 to-purple-500",
@@ -104,7 +104,7 @@ export default async function PatientDashboard() {
             <div className="max-w-[720px] mx-auto w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="text-sm text-[var(--color-text-secondary)] shrink-0">
-                  Dashboard
+                  Home
                 </div>
                 <div className="hidden sm:block h-4 w-px bg-[var(--color-border)] shrink-0" />
                 <div className="relative min-w-0">
@@ -199,7 +199,7 @@ export default async function PatientDashboard() {
 
               <details className="mt-10 group border border-[var(--color-border)] rounded-[var(--radius-lg)] bg-[var(--color-surface)] p-1">
                 <summary className="cursor-pointer list-none px-4 py-3 font-medium text-[var(--color-text-primary)] rounded-[var(--radius-md)] hover:bg-[var(--color-surface-raised)] [&::-webkit-details-marker]:hidden flex items-center justify-between gap-2">
-                  <span>Appointments, insights, and more</span>
+                  <span>Schedule, insights, and more</span>
                   <ChevronRightIcon className="h-5 w-5 shrink-0 text-[var(--color-text-secondary)] rotate-90 transition-transform group-open:-rotate-90" />
                 </summary>
                 <div className="px-4 pb-6 pt-2 space-y-8 border-t border-[var(--color-border)]">
@@ -220,7 +220,7 @@ export default async function PatientDashboard() {
                       {
                         label: "Companion chats",
                         value: "—",
-                        hint: "Talk with Attrangi Bot",
+                        hint: "Talk with AI Chat",
                         color: "text-emerald-600",
                       },
                       {
@@ -277,7 +277,7 @@ export default async function PatientDashboard() {
                     <div className="flex items-center justify-between">
                       <div>
                         <h2 className="text-xl font-semibold text-[var(--color-text-primary)]">
-                          Recommended therapists
+                          Our therapists
                         </h2>
                         <p className="text-sm text-[var(--color-text-secondary)]">
                           Curated for you based on your preferences
@@ -341,7 +341,7 @@ export default async function PatientDashboard() {
                       <div className="space-y-2 text-sm text-[var(--color-text-secondary)]">
                         <p>• Try a short mood check-in when you have a minute</p>
                         <p>• Review notes from your last session when available</p>
-                        <p>• Reach out to Attrangi Bot if you want to talk things through</p>
+                        <p>• Reach out to AI Chat if you want to talk things through</p>
                       </div>
                     </div>
                     <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm">
@@ -359,7 +359,7 @@ export default async function PatientDashboard() {
                           href="/patient/appointments"
                           className="block rounded-lg px-3 py-2 hover:bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
                         >
-                          See all appointments
+                          View schedule
                         </Link>
                         <Link
                           href="/patient/mood"
@@ -371,7 +371,7 @@ export default async function PatientDashboard() {
                           href="/patient/ai-bot"
                           className="block rounded-lg px-3 py-2 hover:bg-[var(--color-surface-raised)] text-[var(--color-text-primary)]"
                         >
-                          Open Attrangi Bot
+                          Open AI Chat
                         </Link>
                       </div>
                     </div>

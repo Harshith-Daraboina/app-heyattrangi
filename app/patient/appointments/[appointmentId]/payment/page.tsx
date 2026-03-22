@@ -89,7 +89,7 @@ export default async function AppointmentPaymentPage({
               href="/patient/appointments"
               className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
             >
-              View My Appointments
+              View schedule
             </Link>
           </div>
         </main>
@@ -125,19 +125,19 @@ export default async function AppointmentPaymentPage({
                   href="/patient/dashboard"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link
                   href="/patient/therapists"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Find Therapist
+                  Browse
                 </Link>
                 <Link
                   href="/patient/appointments"
                   className="text-sm font-medium text-teal-600"
                 >
-                  Appointments
+                  Schedule
                 </Link>
               </div>
             </div>

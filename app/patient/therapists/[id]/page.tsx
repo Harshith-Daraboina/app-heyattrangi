@@ -98,19 +98,19 @@ export default async function TherapistDetailPage({
                   href="/patient/dashboard"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link
                   href="/patient/therapists"
                   className="text-sm font-medium text-teal-600"
                 >
-                  Find Therapist
+                  Browse
                 </Link>
                 <Link
                   href="/patient/appointments"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Appointments
+                  Schedule
                 </Link>
               </div>
             </div>
@@ -130,7 +130,7 @@ export default async function TherapistDetailPage({
             href="/patient/therapists"
             className="text-sm text-gray-600 hover:text-gray-800 mb-4 inline-block"
           >
-            ← Back to Therapists
+            ← Back to browse
           </Link>
         </div>
 

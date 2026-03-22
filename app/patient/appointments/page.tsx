@@ -115,19 +115,19 @@ export default async function AppointmentsPage() {
                   href="/patient/dashboard"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Dashboard
+                  Home
                 </Link>
                 <Link
                   href="/patient/therapists"
                   className="text-sm text-gray-600 hover:text-gray-800"
                 >
-                  Find Therapist
+                  Browse
                 </Link>
                 <Link
                   href="/patient/appointments"
                   className="text-sm font-medium text-teal-600"
                 >
-                  Appointments
+                  Schedule
                 </Link>
               </div>
             </div>
@@ -145,7 +145,7 @@ export default async function AppointmentsPage() {
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-              My Appointments
+              Schedule
             </h1>
             <p className="text-gray-600">
               Manage your upcoming and past therapy sessions

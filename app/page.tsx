@@ -102,7 +102,7 @@ export default async function Home() {
                 AI companion
               </h4>
               <p className="text-sm text-[var(--color-text-secondary)]">
-                Talk things through with Attrangi Bot between sessions
+                Talk things through with AI Chat between sessions
               </p>
             </div>
             <div className="bg-[var(--color-surface)] rounded-[var(--radius-lg)] p-6 shadow-md border border-[var(--color-border)]">

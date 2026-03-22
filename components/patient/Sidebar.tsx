@@ -78,10 +78,10 @@ const RobotIcon = ({ className }: IconProps) => (
 )
 
 const navItems: { label: string; href: string; icon: ReactNode }[] = [
-    { label: "Dashboard", href: "/patient/dashboard", icon: <HomeIcon /> },
-    { label: "Attrangi Bot", href: "/patient/ai-bot", icon: <RobotIcon /> },
-    { label: "Therapists", href: "/patient/therapists", icon: <UserIcon /> },
-    { label: "Appointments", href: "/patient/appointments", icon: <CalendarIcon /> },
+    { label: "Home", href: "/patient/dashboard", icon: <HomeIcon /> },
+    { label: "AI Chat", href: "/patient/ai-bot", icon: <RobotIcon /> },
+    { label: "Browse", href: "/patient/therapists", icon: <UserIcon /> },
+    { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
     { label: "Mood", href: "/patient/mood", icon: <MoodIcon /> },
     { label: "Profile", href: "/patient/profile", icon: <UserIcon /> },
 ]

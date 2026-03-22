@@ -148,7 +148,7 @@ export default function TherapistList() {
             className="font-semibold text-[var(--color-text-primary)]"
             style={{ fontSize: "var(--text-2xl)" }}
           >
-            Recommended therapists
+            Our therapists
           </h1>
           <p
             className="mt-1 text-[var(--color-text-secondary)]"
