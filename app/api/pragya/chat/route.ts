@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
-const DEFAULT_BOT_BASE = "https://heyattrangi-spaces-bot-heyattrangi-low.hf.space"
+// Default Hugging Face Space: Heyattrangi-spaces/Bot-Heyattrangi-V4
+const DEFAULT_BOT_BASE = "https://heyattrangi-spaces-bot-heyattrangi-v4.hf.space"
 
 function upstreamBase(): string {
   const raw =
