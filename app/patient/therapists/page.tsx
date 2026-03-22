@@ -58,22 +58,7 @@ export default async function TherapistsPage() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-[720px] px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1
-            className="mb-2 font-semibold text-[var(--color-text-primary)]"
-            style={{ fontSize: "var(--text-2xl)", fontWeight: 600 }}
-          >
-            Find your therapist
-          </h1>
-          <p
-            className="text-[var(--color-text-secondary)]"
-            style={{ fontSize: "var(--text-sm)" }}
-          >
-            Browse our verified mental health professionals
-          </p>
-        </div>
-
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <TherapistList />
       </main>
     </div>
