@@ -1,12 +1,7 @@
 import Sidebar from "@/components/patient/Sidebar"
-import AIBotCompanionClient from "@/components/ai-bot/AIBotCompanionClient"
+import TryPragyaChat from "@/components/ai-bot/TryPragyaChat"
 import { auth } from "@/auth.config"
 import { redirect } from "next/navigation"
-
-function firstName(displayName: string | null | undefined): string {
-  if (!displayName?.trim()) return "there"
-  return displayName.trim().split(/\s+/)[0] ?? "there"
-}
 
 export default async function AIBotPage() {
   const session = await auth()
@@ -15,7 +10,7 @@ export default async function AIBotPage() {
     redirect("/auth/signin")
   }
 
-  const userName = firstName(session.user.name)
+  const sessionId = `patient_${session.user.id}`
 
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
@@ -23,33 +18,8 @@ export default async function AIBotPage() {
         <Sidebar />
 
         <div className="flex min-h-screen min-w-0 flex-col">
-          <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
-            <div className="mx-auto flex max-w-[680px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-              <div>
-                <h1
-                  className="font-semibold text-[var(--color-text-primary)]"
-                  style={{ fontSize: "var(--text-xl)" }}
-                >
-                  Attrangi Bot
-                </h1>
-                <p
-                  className="mt-0.5 text-[var(--color-text-secondary)]"
-                  style={{ fontSize: "var(--text-sm)" }}
-                >
-                  Your companion
-                </p>
-              </div>
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full font-semibold text-[var(--color-brand)]"
-                style={{ background: "var(--color-brand-light)" }}
-              >
-                AI
-              </div>
-            </div>
-          </header>
-
-          <main className="flex min-h-0 flex-1 flex-col px-0 sm:px-6 lg:px-8">
-            <AIBotCompanionClient userName={userName} />
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <TryPragyaChat sessionId={sessionId} />
           </main>
         </div>
       </div>
