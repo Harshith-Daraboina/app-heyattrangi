@@ -4,7 +4,7 @@ import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-export default function SignOutButton() {
+export default function SignOutButton({ className }: { className?: string }) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -24,9 +24,9 @@ export default function SignOutButton() {
       })
 
       // Sign out from NextAuth
-      await signOut({ 
+      await signOut({
         callbackUrl: "/",
-        redirect: false 
+        redirect: false
       })
 
       // Wait a moment for cookies to clear
@@ -45,7 +45,7 @@ export default function SignOutButton() {
     <button
       onClick={handleSignOut}
       disabled={isLoading}
-      className="text-sm text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50"
+      className={`text-sm text-gray-600 hover:text-gray-800 transition-colors disabled:opacity-50 ${className || ''}`}
     >
       {isLoading ? "Signing out..." : "Sign Out"}
     </button>

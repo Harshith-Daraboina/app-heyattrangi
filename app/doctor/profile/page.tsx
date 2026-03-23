@@ -8,6 +8,7 @@ import ProfilePictureSection from "@/components/profile/ProfilePictureSection"
 import Link from "next/link"
 import SignOutButton from "@/components/auth/SignOutButton"
 import { prisma } from "@/lib/prisma"
+import Sidebar from "@/components/doctor/Sidebar"
 
 export default async function DoctorProfilePage() {
   let session
@@ -71,66 +72,46 @@ export default async function DoctorProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/doctor/dashboard" className="text-xl font-semibold text-gray-800 hover:text-blue-600">
-                Attrangi - Doctor Portal
-              </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-sm text-gray-600">Profile</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/doctor/dashboard"
-                className="text-sm text-gray-600 hover:text-gray-800"
-              >
-                Home
-              </Link>
-              <SignOutButton />
-            </div>
+    <div className="flex h-screen w-full bg-[#f8fafc] text-slate-800 overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full relative">
+        <main className="max-w-4xl mx-auto px-4 sm:px-8 py-8 md:py-12 w-full">
+          <div className="mb-6">
+            <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+              Profile Settings
+            </h1>
+            <p className="text-gray-600">
+              Update your personal information and professional details
+            </p>
           </div>
-        </div>
-      </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Profile Settings
-          </h1>
-          <p className="text-gray-600">
-            Update your personal information and professional details
-          </p>
-        </div>
+          <div className="space-y-6">
+            {/* Profile Picture Section */}
+            <ProfilePictureSection
+              user={user}
+              doctor={doctor}
+              session={session}
+            />
 
-        <div className="space-y-6">
-          {/* Profile Picture Section */}
-          <ProfilePictureSection
-            user={user}
-            doctor={doctor}
-            session={session}
-          />
+            {user && <DoctorProfileForm user={userWithDoctor} />}
 
-          {user && <DoctorProfileForm user={userWithDoctor} />}
-          
-          {/* Documents Section */}
-          <DoctorDocumentsSection
-            documents={{
-              profilePhoto: doctor.profilePhoto,
-              licenseDocument: doctor.licenseDocument,
-              degreeCertificates: doctor.degreeCertificates || [],
-            }}
-          />
+            {/* Documents Section */}
+            <DoctorDocumentsSection
+              documents={{
+                profilePhoto: doctor.profilePhoto,
+                licenseDocument: doctor.licenseDocument,
+                degreeCertificates: doctor.degreeCertificates || [],
+              }}
+            />
 
-          {/* Manage Availability Section */}
-          <ManageAvailability
-            doctorId={doctor.id}
-            currentAvailability={doctor.availability}
-          />
-        </div>
-      </main>
+            {/* Manage Availability Section */}
+            <ManageAvailability
+              doctorId={doctor.id}
+              currentAvailability={doctor.availability}
+            />
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

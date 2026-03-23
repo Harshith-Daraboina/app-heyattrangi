@@ -26,21 +26,20 @@ const CalendarIcon = ({ className }: IconProps) => (
     </svg>
 )
 
-const ClipboardPulseIcon = ({ className }: IconProps) => (
+const ClockIcon = ({ className }: IconProps) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1Z"></path>
-        <path d="M9.5 13.5 11 15.5l2-4.5 1 2.5"></path>
+        <circle cx="12" cy="12" r="9"></circle>
+        <polyline points="12 7 12 12 15 15"></polyline>
     </svg>
 )
 
-const BotIcon = ({ className }: IconProps) => (
+const FileIcon = ({ className }: IconProps) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
-        <circle cx="12" cy="5" r="2"></circle>
-        <path d="M12 7v4"></path>
-        <line x1="8" y1="16" x2="8.01" y2="16" strokeWidth="3"></line>
-        <line x1="16" y1="16" x2="16.01" y2="16" strokeWidth="3"></line>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
     </svg>
 )
 
@@ -68,30 +67,20 @@ const HelpIcon = ({ className }: IconProps) => (
     </svg>
 )
 
-const CreditCardIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
-        <line x1="2" y1="10" x2="22" y2="10"></line>
-    </svg>
-)
-
 const navItems = [
-    { label: "Dashboard", href: "/patient/dashboard", icon: <HomeIcon /> },
-    { label: "Therapists", href: "/patient/therapists", icon: <UsersIcon /> },
-    { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
-    { label: "History", href: "/patient/mood", icon: <ClipboardPulseIcon /> },
-    { label: "AI Bot", href: "/patient/ai-bot", icon: <BotIcon /> },
-    { label: "Billing", href: "/patient/billing", icon: <CreditCardIcon /> },
-    { label: "Settings", href: "/patient/profile", icon: <SettingsIcon /> },
+    { label: "Dashboard", href: "/doctor/dashboard", icon: <HomeIcon /> },
+    { label: "Schedule", href: "/doctor/appointments", icon: <CalendarIcon /> },
+    { label: "Availability", href: "/doctor/availability", icon: <ClockIcon /> },
+    { label: "Profile", href: "/doctor/profile", icon: <SettingsIcon /> },
 ]
 
-export default function Sidebar() {
+export default function DoctorSidebar() {
     const pathname = usePathname()
 
     return (
         <aside className="flex flex-col items-center bg-[#18181b] w-[90px] h-full py-8 text-gray-400 relative shrink-0 z-40 overflow-y-auto">
             <Link
-                href="/"
+                href="/doctor/dashboard"
                 className="mb-10 block"
             >
                 <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-sm p-1.5 mx-auto">
@@ -125,8 +114,7 @@ export default function Sidebar() {
                                 <span className={`block transition-transform ${isActive ? '' : 'group-hover:scale-110'}`}>
                                     {item.icon}
                                 </span>
-                                {/* Label only visible on active, or not at all (mockup has very small label for active) */}
-                                {isActive && <span className="text-[9px] font-bold absolute -bottom-4 left-1/2 -translate-x-1/2 text-orange-400">{item.label}</span>}
+                                {isActive && <span className="text-[9px] font-bold absolute -bottom-4 left-1/2 -translate-x-1/2 text-orange-400 whitespace-nowrap">{item.label}</span>}
                             </div>
                         </Link>
                     )

@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth"
 import Link from "next/link"
 import SignOutButton from "@/components/auth/SignOutButton"
 import TherapistList from "@/components/therapists/TherapistList"
+import Sidebar from "@/components/patient/Sidebar"
 
 export default async function TherapistsPage() {
   const session = await auth()
@@ -19,48 +20,13 @@ export default async function TherapistsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      <nav className="border-b border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-6">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <div className="hidden md:flex gap-4">
-                <Link
-                  href="/patient/dashboard"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/patient/therapists"
-                  className="text-sm font-medium text-teal-600"
-                >
-                  Browse
-                </Link>
-                <Link
-                  href="/patient/appointments"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Schedule
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {session.user.name || session.user.email}
-              </span>
-              <SignOutButton />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <TherapistList />
-      </main>
+    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <TherapistList />
+        </main>
+      </div>
     </div>
   )
 }
