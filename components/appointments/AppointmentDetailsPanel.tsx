@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 
 interface Appointment {
   id: string
@@ -60,6 +61,7 @@ export default function AppointmentDetailsPanel({
   isPast,
 }: AppointmentDetailsPanelProps) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<"details" | "session" | "payment">("details")
 
   const doctorName = appointment.doctor.fullName || appointment.doctor.user.name || "Doctor"
@@ -102,9 +104,10 @@ export default function AppointmentDetailsPanel({
   return (
     <div className="space-y-6">
       {/* Appointment Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-        <div className="flex items-start gap-6 mb-6">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-teal-200 bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center flex-shrink-0">
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-gray-100 relative overflow-hidden mb-8">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-60"></div>
+        <div className="flex items-start gap-6 relative z-10">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center flex-shrink-0 ring-4 ring-teal-50">
             {displayPhoto ? (
               <img
                 src={displayPhoto}
@@ -139,7 +142,7 @@ export default function AppointmentDetailsPanel({
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm">
               <div>
                 <span className="text-gray-500">Date:</span>
@@ -173,36 +176,33 @@ export default function AppointmentDetailsPanel({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+          <nav className="flex flex-wrap gap-2 bg-gray-200/50 p-1.5 rounded-xl w-fit">
             <button
               onClick={() => setActiveTab("details")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "details"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "details"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               Appointment Details
             </button>
             <button
               onClick={() => setActiveTab("session")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "session"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "session"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               {isUpcoming ? "Session" : "Session History"}
             </button>
             <button
               onClick={() => setActiveTab("payment")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "payment"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "payment"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               Payment History
             </button>
@@ -267,7 +267,7 @@ export default function AppointmentDetailsPanel({
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 {isUpcoming ? "Session Details" : "Session History"}
               </h3>
-              
+
               {isUpcoming ? (
                 <div className="space-y-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -311,9 +311,14 @@ export default function AppointmentDetailsPanel({
 
                   {appointment.status === "CONFIRMED" && (
                     <div className="flex gap-3">
-                      <button className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-emerald-600 transition-all">
+                      <a
+                        href={`https://meet-heyattrangi.vercel.app/${appointment.id}/lobby?user=${encodeURIComponent(session?.user?.name || "User")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-emerald-600 transition-all text-center"
+                      >
                         Join Session
-                      </button>
+                      </a>
                       <button className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
                         Cancel Appointment
                       </button>
@@ -337,7 +342,7 @@ export default function AppointmentDetailsPanel({
                           })}
                         </p>
                       </div>
-                      
+
                       {appointment.meetingLink && (
                         <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
                           <p className="text-sm font-medium text-gray-700 mb-2">Session Recording</p>
@@ -363,7 +368,7 @@ export default function AppointmentDetailsPanel({
           {activeTab === "payment" && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment History</h3>
-              
+
               {appointment.payment ? (
                 <div className="space-y-4">
                   <div className="bg-white border-2 border-gray-200 rounded-lg p-6">

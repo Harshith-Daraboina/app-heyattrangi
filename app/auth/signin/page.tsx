@@ -87,116 +87,124 @@ export default function SignInPage() {
   const actionsDisabled = isLoading || signedIn
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center pt-20 px-4 pb-12">
-      <div className="w-full max-w-[480px] flex flex-col items-center text-center">
-        <h1
-          className="mb-4 font-bold text-[var(--color-text-primary)]"
-          style={{
-            fontSize: "var(--text-3xl)",
-            fontWeight: 700,
-          }}
-        >
-          Your mind deserves a companion
-        </h1>
-        <p
-          className="mx-auto mb-8 max-w-[400px] text-[var(--color-text-secondary)]"
-          style={{
-            fontSize: "var(--text-base)",
-            lineHeight: "var(--leading-loose)",
-          }}
-        >
-          Hey Attrangi supports your mental wellbeing — with AI, with therapists,
-          and with you at the centre.
-        </p>
+    <div className="min-h-screen w-full flex bg-white font-sans">
+      {/* Left Branding Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#ece8fc] relative overflow-hidden flex-col justify-between p-12 xl:p-20">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#8a63d2 2px, transparent 2px)", backgroundSize: "30px 30px" }}></div>
 
-        {signedIn && session?.user ? (
-          <div className="mb-6 w-full p-4 bg-amber-50 border border-amber-200 rounded-lg text-left">
-            <div className="flex items-start gap-3">
-              <div className="text-amber-600 text-xl">⚠️</div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-amber-800 mb-1">
-                  Already Signed In
-                </h3>
-                <p className="text-sm text-amber-700 mb-3">
-                  You&apos;re currently signed in as{" "}
-                  <strong>{session.user.email}</strong>. To use a different
-                  account, clear this session first.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await signOut({ redirect: false })
-                      window.location.reload()
-                    }}
-                    className="text-sm bg-amber-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-amber-700 transition-colors"
-                  >
-                    Clear Account & Sign Out
-                  </button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const response = await fetch("/api/auth/check-onboarding")
-                      const data = await response.json()
+        <div className="relative z-10 w-14 h-14 rounded-2xl bg-gray-900 grid place-items-center shadow-xl">
+          <span className="text-white text-3xl font-black">A</span>
+        </div>
 
-                      if (data.completed) {
-                        const role = data.role
-                        switch (role) {
-                          case "PATIENT":
-                          case "CAREGIVER":
-                            router.push("/patient/dashboard")
-                            break
-                          case "DOCTOR":
-                            router.push("/doctor/dashboard")
-                            break
-                          case "ADMIN":
-                            router.push("/admin/dashboard")
-                            break
+        <div className="relative z-10 my-auto">
+          <h1 className="text-5xl xl:text-[64px] font-black text-gray-900 leading-[1.05] tracking-tight mb-6">
+            Your mind<br />deserves a<br />companion.
+          </h1>
+          <p className="text-lg xl:text-xl font-medium text-gray-700 max-w-md leading-relaxed">
+            Hey Attrangi supports your mental wellbeing — with AI, with therapists, and with you at the centre.
+          </p>
+        </div>
+
+        {/* Abstract Illustration */}
+        <div className="relative z-10 w-full h-48 mt-12 pl-10 flex items-end">
+          <div className="w-48 h-12 bg-[#ffccb3] rounded-t-full relative z-20 border-b-4 border-[#ffb38a]"></div>
+          <div className="w-16 h-32 bg-[#a3b8f7] rounded-t-full -ml-8 relative z-10 border-r-4 border-[#85a1f2]"></div>
+          <div className="w-24 h-40 bg-[#d1a080] rounded-t-full -ml-4 relative shadow-lg"></div>
+        </div>
+      </div>
+
+      {/* Right Form Panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-white relative">
+        <div className="w-full max-w-[420px]">
+          <div className="mb-10 text-center lg:text-left">
+            <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Welcome back</h2>
+            <p className="text-gray-500 font-medium">Log in to continue your mental wellness journey.</p>
+          </div>
+
+          {signedIn && session?.user ? (
+            <div className="mb-8 w-full p-5 bg-[#fff8e7] border border-[#f4b860]/30 rounded-2xl text-left shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#f4b860]/20 flex items-center justify-center shrink-0">
+                  <span className="text-[#d89332] text-xl">👋</span>
+                </div>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <h3 className="text-sm font-bold text-gray-900 mb-1">
+                    Already Signed In
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    You're currently signed in as <strong className="text-gray-900">{session.user.email}</strong>.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const response = await fetch("/api/auth/check-onboarding")
+                        const data = await response.json()
+                        if (data.completed) {
+                          const role = data.role
+                          switch (role) {
+                            case "PATIENT":
+                            case "CAREGIVER": router.push("/patient/dashboard"); break
+                            case "DOCTOR": router.push("/doctor/dashboard"); break
+                            case "ADMIN": router.push("/admin/dashboard"); break
+                          }
                         }
-                      }
-                    }}
-                    className="text-sm bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
-                  >
-                    Continue to Home
-                  </button>
+                      }}
+                      className="text-sm bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-md w-full sm:w-auto text-center"
+                    >
+                      Continue to App
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        await signOut({ redirect: false })
+                        window.location.reload()
+                      }}
+                      className="text-sm bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-colors w-full sm:w-auto text-center"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : null}
+          ) : (
+            <div className="space-y-6">
+              <button
+                type="button"
+                onClick={handleDirectSignIn}
+                disabled={actionsDisabled}
+                className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 border-2 border-gray-200 hover:border-gray-300 transition-all rounded-[20px] py-4 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                {isLoading ? (
+                  <div className="w-6 h-6 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <GoogleIcon className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                    <span className="font-bold text-base">Continue with Google</span>
+                  </>
+                )}
+              </button>
 
-        {!signedIn ? (
-          <>
-            <Link
-              href="/auth/signup"
-              className="w-full inline-flex items-center justify-center gap-3 border-0 text-white cursor-pointer no-underline"
-              style={{
-                backgroundColor: "var(--color-brand)",
-                borderRadius: "var(--radius-md)",
-                padding: "14px 32px",
-                fontSize: "var(--text-base)",
-                fontWeight: 500,
-              }}
-            >
-              <GoogleIcon className="w-5 h-5 shrink-0" />
-              Get started — it is free
-            </Link>
+              <div className="relative flex items-center py-4">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400 text-sm font-semibold uppercase tracking-widest">New here?</span>
+                <div className="flex-grow border-t border-gray-200"></div>
+              </div>
 
-            <button
-              type="button"
-              onClick={handleDirectSignIn}
-              disabled={actionsDisabled}
-              className="mt-4 border-0 bg-transparent cursor-pointer p-0 text-[var(--color-accent)] no-underline disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ fontSize: "var(--text-sm)" }}
-            >
-              Already have an account? Sign in
-            </button>
-          </>
-        ) : null}
+              <Link
+                href="/auth/signup"
+                className="w-full flex items-center justify-center gap-3 bg-gray-900 text-white hover:bg-gray-800 transition-all rounded-[20px] py-4 shadow-lg hover:shadow-xl font-bold text-base"
+              >
+                Create an account
+              </Link>
+            </div>
+          )}
 
-        <p className="mt-8 text-center text-sm text-[var(--color-text-muted)]">
-          By continuing, you agree to our Terms of Service and Privacy Policy
-        </p>
+          <p className="mt-12 text-center text-[13px] font-medium text-gray-400 max-w-sm mx-auto">
+            By continuing, you agree to our <Link href="#" className="text-gray-700 underline underline-offset-2">Terms of Service</Link> and <Link href="#" className="text-gray-700 underline underline-offset-2">Privacy Policy</Link>
+          </p>
+        </div>
       </div>
     </div>
   )

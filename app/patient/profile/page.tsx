@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth"
 import ProfileForm from "@/components/profile/PatientProfileForm"
 import Link from "next/link"
 import SignOutButton from "@/components/auth/SignOutButton"
+import Sidebar from "@/components/patient/Sidebar"
 import WellnessSummaryCard from "@/components/profile/WellnessSummaryCard"
 import { prisma } from "@/lib/prisma"
 
@@ -32,58 +33,38 @@ export default async function PatientProfilePage() {
   })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800 hover:text-teal-600">
-                Attrangi
-              </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-sm text-gray-600">Profile</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/patient/dashboard"
-                className="text-sm text-gray-600 hover:text-gray-800"
-              >
-                Home
-              </Link>
-              <SignOutButton />
-            </div>
+    <div className="flex h-screen w-full bg-gradient-to-br from-teal-50 via-white to-blue-50 overflow-hidden text-[var(--color-text-primary)]">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+              Profile Settings
+            </h1>
+            <p className="text-gray-600">
+              Update your personal information and preferences
+            </p>
           </div>
-        </div>
-      </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Profile Settings
-          </h1>
-          <p className="text-gray-600">
-            Update your personal information and preferences
-          </p>
-        </div>
+          {patientData?.assessments[0] && (
+            <WellnessSummaryCard assessment={patientData.assessments[0]} />
+          )}
 
-        {patientData?.assessments[0] && (
-          <WellnessSummaryCard assessment={patientData.assessments[0]} />
-        )}
-
-        {user && (
-          <ProfileForm
-            user={{
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              image: user.image,
-              role: user.role,
-              patient: user.patient || undefined,
-            }}
-            role={user.role}
-          />
-        )}
-      </main>
+          {user && (
+            <ProfileForm
+              user={{
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+                role: user.role,
+                patient: user.patient || undefined,
+              }}
+              role={user.role}
+            />
+          )}
+        </main>
+      </div>
     </div>
   )
 }

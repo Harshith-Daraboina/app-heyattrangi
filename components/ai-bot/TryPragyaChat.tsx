@@ -239,16 +239,16 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
         </div>
 
         <div className="relative flex min-h-0 flex-1 justify-center overflow-y-auto bg-[#fafcfd]">
-          <div className="absolute right-6 top-6 z-50 hidden lg:block">
-            <button
-              type="button"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-md transition-all hover:border-orange-300 hover:text-orange-500 hover:shadow-lg"
-              aria-label="Menu"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+          <div className="absolute right-6 top-6 z-50 hidden lg:flex items-center">
+            <div className="flex items-center gap-3 bg-white border border-gray-200 shadow-sm rounded-full pl-2 pr-5 py-1.5 cursor-default hover:border-orange-200 transition-colors">
+              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+              </div>
+              <div className="flex flex-col items-start leading-tight">
+                <span className="text-[9px] text-gray-400 uppercase tracking-widest font-black">Available</span>
+                <span className="text-sm font-bold text-gray-800">1,250 Credits</span>
+              </div>
+            </div>
           </div>
 
           {!hasStarted ? (
@@ -263,16 +263,14 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
                     key={mode.id}
                     type="button"
                     onClick={() => setSelectedMode(mode.id)}
-                    className={`flex w-full cursor-pointer flex-col justify-center rounded-2xl border-2 px-6 py-5 text-left transition-all duration-300 ease-out ${
-                      selectedMode === mode.id
-                        ? "translate-x-2 border-orange-400 bg-orange-50 shadow-[0_8px_20px_rgba(249,107,19,0.15)] ring-1 ring-orange-400/20"
-                        : "border-gray-100 bg-white hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-sm"
-                    }`}
+                    className={`flex w-full cursor-pointer flex-col justify-center rounded-2xl border-2 px-6 py-5 text-left transition-all duration-300 ease-out ${selectedMode === mode.id
+                      ? "translate-x-2 border-orange-400 bg-orange-50 shadow-[0_8px_20px_rgba(249,107,19,0.15)] ring-1 ring-orange-400/20"
+                      : "border-gray-100 bg-white hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-sm"
+                      }`}
                   >
                     <h3
-                      className={`mb-1 text-[16px] font-bold ${
-                        selectedMode === mode.id ? "text-orange-700" : "text-gray-800"
-                      }`}
+                      className={`mb-1 text-[16px] font-bold ${selectedMode === mode.id ? "text-orange-700" : "text-gray-800"
+                        }`}
                     >
                       {mode.title}
                     </h3>
@@ -286,11 +284,10 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
                   type="button"
                   onClick={handleStartChat}
                   disabled={!selectedMode}
-                  className={`flex items-center gap-2 rounded-xl px-8 py-4 font-bold transition-all duration-300 ${
-                    selectedMode
-                      ? "bg-orange-500 text-white shadow-[0_8px_20px_rgba(249,107,19,0.3)] hover:-translate-y-1 hover:bg-orange-600"
-                      : "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
-                  }`}
+                  className={`flex items-center gap-2 rounded-xl px-8 py-4 font-bold transition-all duration-300 ${selectedMode
+                    ? "bg-orange-500 text-white shadow-[0_8px_20px_rgba(249,107,19,0.3)] hover:-translate-y-1 hover:bg-orange-600"
+                    : "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                    }`}
                 >
                   Start Chatting
                   {selectedMode && (
@@ -307,16 +304,14 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
                 {messages.map((msg, idx) => (
                   <div
                     key={idx}
-                    className={`flex animate-in slide-in-from-bottom-2 duration-300 ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex animate-in slide-in-from-bottom-2 duration-300 ${msg.role === "user" ? "justify-end" : "justify-start"
+                      }`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-3xl p-5 text-[15px] leading-relaxed shadow-sm sm:max-w-[75%] ${
-                        msg.role === "user"
-                          ? "rounded-tr-sm bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-[0_4px_14px_rgba(249,107,19,0.25)]"
-                          : "rounded-tl-sm border border-gray-100 bg-white text-gray-800 shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
-                      }`}
+                      className={`max-w-[85%] rounded-3xl p-5 text-[15px] leading-relaxed shadow-sm sm:max-w-[75%] ${msg.role === "user"
+                        ? "rounded-tr-sm bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-[0_4px_14px_rgba(249,107,19,0.25)]"
+                        : "rounded-tl-sm border border-gray-100 bg-white text-gray-800 shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
+                        }`}
                     >
                       {msg.content}
                     </div>
@@ -355,11 +350,10 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
                     <button
                       type="submit"
                       disabled={isLoading || !inputMessage.trim()}
-                      className={`flex aspect-square h-full items-center justify-center rounded-[12px] p-2.5 transition-all duration-300 ${
-                        isLoading || !inputMessage.trim()
-                          ? "bg-transparent text-gray-400"
-                          : "bg-orange-500 text-white shadow-md shadow-orange-500/30 hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-lg"
-                      }`}
+                      className={`flex aspect-square h-full items-center justify-center rounded-[12px] p-2.5 transition-all duration-300 ${isLoading || !inputMessage.trim()
+                        ? "bg-transparent text-gray-400"
+                        : "bg-orange-500 text-white shadow-md shadow-orange-500/30 hover:-translate-y-0.5 hover:bg-orange-600 hover:shadow-lg"
+                        }`}
                     >
                       <svg className="h-5 w-5 translate-x-[-1px] translate-y-[1px]" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />

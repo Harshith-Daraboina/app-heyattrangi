@@ -58,46 +58,43 @@ export default async function MoodTrackerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
-      <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
-        <Sidebar />
-
-        <div className="flex min-h-screen min-w-0 flex-col">
-          <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
-            <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:max-w-4xl lg:px-8">
-              <div>
-                <h1
-                  className="font-semibold text-[var(--color-text-primary)]"
-                  style={{ fontSize: "var(--text-xl)" }}
-                >
-                  Mood tracker
-                </h1>
-                <p
-                  className="mt-0.5 text-[var(--color-text-secondary)]"
-                  style={{ fontSize: "var(--text-sm)" }}
-                >
-                  Quick check-ins for how you feel
-                </p>
-              </div>
-              <div
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-[var(--color-brand)]"
-                style={{ background: "var(--color-brand-light)" }}
-                aria-hidden
+    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full flex flex-col relative w-full overflow-y-auto">
+        <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
+          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:max-w-4xl lg:px-8">
+            <div>
+              <h1
+                className="font-semibold text-[var(--color-text-primary)]"
+                style={{ fontSize: "var(--text-xl)" }}
               >
-                M
-              </div>
+                Mood tracker
+              </h1>
+              <p
+                className="mt-0.5 text-[var(--color-text-secondary)]"
+                style={{ fontSize: "var(--text-sm)" }}
+              >
+                Quick check-ins for how you feel
+              </p>
             </div>
-          </header>
+            <div
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-[var(--color-brand)]"
+              style={{ background: "var(--color-brand-light)" }}
+              aria-hidden
+            >
+              M
+            </div>
+          </div>
+        </header>
 
-          <main className="relative min-h-0 flex-1 overflow-y-auto">
-            <MoodTrackerClient
-              canLog={!!user.patient}
-              initialEntries={initialEntries}
-              initialStreak={initialStreak}
-              initialTotal={initialTotal}
-            />
-          </main>
-        </div>
+        <main className="relative min-h-0 flex-1 overflow-y-auto">
+          <MoodTrackerClient
+            canLog={!!user.patient}
+            initialEntries={initialEntries}
+            initialStreak={initialStreak}
+            initialTotal={initialTotal}
+          />
+        </main>
       </div>
     </div>
   )

@@ -13,15 +13,10 @@ export default async function AIBotPage() {
   const sessionId = `patient_${session.user.id}`
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text-primary)]">
-      <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
-        <Sidebar />
-
-        <div className="flex min-h-screen min-w-0 flex-col">
-          <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <TryPragyaChat sessionId={sessionId} />
-          </main>
-        </div>
+    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full flex flex-col relative w-full overflow-hidden">
+        <TryPragyaChat sessionId={sessionId} />
       </div>
     </div>
   )
