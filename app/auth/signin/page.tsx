@@ -4,6 +4,7 @@ import { signIn, useSession, signOut } from "next-auth/react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -92,8 +93,14 @@ export default function SignInPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-[#ece8fc] relative overflow-hidden flex-col justify-between p-12 xl:p-20">
         <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#8a63d2 2px, transparent 2px)", backgroundSize: "30px 30px" }}></div>
 
-        <div className="relative z-10 w-14 h-14 rounded-2xl bg-gray-900 grid place-items-center shadow-xl">
-          <span className="text-white text-3xl font-black">A</span>
+        <div className="relative z-10 w-16 h-16 rounded-2xl bg-white grid place-items-center shadow-xl p-2">
+          <Image
+            src="/images/logo.png"
+            alt="Attrangi Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
         </div>
 
         <div className="relative z-10 my-auto">

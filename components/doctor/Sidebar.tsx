@@ -85,7 +85,7 @@ export default function DoctorSidebar() {
             >
                 <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-sm p-1.5 mx-auto">
                     <Image
-                        src="/images/logo-main.png"
+                        src="/images/logo.png"
                         alt="Attrangi Logo"
                         width={40}
                         height={40}

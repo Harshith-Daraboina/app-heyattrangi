@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Attrangi - Mental Health & Wellness Platform",
+  title: "Dashboard",
   description: "Comprehensive mental health support platform connecting patients, caregivers, and therapists",
+  icons: {
+    icon: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
