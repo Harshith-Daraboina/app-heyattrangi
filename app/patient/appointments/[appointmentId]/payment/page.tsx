@@ -3,7 +3,7 @@ import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import SignOutButton from "@/components/auth/SignOutButton"
+import Sidebar from "@/components/patient/Sidebar"
 import PaymentPanel from "@/components/appointments/PaymentPanel"
 
 export default async function AppointmentPaymentPage({
@@ -68,31 +68,24 @@ export default async function AppointmentPaymentPage({
 
   if (!appointment) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-        <nav className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
+      <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="card p-8 text-center max-w-2xl mx-auto mt-20">
+              <h2 className="text-2xl font-semibold mb-4">Appointment Not Found</h2>
+              <p className="text-[var(--color-text-secondary)] mb-6">
+                The appointment you're looking for doesn't exist.
+              </p>
+              <Link
+                href="/patient/appointments"
+                className="inline-block px-6 py-3 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-all"
+              >
+                View schedule
               </Link>
-              <SignOutButton />
             </div>
-          </div>
-        </nav>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Appointment Not Found</h2>
-            <p className="text-gray-600 mb-6">
-              The appointment you're looking for doesn't exist.
-            </p>
-            <Link
-              href="/patient/appointments"
-              className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
-            >
-              View schedule
-            </Link>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     )
   }
@@ -112,57 +105,22 @@ export default async function AppointmentPaymentPage({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-6">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <div className="hidden md:flex gap-4">
-                <Link
-                  href="/patient/dashboard"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/patient/therapists"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Browse
-                </Link>
-                <Link
-                  href="/patient/appointments"
-                  className="text-sm font-medium text-teal-600"
-                >
-                  Schedule
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {session.user.name || session.user.email}
-              </span>
-              <SignOutButton />
-            </div>
+    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-500">
+            <h1 className="text-4xl font-extrabold text-[var(--color-text-primary)] tracking-tight mb-2">
+              Complete Payment
+            </h1>
+            <p className="text-xl text-[var(--color-text-secondary)] font-medium">
+              Secure payment for your appointment
+            </p>
           </div>
-        </div>
-      </nav>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Complete Payment
-          </h1>
-          <p className="text-gray-600">
-            Secure payment for your appointment
-          </p>
-        </div>
-
-        <PaymentPanel appointment={appointment} />
-      </main>
+          <PaymentPanel appointment={appointment} />
+        </main>
+      </div>
     </div>
   )
 }
