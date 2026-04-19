@@ -137,8 +137,8 @@ export default function TherapistList() {
     "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-[var(--color-text-primary)] focus:border-[var(--color-brand)] focus:outline-none"
 
   return (
-    <div>
-      <div className="mb-8 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+    <div className="max-w-[1000px] mx-auto pb-10">
+      <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between px-2">
         <div>
           <h1
             className="font-semibold text-[var(--color-text-primary)]"
@@ -161,48 +161,28 @@ export default function TherapistList() {
         </Link>
       </div>
 
-      <div
-        className="mb-8 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
-      >
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label
-              className="mb-2 block font-medium text-[var(--color-text-primary)]"
-              style={{ fontSize: "var(--text-sm)" }}
-            >
-              Search
-            </label>
-            <input
-              type="text"
-              placeholder="Name, focus area, or keywords…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={filterClass}
-              style={{ fontSize: "var(--text-sm)" }}
-            />
-          </div>
-          <div>
-            <label
-              className="mb-2 block font-medium text-[var(--color-text-primary)]"
-              style={{ fontSize: "var(--text-sm)" }}
-            >
-              Specialization
-            </label>
-            <select
-              value={specialization}
-              onChange={(e) => setSpecialization(e.target.value)}
-              className={filterClass}
-              style={{ fontSize: "var(--text-sm)" }}
-            >
-              <option value="">All specializations</option>
-              {specializations.map((spec) => (
-                <option key={spec} value={spec}>
-                  {spec}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
+      <div className="mb-4 rounded-[20px] bg-[#fdfaf2] border border-[#f3eede] p-4 flex items-center gap-3">
+        <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="w-6 h-6 text-gray-500 shrink-0 ml-1">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Where are you finding help?"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="bg-transparent border-none outline-none flex-1 text-[16px] text-gray-800 placeholder-gray-500 font-medium"
+        />
+        <svg fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="w-5 h-5 text-gray-500 shrink-0 cursor-pointer mr-2">
+          <path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6m2-6h6m2 8h6" />
+        </svg>
+      </div>
+
+      <div className="flex gap-2.5 overflow-x-auto pb-4 mb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-1">
+         <button onClick={() => setSpecialization("")} className={`px-5 py-2.5 rounded-full font-bold text-[13px] whitespace-nowrap transition-colors border ${specialization === "" ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "bg-[#fcfbf9] border-gray-200 text-gray-700 hover:bg-gray-50"}`}>All Therapists (320)</button>
+         {specializations.map(spec => (
+            <button key={spec} onClick={() => setSpecialization(spec)} className={`px-5 py-2.5 rounded-full font-bold text-[13px] whitespace-nowrap transition-colors border ${specialization === spec ? "bg-[#0a0a0a] text-white border-[#0a0a0a]" : "bg-[#fcfbf9] border-gray-200 text-gray-700 hover:bg-gray-50"}`}>{spec}</button>
+         ))}
       </div>
 
       {isLoading ? (
@@ -226,131 +206,73 @@ export default function TherapistList() {
           </p>
         </div>
       ) : (
-        <ul className="flex list-none flex-col gap-6 p-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {doctors.map((doctor: Doctor, index: number) => {
-            const name = displayName(doctor)
-            const role = roleLabel(doctor)
-            const available = doctor.availability?.isAvailable !== false
-            const src = photoSrc(doctor)
-            const city = doctor.city?.trim()
-            
-            // Mock rating logic (usually this comes from DB)
-            const ratingNumber = "4.5"
-            const reviewCount = "1,258"
+             const name = displayName(doctor)
+             const role = roleLabel(doctor)
+             const available = doctor.availability?.isAvailable !== false
+             const src = photoSrc(doctor)
+             const city = doctor.city?.trim()
+             
+             const ratingNumber = "4.8"
+             const fee = doctor.consultationFee || 150
+             const isFeatured = index === 0
 
-            // Helper to generate the exact horizontal mockup
-            function getMockSchedule(baseAvailable: boolean) {
-              const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-              const dates = [];
-              for (let i = 1; i <= 6; i++) {
-                 const d = new Date();
-                 d.setDate(d.getDate() + i);
-                 const dateStr = `${months[d.getMonth()]} ${d.getDate()}`;
-                 
-                 let isAvailable = baseAvailable;
-                 if (i === 3 || i === 6) isAvailable = false; // toggle for variety
-                 
-                 dates.push({
-                    id: i,
-                    date: dateStr,
-                    isAvailable: isAvailable,
-                    isHovered: i === 2 // to exactly mimic the mockup's hovered mid state
-                 });
-              }
-              return dates;
-            }
-            
-            const schedule = getMockSchedule(available);
-
-            return (
-              <li
+             return (
+              <div
                 key={doctor.id}
-                className="relative flex flex-col bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-5 md:p-6 transition-transform hover:-translate-y-1 overflow-hidden group"
+                className="flex flex-col bg-white rounded-[24px] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-gray-100 transition-transform hover:-translate-y-1"
               >
-                <div className="flex gap-5">
-                    {/* Avatar */}
-                    <div className="w-[72px] h-[72px] shrink-0 rounded-full overflow-hidden border border-gray-100 relative bg-gray-50 mt-1">
-                        <Image 
-                            src={src || "/images/promo_doctor.png"} 
-                            alt={name} 
-                            fill 
-                            className="object-cover" 
-                        />
-                    </div>
+                  <div className="flex-1 w-full flex flex-col">
+                      <div className="flex justify-between items-start mb-5">
+                          <div className="flex items-center gap-3">
+                             <div className="w-[50px] h-[50px] shrink-0 rounded-full overflow-hidden border border-gray-100 relative bg-gray-50">
+                                 <Image src={src || "/images/promo_doctor.png"} alt={name} fill className="object-cover" />
+                             </div>
+                             <div>
+                                 <h3 className="font-medium text-gray-900 leading-tight tracking-tight text-xl">{name}</h3>
+                                 <p className="text-gray-500 text-[14px] font-medium">{role}</p>
+                             </div>
+                          </div>
+                          
+                          <div className="text-right">
+                              <div className="font-medium text-gray-900 text-xl">Rs. {fee}</div>
+                              <div className="text-[12px] font-semibold text-gray-500 mt-1 whitespace-nowrap">per session</div>
+                          </div>
+                      </div>
 
-                    {/* Info */}
-                    <div className="flex-1 flex flex-col">
-                        <div className="flex justify-between items-start">
-                           <Link href={`/patient/therapists/${doctor.id}`} className="text-[20px] font-bold text-[#1f2937] leading-tight mb-1 cursor-pointer hover:text-blue-600 transition-colors">
-                               {name}
-                           </Link>
-                           <Link href={`/patient/therapists/${doctor.id}`} className="text-gray-400 hover:text-gray-900 transition-colors p-1">
-                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-                                   <polyline points="9 18 15 12 9 6" />
-                               </svg>
-                           </Link>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 text-[14px] text-gray-500 font-medium mb-3">
-                            <div className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-gray-400">
-                                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-                                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
-                                    <circle cx="20" cy="10" r="2" />
-                                </svg>
-                                <span>{role}</span>
-                            </div>
-                            <span className="text-gray-300">•</span>
-                            <div className="flex items-center gap-1.5">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-gray-400">
-                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                                    <circle cx="12" cy="10" r="3" />
-                                </svg>
-                                <span>{city || 'Remote'}</span>
-                            </div>
-                        </div>
+                      <div className="flex items-center gap-3 mb-4">
+                          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-gray-200 text-gray-700 text-[12px] font-bold">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[15px] h-[15px]">
+                                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                  <line x1="16" y1="2" x2="16" y2="6" />
+                                  <line x1="8" y1="2" x2="8" y2="6" />
+                                  <line x1="3" y1="10" x2="21" y2="10" />
+                              </svg>
+                              {available ? "This week" : "Coming soon"}
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200 text-gray-700 text-[12px] font-bold">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[15px] h-[15px]">
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                              </svg>
+                              {ratingNumber}
+                          </div>
+                      </div>
 
-                        <div className="flex items-center gap-2 mb-3.5">
-                            <div className="flex gap-[2px] text-[#fbbf24]">
-                                {[1,2,3,4,5].map(i => (
-                                    <svg key={i} viewBox="0 0 24 24" fill="currentColor" stroke="transparent" className={`w-5 h-5 ${i === 5 ? 'opacity-50' : ''}`}>
-                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                                    </svg>
-                                ))}
-                            </div>
-                            <span className="font-bold text-[#1f2937] text-[15px] ml-1">{ratingNumber}</span>
-                            <span className="text-gray-500 text-[14px]">({reviewCount})</span>
-                        </div>
+                      <p className="text-gray-800 text-[13px] leading-relaxed font-medium mb-5 opacity-80 min-h-[60px]">
+                          {doctor.bio ? bioExcerpt(doctor.bio, 120) : "Passionate mental health professional offering personalized counseling and support. Dedicated to fostering a safe space for growth."}
+                      </p>
 
-                        <div className={`flex items-center gap-2 font-medium text-[14px] ${available ? 'text-[#16a34a]' : 'text-gray-400'}`}>
-                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                            </svg>
-                            <span>{available ? "Available" : "Unavailable"} {doctor.consultationTypes.includes('Video') ? "Remotely" : ""}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Calendar / Schedule Scroll row */}
-                <div className="mt-7 flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                    {schedule.map(slot => (
-                        <div 
-                            key={slot.id} 
-                            className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[16px] border min-w-[110px] cursor-pointer transition-colors
-                                ${slot.isHovered ? 'bg-[#dcfce7] border-[#22c55e] text-[#15803d]' 
-                                : slot.isAvailable ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#16a34a] hover:bg-[#dcfce7] hover:border-[#22c55e]' 
-                                : 'bg-[#f8fafc] border-transparent text-gray-400'}
-                            `}
-                        >
-                            <span className="font-medium text-[14px] leading-tight mb-0.5">{slot.date}</span>
-                            <span className="text-[14px] leading-tight">{slot.isAvailable ? 'Available' : 'Unavailable'}</span>
-                        </div>
-                    ))}
-                </div>
-              </li>
-            )
+                      <div className="mt-auto">
+                          <Link href={`/patient/therapists/${doctor.id}`} className="w-full inline-block text-center py-3 rounded-xl bg-[var(--color-brand)] text-white text-[13px] font-bold transition-all hover:scale-[1.02] hover:opacity-95 shadow-md shadow-orange-100/50 hover:shadow-lg">
+                              View Profile
+                          </Link>
+                      </div>
+                  </div>
+              </div>
+             )
           })}
-        </ul>
+        </div>
       )}
     </div>
   )

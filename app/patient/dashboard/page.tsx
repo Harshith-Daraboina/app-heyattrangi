@@ -6,6 +6,7 @@ import Sidebar from "@/components/patient/Sidebar"
 import CenterColumn from "@/components/patient/dashboard/CenterColumn"
 import RightColumn from "@/components/patient/dashboard/RightColumn"
 import BotPopup from "@/components/patient/dashboard/BotPopup"
+import DailyRewardPopup from "@/components/patient/dashboard/DailyRewardPopup"
 
 export default async function PatientDashboard() {
   const session = await auth()
@@ -66,6 +67,7 @@ export default async function PatientDashboard() {
       <CenterColumn displayName={displayName} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
       <RightColumn upcomingAppointments={upcomingAppointments} />
       <BotPopup />
+      <DailyRewardPopup />
     </div>
   )
 }
