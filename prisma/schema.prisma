@@ -99,6 +99,12 @@ model Patient {
   assessments MentalWellnessAssessment[]
   moodCheckIns MoodCheckIn[]
   
+  // Gamification
+  currentStreak   Int               @default(0)
+  lastLoginDate   DateTime?
+  creditWallet    CareCreditWallet?
+  creditLogs      CreditLog[]
+  
   @@map("patients")
 }
 
@@ -473,4 +479,42 @@ enum TaskDifficulty {
   EASY
   MEDIUM
   HARD
+}
+
+// ----------------------------------------------------------------------
+// Care Credits & Gamification Models
+// ----------------------------------------------------------------------
+
+model CareCreditWallet {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId       String   @unique @db.ObjectId
+  totalCredits    Int      @default(0)
+  updatedAt       DateTime @updatedAt
+  
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  
+  @@map("care_credit_wallets")
+}
+
+model CreditLog {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId       String   @db.ObjectId
+  actionType      String   // e.g., "mood_checkin", "journal_entry", "ai_interaction", "therapy_session"
+  creditsAwarded  Int
+  timestamp       DateTime @default(now())
+
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@index([patientId, timestamp])
+  @@map("credit_logs")
+}
+
+model Reward {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  creditCost      Int
+  type            String   // "AI", "content", "therapy"
+  createdAt       DateTime @default(now())
+
+  @@map("rewards")
 }

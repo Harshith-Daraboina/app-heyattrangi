@@ -1,6 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, useMemo } from "react"
+import useSWR from "swr"
+import { useDebounce } from "@/lib/hooks/useDebounce"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -101,11 +103,12 @@ function DetailChips({ label, items }: { label: string; items: string[] }) {
   )
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 export default function TherapistList() {
-  const [doctors, setDoctors] = useState<Doctor[]>([])
-  const [loading, setLoading] = useState(true)
   const [specialization, setSpecialization] = useState("")
   const [search, setSearch] = useState("")
+  const debouncedSearch = useDebounce(search, 500)
 
   const specializations = [
     "Psychiatrist",
@@ -116,26 +119,19 @@ export default function TherapistList() {
     "Child Psychologist",
   ]
 
-  const fetchTherapists = useCallback(async () => {
-    setLoading(true)
-    try {
-      const params = new URLSearchParams()
-      if (specialization) params.append("specialization", specialization)
-      if (search) params.append("search", search)
-
-      const response = await fetch(`/api/doctors?${params.toString()}`)
-      const data = await response.json()
-      setDoctors(data.doctors || [])
-    } catch (error) {
-      console.error("Error fetching therapists:", error)
-    } finally {
-      setLoading(false)
+  const { data, error, isLoading } = useSWR(
+    `/api/doctors?${new URLSearchParams({
+      ...(specialization && { specialization }),
+      ...(debouncedSearch && { search: debouncedSearch }),
+    }).toString()}`,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 10000, // Cache for 10 seconds
     }
-  }, [specialization, search])
+  )
 
-  useEffect(() => {
-    void fetchTherapists()
-  }, [fetchTherapists])
+  const doctors = data?.doctors || []
 
   const filterClass =
     "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-[var(--color-text-primary)] focus:border-[var(--color-brand)] focus:outline-none"
@@ -209,7 +205,7 @@ export default function TherapistList() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="py-16 text-center">
           <p className="text-[var(--color-text-secondary)]" style={{ fontSize: "var(--text-sm)" }}>
             Loading therapists…
@@ -231,110 +227,125 @@ export default function TherapistList() {
         </div>
       ) : (
         <ul className="flex list-none flex-col gap-6 p-0">
-          {doctors.map((doctor, index) => {
+          {doctors.map((doctor: Doctor, index: number) => {
             const name = displayName(doctor)
             const role = roleLabel(doctor)
-            const areas = focusAreas(doctor)
-            const exp = yearsExp(doctor)
             const available = doctor.availability?.isAvailable !== false
             const src = photoSrc(doctor)
-            const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length]
-            const fee = Math.round(doctor.consultationFee || 0)
-            const excerpt = bioExcerpt(doctor.bio)
-            const langs = doctor.languagesSpoken ?? []
-            const modes = doctor.consultationTypes ?? []
-            const ages = doctor.preferredAgeGroups ?? []
             const city = doctor.city?.trim()
+            
+            // Mock rating logic (usually this comes from DB)
+            const ratingNumber = "4.5"
+            const reviewCount = "1,258"
+
+            // Helper to generate the exact horizontal mockup
+            function getMockSchedule(baseAvailable: boolean) {
+              const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+              const dates = [];
+              for (let i = 1; i <= 6; i++) {
+                 const d = new Date();
+                 d.setDate(d.getDate() + i);
+                 const dateStr = `${months[d.getMonth()]} ${d.getDate()}`;
+                 
+                 let isAvailable = baseAvailable;
+                 if (i === 3 || i === 6) isAvailable = false; // toggle for variety
+                 
+                 dates.push({
+                    id: i,
+                    date: dateStr,
+                    isAvailable: isAvailable,
+                    isHovered: i === 2 // to exactly mimic the mockup's hovered mid state
+                 });
+              }
+              return dates;
+            }
+            
+            const schedule = getMockSchedule(available);
 
             return (
               <li
                 key={doctor.id}
-                className="flex flex-col gap-5 overflow-hidden rounded-[20px] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-[box-shadow] duration-300 hover:shadow-[0_10px_28px_rgba(0,0,0,0.08)] sm:p-6 md:flex-row md:items-stretch md:gap-8"
+                className="relative flex flex-col bg-white rounded-[24px] border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)] p-5 md:p-6 transition-transform hover:-translate-y-1 overflow-hidden group"
               >
-                <div className="relative mx-auto flex h-[min(52vw,280px)] w-full max-w-[320px] shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface-raised)] md:mx-0 md:h-[min(72vh,360px)] md:w-64 md:max-w-none lg:w-72">
-                  {src ? (
-                    <Image
-                      src={src}
-                      alt={name}
-                      fill
-                      className="object-contain p-3"
-                      sizes="(max-width: 768px) 90vw, 288px"
-                      unoptimized
-                    />
-                  ) : (
-                    <div
-                      className={`flex h-full min-h-[200px] w-full items-center justify-center bg-gradient-to-br ${gradient}`}
-                      aria-hidden
-                    >
-                      <span className="text-5xl font-bold text-white/85 drop-shadow-sm">
-                        {name.charAt(0).toUpperCase()}
-                      </span>
+                <div className="flex gap-5">
+                    {/* Avatar */}
+                    <div className="w-[72px] h-[72px] shrink-0 rounded-full overflow-hidden border border-gray-100 relative bg-gray-50 mt-1">
+                        <Image 
+                            src={src || "/images/promo_doctor.png"} 
+                            alt={name} 
+                            fill 
+                            className="object-cover" 
+                        />
                     </div>
-                  )}
+
+                    {/* Info */}
+                    <div className="flex-1 flex flex-col">
+                        <div className="flex justify-between items-start">
+                           <Link href={`/patient/therapists/${doctor.id}`} className="text-[20px] font-bold text-[#1f2937] leading-tight mb-1 cursor-pointer hover:text-blue-600 transition-colors">
+                               {name}
+                           </Link>
+                           <Link href={`/patient/therapists/${doctor.id}`} className="text-gray-400 hover:text-gray-900 transition-colors p-1">
+                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                                   <polyline points="9 18 15 12 9 6" />
+                               </svg>
+                           </Link>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 text-[14px] text-gray-500 font-medium mb-3">
+                            <div className="flex items-center gap-1.5">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-gray-400">
+                                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
+                                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
+                                    <circle cx="20" cy="10" r="2" />
+                                </svg>
+                                <span>{role}</span>
+                            </div>
+                            <span className="text-gray-300">•</span>
+                            <div className="flex items-center gap-1.5">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px] text-gray-400">
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                <span>{city || 'Remote'}</span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-3.5">
+                            <div className="flex gap-[2px] text-[#fbbf24]">
+                                {[1,2,3,4,5].map(i => (
+                                    <svg key={i} viewBox="0 0 24 24" fill="currentColor" stroke="transparent" className={`w-5 h-5 ${i === 5 ? 'opacity-50' : ''}`}>
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                    </svg>
+                                ))}
+                            </div>
+                            <span className="font-bold text-[#1f2937] text-[15px] ml-1">{ratingNumber}</span>
+                            <span className="text-gray-500 text-[14px]">({reviewCount})</span>
+                        </div>
+
+                        <div className={`flex items-center gap-2 font-medium text-[14px] ${available ? 'text-[#16a34a]' : 'text-gray-400'}`}>
+                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                            </svg>
+                            <span>{available ? "Available" : "Unavailable"} {doctor.consultationTypes.includes('Video') ? "Remotely" : ""}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[13px] text-[var(--color-text-secondary)]">
-                    <span className="text-amber-500" aria-hidden>
-                      ★
-                    </span>
-                    <span>
-                      {exp !== null ? (
-                        <>
-                          Verified · {exp} {exp === 1 ? "yr" : "yrs"} experience
-                        </>
-                      ) : (
-                        <>Verified on Attrangi</>
-                      )}
-                    </span>
-                    {city ? (
-                      <>
-                        <span className="text-[var(--color-text-muted)]" aria-hidden>
-                          ·
-                        </span>
-                        <span>{city}</span>
-                      </>
-                    ) : null}
-                  </div>
-
-                  <h2 className="text-xl font-bold leading-tight text-[var(--color-text-primary)]">
-                    {name}
-                  </h2>
-                  <p className="mt-1 text-sm font-medium leading-snug text-[var(--color-text-secondary)]">
-                    {role} · {areas}
-                  </p>
-
-                  <div className="mt-4 space-y-3">
-                    <DetailChips label="Languages" items={langs} />
-                    <DetailChips label="Session types" items={modes} />
-                    <DetailChips label="Age groups" items={ages} />
-                  </div>
-
-                  {excerpt ? (
-                    <p className="mt-4 text-sm leading-relaxed text-[var(--color-text-secondary)]">
-                      {excerpt}
-                    </p>
-                  ) : null}
-
-                  <div className="mt-6 flex flex-col gap-4 border-t border-[var(--color-border)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-lg font-bold text-[var(--color-text-primary)]">
-                      ₹{fee.toLocaleString("en-IN")} / session
-                    </p>
-                    <div className="shrink-0 sm:min-w-[160px]">
-                      {available ? (
-                        <Link
-                          href={`/patient/therapists/${doctor.id}`}
-                          className="flex w-full items-center justify-center rounded-[var(--radius-md)] bg-[var(--color-brand)] px-8 py-3 text-center text-sm font-semibold text-white shadow-[0_6px_20px_rgba(232,114,42,0.35)] transition-all duration-300 hover:bg-[var(--color-brand-dark)] hover:opacity-[0.98] sm:w-auto"
+                {/* Calendar / Schedule Scroll row */}
+                <div className="mt-7 flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+                    {schedule.map(slot => (
+                        <div 
+                            key={slot.id} 
+                            className={`shrink-0 flex flex-col justify-center px-4 py-2.5 rounded-[16px] border min-w-[110px] cursor-pointer transition-colors
+                                ${slot.isHovered ? 'bg-[#dcfce7] border-[#22c55e] text-[#15803d]' 
+                                : slot.isAvailable ? 'bg-[#f0fdf4] border-[#bbf7d0] text-[#16a34a] hover:bg-[#dcfce7] hover:border-[#22c55e]' 
+                                : 'bg-[#f8fafc] border-transparent text-gray-400'}
+                            `}
                         >
-                          Book now
-                        </Link>
-                      ) : (
-                        <span className="flex w-full items-center justify-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] py-3 text-sm font-medium text-[var(--color-text-muted)]">
-                          Currently unavailable
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                            <span className="font-medium text-[14px] leading-tight mb-0.5">{slot.date}</span>
+                            <span className="text-[14px] leading-tight">{slot.isAvailable ? 'Available' : 'Unavailable'}</span>
+                        </div>
+                    ))}
                 </div>
               </li>
             )

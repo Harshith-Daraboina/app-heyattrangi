@@ -1,11 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { unstable_cache } from "next/cache"
 
 export async function GET(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams
     const specialization = searchParams.get("specialization")
     const search = searchParams.get("search")
+    const page = parseInt(searchParams.get("page") || "1")
+    const limit = parseInt(searchParams.get("limit") || "10")
+    const skip = (page - 1) * limit
 
     const where: any = {
       status: "APPROVED",
@@ -15,27 +19,79 @@ export async function GET(req: NextRequest) {
       where.specialization = specialization
     }
 
-    // Note: MongoDB text search is simplified - filtering by specialization only
-    // For full-text search, consider implementing MongoDB text indexes or use a search service
+    // Support for simple name search if implemented in MongoDB
+    if (search) {
+      where.OR = [
+        { user: { name: { contains: search, mode: 'insensitive' } } },
+        { bio: { contains: search, mode: 'insensitive' } },
+        { primarySpecialization: { contains: search, mode: 'insensitive' } },
+      ]
+    }
 
-    const doctors = await prisma.doctor.findMany({
-      where,
-      include: {
-        user: {
+    const getDoctors = unstable_cache(
+      async (where: any, skip: number, limit: number) => {
+        return prisma.doctor.findMany({
+          where,
           select: {
-            name: true,
-            email: true,
-            image: true,
+            id: true,
+            specialization: true,
+            primarySpecialization: true,
+            secondarySpecializations: true,
+            experience: true,
+            yearsOfExperience: true,
+            consultationFee: true,
+            bio: true,
+            profilePhoto: true,
+            languagesSpoken: true,
+            consultationTypes: true,
+            preferredAgeGroups: true,
+            city: true,
+            user: {
+              select: {
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+            availability: {
+              select: {
+                isAvailable: true,
+              },
+            },
           },
-        },
-        availability: true,
+          orderBy: {
+            createdAt: "desc",
+          },
+          skip,
+          take: limit,
+        })
       },
-      orderBy: {
-        createdAt: "desc",
+      ["doctors-list"],
+      { revalidate: 60, tags: ["doctors"] }
+    )
+
+    const getDoctorsCount = unstable_cache(
+      async (where: any) => {
+        return prisma.doctor.count({ where })
+      },
+      ["doctors-count"],
+      { revalidate: 60, tags: ["doctors"] }
+    )
+
+    const [doctors, totalCount] = await Promise.all([
+      getDoctors(where, skip, limit),
+      getDoctorsCount(where),
+    ])
+
+    return NextResponse.json({
+      doctors,
+      pagination: {
+        total: totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
       },
     })
-
-    return NextResponse.json({ doctors })
   } catch (error) {
     console.error("Error fetching doctors:", error)
     return NextResponse.json(
