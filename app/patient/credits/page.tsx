@@ -97,7 +97,7 @@ export default function CareCreditsPage() {
                             <div className="flex items-center justify-between border-t border-white/20 pt-4">
                                 <div className="flex flex-col">
                                     <span className="text-white/80 text-xs font-bold uppercase tracking-wider">Earned Today</span>
-                                    <span className="text-lg font-bold">{loading ? "-" : stats.earned_today} / 4</span>
+                                    <span className="text-lg font-bold">{loading ? "-" : stats.earned_today} 🌿</span>
                                 </div>
                                 <div className="flex flex-col text-right">
                                     <span className="text-white/80 text-xs font-bold uppercase tracking-wider">Daily Streak</span>
@@ -109,6 +109,9 @@ export default function CareCreditsPage() {
                         {/* Developer Simulation Block for Demo */}
                         <div className="bg-white rounded-[24px] p-6 border border-gray-100 shadow-sm space-y-3">
                             <h4 className="font-bold text-gray-800 text-[13px] mb-4">Simulate Progress (Demo)</h4>
+                            <button onClick={() => simulateEarn("daily_login_bonus")} className="w-full text-left px-4 py-2 bg-purple-50 hover:bg-purple-100 rounded-xl text-sm font-bold border border-purple-100 text-purple-700 transition-colors">
+                                + Daily Login Reward
+                            </button>
                             <button onClick={() => simulateEarn("mood_checkin")} className="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-xl text-sm font-medium border border-gray-200 transition-colors">
                                 + Log Mood (+1)
                             </button>

@@ -10,9 +10,9 @@ export async function GET() {
         // Ensure there are some default rewards for demonstration if DB is empty
         if (rewards.length === 0) {
             const fallbackRewards = [
-                { id: "fallback-1", name: "Premium Background Noise", creditCost: 5, type: "content" },
-                { id: "fallback-2", name: "Unlimited AI Chats (24h)", creditCost: 10, type: "AI" },
-                { id: "fallback-3", name: "15% off Therapy Session", creditCost: 50, type: "therapy" },
+                { id: "fallback-1", name: "Premium Wellness Background", creditCost: 150, type: "content" },
+                { id: "fallback-2", name: "Unlimited AI Guidance (24h)", creditCost: 500, type: "AI" },
+                { id: "fallback-3", name: "15% off Therapy Session", creditCost: 2500, type: "therapy" },
             ]
             return NextResponse.json(fallbackRewards)
         }

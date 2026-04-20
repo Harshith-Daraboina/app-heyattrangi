@@ -1,22 +1,38 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function DailyRewardPopup() {
     const [isOpen, setIsOpen] = useState(false)
     const [isClaimed, setIsClaimed] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [streak, setStreak] = useState(1)
+    const [balance, setBalance] = useState(0)
+    const [showCelebration, setShowCelebration] = useState(false)
 
     useEffect(() => {
-        // Only show once per day
-        const today = new Date().toISOString().split('T')[0]
-        const hasSeen = localStorage.getItem(`daily_reward_modal_${today}`)
-        
-        if (!hasSeen) {
-            // slight delay so it pops up cleanly after dashboard hydration
-            const timer = setTimeout(() => setIsOpen(true), 1200)
-            return () => clearTimeout(timer)
+        const fetchData = async () => {
+            try {
+                const res = await fetch("/api/patient/credits")
+                const data = await res.json()
+                if (res.ok) {
+                    setStreak(data.current_streak)
+                    setBalance(data.total_credits)
+                    const today = new Date().toISOString().split('T')[0]
+                    const hasSeen = localStorage.getItem(`daily_reward_modal_${today}`)
+                    
+                    if (!hasSeen) {
+                        const timer = setTimeout(() => setIsOpen(true), 800)
+                        return () => clearTimeout(timer)
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch streak", error)
+            }
         }
+        
+        fetchData()
     }, [])
 
     const closeAndRemember = () => {
@@ -28,20 +44,26 @@ export default function DailyRewardPopup() {
     const handleClaim = async () => {
         setIsLoading(true)
         try {
-            await fetch("/api/patient/credits/earn", {
+            const res = await fetch("/api/patient/credits/earn", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ actionType: "daily_login_bonus" })
             })
+            const data = await res.json()
             
-            setIsClaimed(true)
-            const today = new Date().toISOString().split('T')[0]
-            localStorage.setItem(`daily_reward_modal_${today}`, "true")
-            
-            // Auto close after celebrating
-            setTimeout(() => {
-                setIsOpen(false)
-            }, 2500)
+            if (res.ok) {
+                setIsClaimed(true)
+                setShowCelebration(true)
+                setBalance(data.total_credits)
+                const today = new Date().toISOString().split('T')[0]
+                localStorage.setItem(`daily_reward_modal_${today}`, "true")
+                
+                setTimeout(() => {
+                    setIsOpen(false)
+                }, 4000)
+            } else {
+                alert(data.message || "Already claimed or error")
+            }
         } catch (error) {
             console.error(error)
         } finally {
@@ -51,64 +73,186 @@ export default function DailyRewardPopup() {
 
     if (!isOpen) return null
 
+    const rewards = [10, 15, 20, 25, 30, 40, 75]
+    const currentDay = ((Math.max(1, streak) - 1) % 7) + 1
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div 
-                className="absolute inset-0 bg-[#3a1b5c]/40 backdrop-blur-md animate-in fade-in duration-500"
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm"
                 onClick={closeAndRemember}
             />
 
-            {/* Modal Content */}
-            <div className="relative w-full max-w-sm sm:max-w-md md:max-w-lg bg-[#2d1b4e] rounded-[32px] p-6 shadow-2xl border border-white/10 animate-in zoom-in-95 slide-in-from-bottom-8 duration-500 overflow-hidden flex flex-col items-center">
-                
-                <button 
-                    onClick={closeAndRemember}
-                    className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-                >
-                    ✕
-                </button>
-
-                <div className="text-center mb-8 mt-2 w-full">
-                    <h2 className="text-2xl font-extrabold text-white mb-2 tracking-tight">Daily Rewards</h2>
-                    <p className="text-white/60 text-sm font-medium">Try your luck and win daily care credits to maximize your wellness journey!</p>
+            <motion.div 
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="relative w-full max-w-sm md:max-w-md bg-[#fffef4] rounded-[50px] p-8 shadow-2xl border-b-[12px] border-[#e8e4d8] overflow-hidden flex flex-col items-center"
+            >
+                {/* Top Status Bar */}
+                <div className="w-full flex justify-between items-center mb-8 px-2">
+                    <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+                        <span className="text-xl">🌿</span>
+                        <span className="font-black text-[#1a1c1e]">{balance}</span>
+                    </div>
+                    <button 
+                        onClick={closeAndRemember}
+                        className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-black transition-colors"
+                    >
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
 
-                <div className="flex justify-center items-end gap-3 md:gap-4 w-full h-[220px] mb-8 relative">
+                {/* Day Label */}
+                <span className="text-gray-400 font-black text-sm tracking-widest uppercase mb-1">
+                    Day {currentDay}
+                </span>
+
+                {/* Streak Number */}
+                <h2 className="text-7xl font-[900] text-[#1a1c1e] mb-6 tracking-tighter">
+                    {streak}
+                </h2>
+
+                {/* Character Icon */}
+                <div className="relative w-full aspect-square max-w-[180px] mb-8 flex items-center justify-center">
+                    {/* Character: Smiling Coin with Hat */}
+                    <motion.div 
+                        animate={{ 
+                            y: [0, -15, 0],
+                            rotate: [-5, 5, -5]
+                        }}
+                        transition={{ 
+                            duration: 2.5, 
+                            repeat: Infinity, 
+                            ease: "easeInOut" 
+                        }}
+                        className="relative z-10 w-full h-full flex items-center justify-center"
+                    >
+                         <div className="relative">
+                            <span className="text-[120px] leading-none drop-shadow-xl select-none">🪙</span>
+                            {/* Hat */}
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 rotate-[-20deg] text-5xl">🧢</div>
+                            {/* Face */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1 opacity-80">
+                                <div className="flex gap-4">
+                                    <div className="w-2 h-2 bg-black rounded-full" />
+                                    <div className="w-2 h-2 bg-black rounded-full" />
+                                </div>
+                                <div className="w-5 h-2 bg-black rounded-full" style={{ borderRadius: '50% 50% 50% 50% / 0% 0% 100% 100%' }} />
+                            </div>
+                         </div>
+                    </motion.div>
                     
-                    {/* Left Card */}
-                    <div className="w-[110px] md:w-[130px] h-[160px] rounded-3xl bg-gradient-to-b from-[#4ca1af] to-[#2c3e50] p-4 flex flex-col items-center justify-end shadow-2xl relative translate-y-3 opacity-90 transition-transform">
-                        <div className="absolute -top-10 text-6xl drop-shadow-xl saturate-150">🎁</div>
-                        <h4 className="text-white font-bold text-[11px] md:text-xs text-center leading-tight mb-3">Care Credits<br/>unlocked</h4>
-                        <button disabled className="w-full py-2 rounded-xl bg-white/20 text-white text-[10px] font-bold">Claimed</button>
-                    </div>
+                    {/* Float shadow */}
+                    <div className="absolute bottom-4 w-24 h-4 bg-black/5 rounded-full blur-md" />
+                </div>
 
-                    {/* Center Premium Card */}
-                    <div className={`w-[130px] md:w-[150px] h-[200px] rounded-[32px] bg-gradient-to-b from-[#8e2de2] to-[#4a00e0] p-4 flex flex-col items-center justify-end shadow-[0_20px_50px_rgba(142,45,226,0.3)] relative z-10 transition-transform duration-500 ${isClaimed ? 'scale-105 shadow-[0_0_80px_rgba(142,45,226,0.6)]' : 'hover:-translate-y-2'}`}>
-                        <div className="absolute -top-12 text-[80px] drop-shadow-2xl z-20">✨</div>
-                        <div className="absolute top-8 w-full flex justify-between px-2 opacity-50">
-                            <span className="text-xs">🌿</span>
-                            <span className="text-xs">🌿</span>
-                        </div>
-                        <h4 className="text-white font-extrabold text-sm text-center leading-tight mb-4">Care Credits<br/>unlocked</h4>
-                        <button 
-                            onClick={handleClaim}
-                            disabled={isClaimed || isLoading}
-                            className={`w-full py-3 rounded-2xl font-extrabold text-[12px] md:text-sm tracking-wide transition-all shadow-xl ${isClaimed ? 'bg-[#10b981] text-white' : 'bg-white text-[#4a00e0] hover:scale-105 active:scale-95'}`}
-                        >
-                            {isLoading ? '...' : isClaimed ? 'Claimed! ✓' : 'Claim Reward'}
-                        </button>
-                    </div>
+                {/* Progress Bar UI */}
+                <div className="w-full mb-12 px-2 relative">
+                    {/* Background Line */}
+                    <div className="h-4 bg-[#f0ede6] rounded-full w-full absolute top-1/2 -translate-y-1/2" />
+                    
+                    {/* Fill Line */}
+                    <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: `${((currentDay - 1) / 6) * 100}%` }}
+                        className="h-4 bg-yellow-400 rounded-full absolute top-1/2 -translate-y-1/2 z-10"
+                    />
 
-                    {/* Right Card */}
-                    <div className="w-[110px] md:w-[130px] h-[160px] rounded-3xl bg-gradient-to-b from-[#dd5e89] to-[#f7bb97] p-4 flex flex-col items-center justify-end shadow-2xl relative translate-y-3 opacity-90 transition-transform">
-                        <div className="absolute -top-10 text-6xl drop-shadow-xl saturate-150">🎁</div>
-                        <h4 className="text-white font-bold text-[11px] md:text-xs text-center leading-tight mb-3">Check Back<br/>Tomorrow</h4>
-                        <button disabled className="w-full py-2 rounded-xl bg-white/20 text-white text-[10px] font-bold">Locked</button>
+                    {/* Milestone Dots */}
+                    <div className="relative flex justify-between items-center z-20">
+                        {rewards.map((amount, idx) => {
+                            const dayNum = idx + 1
+                            const isReached = dayNum <= currentDay
+                            const isCurrent = dayNum === currentDay
+                            
+                            return (
+                                <div key={dayNum} className="relative flex flex-col items-center">
+                                    <div className={`w-6 h-6 rounded-full border-4 transition-all duration-300 ${
+                                        isCurrent 
+                                        ? "bg-yellow-400 border-white scale-125" 
+                                        : isReached 
+                                        ? "bg-yellow-400 border-transparent" 
+                                        : "bg-[#e8e4dc] border-transparent"
+                                    }`} />
+                                    
+                                    <div className="absolute -bottom-10 flex flex-col items-center whitespace-nowrap">
+                                        <span className={`text-[11px] font-black ${isReached ? 'text-black' : 'text-gray-300'}`}>
+                                            {dayNum * 100} {/* Using step-like numbers for visual style */}
+                                        </span>
+                                        <span className={`text-[9px] font-bold ${isReached ? 'text-gray-500' : 'text-gray-300'} flex items-center gap-0.5`}>
+                                            {amount} <span className="text-[12px]">🌿</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            )
+                        })}
                     </div>
                 </div>
 
-            </div>
+                {/* Action Button */}
+                <div className="w-full mt-4 flex flex-col gap-4">
+                    <AnimatePresence mode="wait">
+                        {!isClaimed ? (
+                            <motion.button 
+                                key="validate-btn"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleClaim}
+                                disabled={isLoading}
+                                className="w-full bg-[#1e1e1e] hover:bg-black text-white rounded-[28px] py-6 flex items-center justify-center gap-3 shadow-lg transition-all"
+                            >
+                                <span className="w-10 h-10 bg-gradient-to-br from-yellow-300 to-yellow-600 rounded-full flex items-center justify-center text-xl shadow-sm">⭐</span>
+                                <span className="text-xl font-black">Validate my rewards</span>
+                            </motion.button>
+                        ) : (
+                            <motion.div 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="bg-green-100 text-green-700 rounded-[28px] py-6 flex items-center justify-center gap-3 font-black text-xl"
+                            >
+                                <span className="text-2xl">🏆</span>
+                                Rewards Claimed!
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Mini Cards (Like at the bottom of the image) */}
+                    <div className="flex gap-3 w-full overflow-hidden opacity-50 select-none pointer-events-none pb-2">
+                        <div className="flex-1 bg-white rounded-3xl p-4 border border-gray-100 flex flex-col items-center">
+                            <span className="text-3xl mb-2">🎁</span>
+                            <div className="w-12 h-2 bg-gray-100 rounded-full" />
+                        </div>
+                        <div className="flex-1 bg-[#e8f5e9] rounded-3xl p-4 border border-green-100 flex flex-col items-center">
+                            <span className="text-3xl mb-2">🌱</span>
+                            <div className="w-12 h-2 bg-green-200 rounded-full" />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Celebration Particles */}
+                {showCelebration && (
+                    <div className="absolute inset-0 pointer-events-none z-[100]">
+                        {[...Array(40)].map((_, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ x: "50%", y: "50%", scale: 0 }}
+                                animate={{ 
+                                    x: `${Math.random() * 100}%`, 
+                                    y: `${Math.random() * 100}%`, 
+                                    scale: Math.random() * 2 + 0.5,
+                                    opacity: 0,
+                                    rotate: Math.random() * 360
+                                }}
+                                transition={{ duration: 2, ease: "easeOut" }}
+                                className="absolute w-4 h-4 text-2xl"
+                            >
+                                {['✨', '🌟', '🌿', '🪙'][Math.floor(Math.random() * 4)]}
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
+            </motion.div>
         </div>
     )
 }
