@@ -1,29 +1,18 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/auth.config"
+import { Suspense } from "react"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { computeMoodStreak } from "@/lib/mood/streak"
-import Sidebar from "@/components/patient/Sidebar"
 import MoodTrackerClient, { type MoodEntryRow } from "@/components/patient/mood/MoodTrackerClient"
+import MoodSkeleton from "@/components/patient/mood/MoodSkeleton"
 
-export default async function MoodTrackerPage() {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
+async function MoodTrackerContent() {
   const user = await getCurrentUser()
-
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
-  }
 
   let initialEntries: MoodEntryRow[] = []
   let initialStreak = 0
   let initialTotal = 0
 
-  if (user.patient) {
+  if (user?.patient) {
     const rows = await prisma.moodCheckIn.findMany({
       where: { patientId: user.patient.id },
       orderBy: { createdAt: "desc" },
@@ -58,44 +47,49 @@ export default async function MoodTrackerPage() {
   }
 
   return (
-    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 min-w-0 h-full flex flex-col relative w-full overflow-y-auto">
-        <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:max-w-4xl lg:px-8">
-            <div>
-              <h1
-                className="font-semibold text-[var(--color-text-primary)]"
-                style={{ fontSize: "var(--text-xl)" }}
-              >
-                Mood tracker
-              </h1>
-              <p
-                className="mt-0.5 text-[var(--color-text-secondary)]"
-                style={{ fontSize: "var(--text-sm)" }}
-              >
-                Quick check-ins for how you feel
-              </p>
-            </div>
-            <div
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-[var(--color-brand)]"
-              style={{ background: "var(--color-brand-light)" }}
-              aria-hidden
+    <div className="flex-1 min-w-0 h-full flex flex-col relative w-full overflow-y-auto bg-[var(--color-bg)]">
+      <header className="sticky top-0 z-10 border-b border-[var(--color-border)] bg-[var(--color-surface)]/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:max-w-4xl lg:px-8">
+          <div>
+            <h1
+              className="font-semibold text-[var(--color-text-primary)]"
+              style={{ fontSize: "var(--text-xl)" }}
             >
-              M
-            </div>
+              Mood tracker
+            </h1>
+            <p
+              className="mt-0.5 text-[var(--color-text-secondary)]"
+              style={{ fontSize: "var(--text-sm)" }}
+            >
+              Quick check-ins for how you feel
+            </p>
           </div>
-        </header>
+          <div
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold text-[var(--color-brand)]"
+            style={{ background: "var(--color-brand-light)" }}
+            aria-hidden
+          >
+            M
+          </div>
+        </div>
+      </header>
 
-        <main className="relative min-h-0 flex-1 overflow-y-auto">
-          <MoodTrackerClient
-            canLog={!!user.patient}
-            initialEntries={initialEntries}
-            initialStreak={initialStreak}
-            initialTotal={initialTotal}
-          />
-        </main>
-      </div>
+      <main className="relative min-h-0 flex-1 overflow-y-auto">
+        <MoodTrackerClient
+          canLog={!!user?.patient}
+          initialEntries={initialEntries}
+          initialStreak={initialStreak}
+          initialTotal={initialTotal}
+        />
+      </main>
     </div>
+  )
+}
+
+export default function MoodTrackerPage() {
+  return (
+    <Suspense fallback={<MoodSkeleton />}>
+      <MoodTrackerContent />
+    </Suspense>
   )
 }

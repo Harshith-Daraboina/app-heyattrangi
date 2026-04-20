@@ -1,29 +1,19 @@
-import { redirect } from "next/navigation"
+import { Suspense } from "react"
 import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import Sidebar from "@/components/patient/Sidebar"
 import CenterColumn from "@/components/patient/dashboard/CenterColumn"
 import RightColumn from "@/components/patient/dashboard/RightColumn"
 import BotPopup from "@/components/patient/dashboard/BotPopup"
 import DailyRewardPopup from "@/components/patient/dashboard/DailyRewardPopup"
+import DashboardSkeleton from "@/components/patient/dashboard/DashboardSkeleton"
 
-export default async function PatientDashboard() {
+async function DashboardContent() {
   const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
   const user = await getCurrentUser()
-
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
-  }
-
-  const displayName = session.user.name || "You"
-
-  const patient = await prisma.patient.findUnique({ where: { userId: user.id } })
+  
+  const displayName = session?.user?.name || "You"
+  const patient = await prisma.patient.findUnique({ where: { userId: user?.id } })
 
   let upcomingAppointments: any[] = []
   let dailyTasks: any[] = []
@@ -49,7 +39,6 @@ export default async function PatientDashboard() {
         orderBy: { dueDate: "asc" }
     })
 
-    // Fallback presentation data if DB is empty for this user
     if (dailyTasks.length === 0) {
         const today = new Date()
         dailyTasks = [
@@ -62,12 +51,19 @@ export default async function PatientDashboard() {
   }
 
   return (
-    <div className="h-screen w-full bg-white font-sans overflow-hidden flex relative">
-      <Sidebar />
+    <div className="flex flex-1 w-full relative h-full">
       <CenterColumn displayName={displayName} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
       <RightColumn upcomingAppointments={upcomingAppointments} />
       <BotPopup />
       <DailyRewardPopup />
     </div>
+  )
+}
+
+export default function PatientDashboard() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
   )
 }
