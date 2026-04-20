@@ -1,7 +1,7 @@
 "use client"
 
 import type { CSSProperties } from "react"
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import Link from "next/link"
 
 interface Appointment {
@@ -87,13 +87,15 @@ export default function AppointmentsList({
 
   const totalCount = upcomingAppointments.length + pastAppointments.length
 
-  const filterAppointments = (appointments: Appointment[]) => {
-    if (filterStatus === "all") return appointments
-    return appointments.filter((apt) => apt.status === filterStatus)
-  }
+  const filteredUpcoming = useMemo(() => {
+    if (filterStatus === "all") return upcomingAppointments
+    return upcomingAppointments.filter((apt) => apt.status === filterStatus)
+  }, [upcomingAppointments, filterStatus])
 
-  const filteredUpcoming = filterAppointments(upcomingAppointments)
-  const filteredPast = filterAppointments(pastAppointments)
+  const filteredPast = useMemo(() => {
+    if (filterStatus === "all") return pastAppointments
+    return pastAppointments.filter((apt) => apt.status === filterStatus)
+  }, [pastAppointments, filterStatus])
 
   const AppointmentCard = ({ appointment }: { appointment: Appointment }) => {
     const appointmentDate = new Date(appointment.appointmentDate)

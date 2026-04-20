@@ -37,13 +37,16 @@ export default async function PatientProfilePage() {
       <Sidebar />
       <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
         <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-              Profile Settings
-            </h1>
-            <p className="text-gray-600">
-              Update your personal information and preferences
-            </p>
+          <div className="mb-6 flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-800 mb-2">
+                Profile Settings
+              </h1>
+              <p className="text-gray-600">
+                Update your personal information and preferences
+              </p>
+            </div>
+            <SignOutButton />
           </div>
 
           {patientData?.assessments[0] && (

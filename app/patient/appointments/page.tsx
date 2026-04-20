@@ -51,11 +51,51 @@ export default async function AppointmentsPage() {
       </div>
     )
   }
+  
+  const now = new Date()
 
-  // Fetch all appointments for this patient
-  const appointments = await prisma.appointment.findMany({
+  // Fetch upcoming appointments
+  const upcomingAppointments = await prisma.appointment.findMany({
     where: {
       patientId: patient.id,
+      appointmentDate: { gt: now },
+      status: { not: "CANCELLED" },
+    },
+    include: {
+      doctor: {
+        include: {
+          user: {
+            select: {
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      },
+      payment: {
+        select: {
+          id: true,
+          amount: true,
+          status: true,
+          createdAt: true,
+        },
+      },
+    },
+    orderBy: {
+      appointmentDate: "asc",
+    },
+  })
+
+  // Fetch past appointments
+  const pastAppointments = await prisma.appointment.findMany({
+    where: {
+      patientId: patient.id,
+      OR: [
+        { appointmentDate: { lte: now } },
+        { status: "COMPLETED" },
+        { status: "CANCELLED" },
+      ],
     },
     include: {
       doctor: {
@@ -82,15 +122,6 @@ export default async function AppointmentsPage() {
       appointmentDate: "desc",
     },
   })
-
-  // Separate upcoming and past appointments
-  const now = new Date()
-  const upcomingAppointments = appointments.filter(
-    (apt) => new Date(apt.appointmentDate) > now && apt.status !== "CANCELLED"
-  )
-  const pastAppointments = appointments.filter(
-    (apt) => new Date(apt.appointmentDate) <= now || apt.status === "COMPLETED" || apt.status === "CANCELLED"
-  )
 
   return (
     <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
