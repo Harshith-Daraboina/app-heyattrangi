@@ -93,7 +93,7 @@ const generalItems = [
     { label: "Dashboard", href: "/patient/dashboard", icon: <GridIcon /> },
     { label: "Therapists", href: "/patient/therapists", icon: <UsersIcon /> },
     { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
-    { label: "History", href: "/patient/mood", icon: <ChartIcon /> },
+    { label: "Mood Tracking", href: "/patient/mood", icon: <ChartIcon /> },
 ]
 
 const toolItems = [

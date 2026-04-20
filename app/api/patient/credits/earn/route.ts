@@ -26,20 +26,31 @@ export async function POST(req: Request) {
         
         const earnedToday = logsToday.reduce((sum: number, log: any) => sum + log.creditsAwarded, 0)
         
-        if (earnedToday >= 4) {
-            const wallet = await prisma.careCreditWallet.findUnique({ where: { patientId: patient.id }})
-            return NextResponse.json({
-                earned_today: earnedToday,
-                total_credits: wallet?.totalCredits || 0,
-                message: "You have already reached the daily maximum of 4 Care Credits 🌿!"
-            })
+        let creditsToAward = 1
+        let isBonus = false
+
+        if (actionType === "daily_login_bonus") {
+            const cycleDay = ((patient.currentStreak - 1) % 7) + 1
+            const rewards = [10, 15, 20, 25, 30, 40, 75]
+            creditsToAward = rewards[cycleDay - 1] || 10
+            if (cycleDay === 7) isBonus = true
+        } else if (actionType === "therapy_session") {
+            creditsToAward = 2
         }
 
-        let creditsToAward = 1
-        if (actionType === "therapy_session") creditsToAward = 2
-
-        if (earnedToday + creditsToAward > 4) {
-            creditsToAward = 4 - earnedToday // Cap precisely at 4
+        // Daily cap logic - don't cap the login bonus, but cap other activities
+        if (actionType !== "daily_login_bonus") {
+            if (earnedToday >= 4) {
+                const wallet = await prisma.careCreditWallet.findUnique({ where: { patientId: patient.id }})
+                return NextResponse.json({
+                    earned_today: earnedToday,
+                    total_credits: wallet?.totalCredits || 0,
+                    message: "You have already reached the daily maximum of 4 Care Credits 🌿!"
+                })
+            }
+            if (earnedToday + creditsToAward > 4) {
+                creditsToAward = 4 - earnedToday
+            }
         }
 
         if (creditsToAward <= 0) {
@@ -48,6 +59,7 @@ export async function POST(req: Request) {
 
         // Transaction: Add Log and Update Wallet safely
         const newWallet = await prisma.$transaction(async (tx) => {
+            // Main reward
             await tx.creditLog.create({
                 data: {
                     patientId: patient.id,
@@ -56,22 +68,37 @@ export async function POST(req: Request) {
                 }
             })
 
+            // Day 7 Bonus Reward
+            if (isBonus) {
+                await tx.creditLog.create({
+                    data: {
+                        patientId: patient.id,
+                        actionType: "bonus_reward_day_7",
+                        creditsAwarded: 100
+                    }
+                })
+            }
+
+            const totalToAdd = isBonus ? creditsToAward + 100 : creditsToAward
+
             return tx.careCreditWallet.upsert({
                 where: { patientId: patient.id },
                 update: {
-                    totalCredits: { increment: creditsToAward }
+                    totalCredits: { increment: totalToAdd }
                 },
                 create: {
                     patientId: patient.id,
-                    totalCredits: creditsToAward
+                    totalCredits: totalToAdd
                 }
             })
         })
 
+        const displayEarned = isBonus ? creditsToAward + 100 : creditsToAward
+
         return NextResponse.json({
-            earned_today: earnedToday + creditsToAward,
+            earned_today: earnedToday + displayEarned,
             total_credits: newWallet.totalCredits,
-            message: `You earned ${creditsToAward} Care Credit${creditsToAward > 1 ? 's' : ''} today 🌿`
+            message: `You earned ${displayEarned} Care Credits today 🌿${isBonus ? ' (Including Day 7 Bonus!)' : ''}`
         })
 
     } catch (error) {

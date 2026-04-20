@@ -664,7 +664,7 @@ export default function MoodTrackerClient({
       </div>
 
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-3 backdrop-blur-md lg:left-[82px]"
+        className="sticky bottom-0 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-3 backdrop-blur-md"
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
       >
         <div className="mx-auto flex max-w-xl justify-center sm:px-6 lg:max-w-2xl">

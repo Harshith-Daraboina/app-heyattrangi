@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
       where.specialization = specialization
     }
 
-    // Support for simple name search if implemented in MongoDB
     if (search) {
       where.OR = [
         { user: { name: { contains: search, mode: 'insensitive' } } },

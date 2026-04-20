@@ -127,14 +127,11 @@ export default function TherapistList() {
     fetcher,
     {
       revalidateOnFocus: false,
-      dedupingInterval: 10000, // Cache for 10 seconds
+      dedupingInterval: 10000,
     }
   )
 
   const doctors = data?.doctors || []
-
-  const filterClass =
-    "w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 text-[var(--color-text-primary)] focus:border-[var(--color-brand)] focus:outline-none"
 
   return (
     <div className="max-w-[1000px] mx-auto pb-10">
@@ -212,11 +209,9 @@ export default function TherapistList() {
              const role = roleLabel(doctor)
              const available = doctor.availability?.isAvailable !== false
              const src = photoSrc(doctor)
-             const city = doctor.city?.trim()
              
              const ratingNumber = "4.8"
              const fee = doctor.consultationFee || 150
-             const isFeatured = index === 0
 
              return (
               <div

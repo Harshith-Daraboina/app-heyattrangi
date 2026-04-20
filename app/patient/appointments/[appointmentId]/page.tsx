@@ -51,6 +51,19 @@ export default async function AppointmentDetailPage({
               image: true,
             },
           },
+          availability: true,
+          appointments: {
+            where: {
+              appointmentDate: {
+                gte: new Date(new Date().setHours(0, 0, 0, 0)),
+                lte: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+              },
+              status: { not: "CANCELLED" }
+            },
+            select: {
+              appointmentDate: true
+            }
+          }
         },
       },
       patient: {

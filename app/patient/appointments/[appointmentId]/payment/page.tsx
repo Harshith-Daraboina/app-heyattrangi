@@ -105,19 +105,10 @@ export default async function AppointmentPaymentPage({
   }
 
   return (
-    <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
+    <div className="flex h-screen w-full bg-white text-gray-900 overflow-hidden">
       <Sidebar />
-      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="mb-10 text-center animate-in fade-in slide-in-from-top-4 duration-500">
-            <h1 className="text-4xl font-extrabold text-[var(--color-text-primary)] tracking-tight mb-2">
-              Complete Payment
-            </h1>
-            <p className="text-xl text-[var(--color-text-secondary)] font-medium">
-              Secure payment for your appointment
-            </p>
-          </div>
-
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full bg-gray-50/30">
+        <main className="max-w-lg mx-auto py-12">
           <PaymentPanel appointment={appointment} />
         </main>
       </div>
