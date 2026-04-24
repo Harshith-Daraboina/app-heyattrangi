@@ -54,7 +54,6 @@ async function DashboardContent() {
     <div className="flex flex-1 w-full relative h-full">
       <CenterColumn displayName={displayName} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
       <RightColumn upcomingAppointments={upcomingAppointments} />
-      <BotPopup />
       <DailyRewardPopup />
     </div>
   )
