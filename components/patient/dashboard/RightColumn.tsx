@@ -55,68 +55,68 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
     const displayAppointments = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments.slice(0, 3) : []
 
     return (
-        <div className="hidden xl:flex flex-col w-[440px] bg-white h-full px-6 py-6 relative">
+        <div className="hidden xl:flex flex-col w-[400px] bg-white h-full px-5 py-5 relative">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                    <button className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm ring-4 ring-gray-50/50">
-                        <SearchIcon className="w-4 h-4" />
+                    <button className="w-9 h-9 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm ring-4 ring-gray-50/50">
+                        <SearchIcon className="w-3.5 h-3.5" />
                     </button>
-                    <button className="w-10 h-10 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm relative ring-4 ring-gray-50/50">
-                        <BellIcon className="w-4 h-4" />
-                        <span className="absolute top-2 right-2 w-2 h-2 bg-green-500 rounded-full border border-white" />
+                    <button className="w-9 h-9 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm relative ring-4 ring-gray-50/50">
+                        <BellIcon className="w-3.5 h-3.5" />
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-500 rounded-full border border-white" />
                     </button>
                 </div>
             </div>
 
             {/* Upcoming Sessions Section */}
-            <div className="mb-2">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 text-center">Upcoming sessions</h3>
+            <div className="mb-4">
+                <h3 className="text-[15px] font-black text-gray-900 mb-3 text-center">Upcoming sessions</h3>
                 {displayAppointments.length > 0 ? (
-                    <div className="bg-[#f0f9f1] rounded-[24px] p-5 shadow-sm border border-[#e2ece3] flex items-center justify-between">
+                    <div className="bg-[#f0f9f1] rounded-[24px] p-4 shadow-sm border border-[#e2ece3] flex items-center justify-between">
                         <div>
-                            <span className="text-[13px] font-bold text-gray-700">Session in 5 mins</span>
+                            <span className="text-[11px] font-black text-gray-700">Session in 5 mins</span>
                         </div>
-                        <button className="bg-[#a3d1ac] hover:bg-[#92c59c] text-white font-bold py-2 px-6 rounded-full transition-colors">
+                        <button className="bg-[#a3d1ac] hover:bg-[#92c59c] text-white font-black py-1.5 px-4 rounded-full transition-colors text-[11px]">
                             Join now
                         </button>
                     </div>
                 ) : (
-                    <div className="bg-gray-50 rounded-[24px] p-5 border border-gray-100 text-center">
-                        <span className="text-[13px] font-medium text-gray-400">No sessions today</span>
+                    <div className="bg-gray-50 rounded-[20px] p-4 border border-gray-100 text-center">
+                        <span className="text-[11px] font-bold text-gray-400">No sessions today</span>
                     </div>
                 )}
             </div>
 
             {/* Schedule Section */}
-            <div className="mb-2">
-                <h3 className="text-lg font-bold text-gray-900 text-center">Schedule</h3>
+            <div className="mb-3">
+                <h3 className="text-[15px] font-black text-gray-900 text-center">Schedule</h3>
             </div>
 
             {/* Calendar Area */}
-            <div className="bg-white rounded-[24px] p-4 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100/80 mb-2 relative z-10 w-full hover:shadow-[0_8px_40px_rgb(0,0,0,0.05)] transition-shadow duration-300">
-                <div className="relative flex p-1 bg-gray-100/80 rounded-[10px] mb-2 border border-gray-200">
+            <div className="bg-white rounded-[24px] p-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-gray-100/80 mb-4 relative z-10 w-full hover:shadow-[0_8px_40px_rgb(0,0,0,0.05)] transition-shadow duration-300">
+                <div className="relative flex p-1 bg-gray-100/80 rounded-[10px] mb-3 border border-gray-200">
                     <div 
-                        className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-[10px] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${view === 'Weekly' ? 'left-1' : 'left-[calc(50%+2px)]'}`} 
+                        className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-[8px] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.12)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${view === 'Weekly' ? 'left-1' : 'left-[calc(50%+2px)]'}`} 
                     />
-                    <button onClick={() => setView('Weekly')} className={`flex-1 text-[13px] font-bold py-2 rounded-[10px] relative z-10 transition-all duration-300 active:scale-95 ${view === 'Weekly' ? 'text-gray-800' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/30'}`}>Weekly</button>
-                    <button onClick={() => setView('Monthly')} className={`flex-1 text-[13px] font-bold py-2 rounded-[10px] relative z-10 transition-all duration-300 active:scale-95 ${view === 'Monthly' ? 'text-gray-800' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/30'}`}>Monthly</button>
+                    <button onClick={() => setView('Weekly')} className={`flex-1 text-[11px] font-black py-1.5 rounded-[8px] relative z-10 transition-all duration-300 active:scale-95 ${view === 'Weekly' ? 'text-gray-800' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/30'}`}>Weekly</button>
+                    <button onClick={() => setView('Monthly')} className={`flex-1 text-[11px] font-black py-1.5 rounded-[8px] relative z-10 transition-all duration-300 active:scale-95 ${view === 'Monthly' ? 'text-gray-800' : 'text-gray-500 hover:text-gray-800 hover:bg-gray-200/30'}`}>Monthly</button>
                 </div>
 
-                <div className="flex items-center justify-between mb-2 px-2">
-                    <h4 className="font-extrabold text-[17px] text-gray-800 tracking-tight">{format(currentDate, view === 'Weekly' ? "MMM yyyy" : "MMMM yyyy")}</h4>
-                    <div className="flex gap-2.5">
-                        <button onClick={handlePrev} className="w-8 h-8 rounded-full border border-gray-100 bg-white shadow-sm flex items-center justify-center text-gray-500 hover:border-gray-300 hover:text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                <div className="flex items-center justify-between mb-3 px-1">
+                    <h4 className="font-black text-[14px] text-gray-800 tracking-tight">{format(currentDate, view === 'Weekly' ? "MMM yyyy" : "MMMM yyyy")}</h4>
+                    <div className="flex gap-2">
+                        <button onClick={handlePrev} className="w-7 h-7 rounded-full border border-gray-100 bg-white shadow-sm flex items-center justify-center text-gray-500 hover:border-gray-300 hover:text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                         </button>
-                        <button onClick={handleNext} className="w-8 h-8 rounded-full border border-gray-100 bg-white shadow-sm flex items-center justify-center text-gray-500 hover:border-gray-300 hover:text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200">
-                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                        <button onClick={handleNext} className="w-7 h-7 rounded-full border border-gray-100 bg-white shadow-sm flex items-center justify-center text-gray-500 hover:border-gray-300 hover:text-gray-800 hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all duration-200">
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
                         </button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-7 gap-y-3 gap-x-3 text-center mb-1">
+                <div className="grid grid-cols-7 gap-y-2 gap-x-2 text-center mb-1">
                     {days.map((d, i) => (
-                        <div key={`header-${i}`} className="text-[13px] font-extrabold text-gray-400 mb-2">{d}</div>
+                        <div key={`header-${i}`} className="text-[11px] font-black text-gray-400 mb-1.5">{d}</div>
                     ))}
 
                     {/* Show full month if 'Monthly' is selected, otherwise show 2 weeks */}
@@ -134,13 +134,13 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                                     <div key={`day-${i}`} className="flex justify-center relative group">
                                         <button
                                             onClick={() => setSelectedDate(date)}
-                                            className={`w-12 h-[42px] flex flex-col items-center justify-center text-[15px] font-bold rounded-[12px] relative z-10 transition-all duration-300
+                                            className={`w-10 h-[36px] flex flex-col items-center justify-center text-[13px] font-black rounded-[10px] relative z-10 transition-all duration-300
                                                 ${isSelected ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40' : isToday ? 'text-orange-500 bg-orange-50' : 'text-gray-600'}
                                             `}
                                         >
                                             <span>{format(date, "d")}</span>
                                             {hasAppointment && (
-                                                <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isSelected ? 'bg-white' : 'bg-orange-400'}`} />
+                                                <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-orange-400'}`} />
                                             )}
                                         </button>
                                     </div>
@@ -158,13 +158,13 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                                 <div key={`day-${i}`} className="flex justify-center relative group">
                                     <button
                                         onClick={() => setSelectedDate(date)}
-                                        className={`w-12 h-[42px] flex flex-col items-center justify-center text-[15px] font-bold rounded-[12px] relative z-10 transition-all duration-300
+                                        className={`w-10 h-[36px] flex flex-col items-center justify-center text-[13px] font-black rounded-[10px] relative z-10 transition-all duration-300
                                             ${isSelected ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/40' : isToday ? 'text-orange-500 bg-orange-50' : 'text-gray-600'}
                                         `}
                                     >
                                         <span>{format(date, "d")}</span>
                                         {hasAppointment && (
-                                            <div className={`w-1.5 h-1.5 rounded-full mt-1 ${isSelected ? 'bg-white' : 'bg-orange-400'}`} />
+                                            <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-orange-400'}`} />
                                         )}
                                     </button>
                                 </div>
@@ -172,11 +172,10 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                         })
                     )}
                 </div>
-                
             </div>
-
-            <PragyaSidebarCard />
-
+            <div className="mt-auto">
+                <PragyaSidebarCard />
+            </div>
         </div>
     )
 }
