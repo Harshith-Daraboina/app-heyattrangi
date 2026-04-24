@@ -30,7 +30,7 @@ export default function CenterColumn({ displayName, upcomingAppointments }: { di
     const nextApt = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments[0] : null
 
     return (
-        <div className="flex-1 h-full overflow-y-auto w-full px-10 py-10 bg-[#fafdfc]">
+        <div className="flex-1 h-full overflow-y-auto w-full px-6 md:px-8 xl:px-10 py-8 md:py-10 bg-[#fafdfc]">
             {/* Header */}
             <header className="flex items-start justify-between w-full mb-10">
                 <div>
