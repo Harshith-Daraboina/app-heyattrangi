@@ -2,6 +2,20 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
+import { 
+  format, 
+  addMonths, 
+  subMonths, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  isSameMonth, 
+  isSameDay, 
+  addDays, 
+  eachDayOfInterval
+} from "date-fns"
 
 interface Doctor {
   id: string
@@ -9,13 +23,8 @@ interface Doctor {
   profilePhoto: string | null
   primarySpecialization: string | null
   specialization: string | null
-  secondarySpecializations?: string[]
   yearsOfExperience: number | null
   consultationFee: number
-  bio: string | null
-  languagesSpoken: string[]
-  preferredAgeGroups: string[]
-  consultationTypes: string[]
   appointmentDuration: number | null
   user: {
     id: string
@@ -38,141 +47,71 @@ interface TherapistBookingPanelProps {
 
 export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelProps) {
   const router = useRouter()
-  const [selectedDate, setSelectedDate] = useState<string>("")
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [selectedTime, setSelectedTime] = useState<string>("")
-  const [availableSlots, setAvailableSlots] = useState<{ time: string; isBooked: boolean }[]>([])
   const [isBooking, setIsBooking] = useState(false)
   const [reason, setReason] = useState("")
 
   const displayPhoto = doctor.profilePhoto || doctor.user.image
   const specialization = doctor.primarySpecialization || doctor.specialization || "Therapist"
 
-  const [now, setNow] = useState<Date | null>(null)
-
-  useEffect(() => {
-    // Using raw system clock for 'now' as it aligns with user's reported time
-    setNow(new Date())
-    
-    const timer = setInterval(() => {
-      setNow(new Date())
-    }, 60000)
-    
-    return () => clearInterval(timer)
-  }, [])
-
   // Helper to generate slots for a specific date
-  const getSlotsForDate = (dateStr: string) => {
-    const slots: { time: string; isBooked: boolean }[] = []
-    if (!now) return slots
-
+  const getSlotsForDate = (date: Date) => {
+    const slots: { time: string; status: 'available' | 'booked' | 'unavailable' }[] = []
+    
     const startTime = doctor.availability?.startTime || "09:00"
     const endTime = doctor.availability?.endTime || "17:00"
-    const duration = doctor.appointmentDuration || 30
+    const duration = doctor.appointmentDuration || 60
 
     const [startHour, startMin] = startTime.split(":").map(Number)
     const [endHour, endMin] = endTime.split(":").map(Number)
 
-    const [y_sel, m_sel, d_sel] = dateStr.split("-").map(Number)
-    const isToday = now.getUTCFullYear() === y_sel && 
-                    now.getUTCMonth() === m_sel - 1 && 
-                    now.getUTCDate() === d_sel
+    const dayName = format(date, "EEEE").toUpperCase()
+    if (!doctor.availability?.availableDays?.includes(dayName)) return []
 
-    const nowTime = now.getTime()
-    const bufferTime = nowTime + (60 * 60 * 1000)
+    const now = new Date()
+    const bufferTime = now.getTime() + (60 * 60 * 1000)
 
-    // Generate slots in UTC
     for (let h = startHour; h <= endHour; h++) {
       for (let m = 0; m < 60; m += duration) {
         if (h === startHour && m < startMin) continue
         if (h === endHour && m >= endMin) break
 
-        const slotTime = new Date(Date.UTC(y_sel, m_sel - 1, d_sel, h, m))
-        const timeStr = slotTime.toLocaleTimeString("en-US", {
-          hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC"
-        })
+        const slotTime = new Date(date)
+        slotTime.setHours(h, m, 0, 0)
         
-        // Buffer Check (for Today)
-        const isPast = isToday && (slotTime.getTime() < bufferTime)
-
-        // Appointment Check
-        const isBooked = isPast || doctor.appointments?.some(appt => {
-          const apptDate = new Date(appt.appointmentDate)
-          return Math.abs(apptDate.getTime() - slotTime.getTime()) < 1000 // Compare within 1 second
+        const timeStr = format(slotTime, "h:mm a")
+        
+        const isPast = slotTime.getTime() < bufferTime
+        const isAlreadyBooked = doctor.appointments?.some(appt => {
+          return Math.abs(new Date(appt.appointmentDate).getTime() - slotTime.getTime()) < 1000
         }) || false
 
-        slots.push({ time: timeStr, isBooked })
+        slots.push({ 
+          time: timeStr, 
+          status: isAlreadyBooked ? 'booked' : isPast ? 'unavailable' : 'available' 
+        })
       }
     }
     return slots
   }
 
-  // Generate available dates (next 14 days)
-  const availableDates = (() => {
-    const dates: { date: string; dayName: string; dayNum: number; isFull: boolean }[] = []
-    const today = new Date()
-    
-    const dayNameMap: { [key: number]: string } = {
-      0: "SUNDAY", 1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY", 
-      4: "THURSDAY", 5: "FRIDAY", 6: "SATURDAY",
-    }
-    
-    for (let i = 0; i <= 14; i++) {
-      const date = new Date(today)
-      date.setDate(today.getDate() + i)
-      const dayOfWeek = date.getDay()
-      const dayName = dayNameMap[dayOfWeek]
-      
-      if (doctor.availability?.availableDays?.includes(dayName)) {
-        const dateStr = date.toISOString().split("T")[0]
-        const daySlots = getSlotsForDate(dateStr)
-        const isFull = daySlots.length > 0 && daySlots.every(s => s.isBooked)
-
-        dates.push({
-          date: dateStr,
-          dayName: i === 0 ? "TODAY" : date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
-          dayNum: date.getDate(),
-          isFull
-        })
-      }
-    }
-    return dates
-  })()
-
-  useEffect(() => {
-    if (!selectedDate || !doctor.availability) {
-      setAvailableSlots([])
-      return
-    }
-
-    setAvailableSlots(getSlotsForDate(selectedDate))
-    setSelectedTime("") 
-  }, [selectedDate, doctor.availability, doctor.appointmentDuration, doctor.appointments])
-
   const handleBooking = async () => {
-    if (!selectedDate || !selectedTime) return
-    const targetSlot = availableSlots.find(s => s.time === selectedTime)
-    if (targetSlot?.isBooked) {
-      alert("This slot is already booked. Please choose another one.")
-      return
-    }
-
-    if (!reason.trim()) {
-      alert("Please provide a reason for the appointment")
-      return
-    }
+    if (!selectedDate || !selectedTime || !reason.trim()) return
     setIsBooking(true)
     try {
-      const dateStr = selectedDate.split("T")[0]
       const timeMatch = selectedTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
       if (!timeMatch) return
 
-      const [, hours, minutes, period] = timeMatch
+      let [, hours, minutes, period] = timeMatch
       let hour24 = parseInt(hours)
       if (period.toUpperCase() === "PM" && hour24 !== 12) hour24 += 12
       else if (period.toUpperCase() === "AM" && hour24 === 12) hour24 = 0
       
-      const [y, m, d] = dateStr.split("-").map(Number)
-      const appointmentDateTime = new Date(Date.UTC(y, m - 1, d, hour24, parseInt(minutes)))
+      const appointmentDateTime = new Date(selectedDate)
+      appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0)
+
       const response = await fetch("/api/appointments/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -182,6 +121,7 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
           reason: reason,
         }),
       })
+
       if (response.ok) {
         const data = await response.json()
         router.push(`/patient/appointments/${data.appointmentId}/payment`)
@@ -196,150 +136,208 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
     }
   }
 
+  // Monthly Calendar Logic
+  const monthStart = startOfMonth(currentMonth)
+  const monthEnd = endOfMonth(monthStart)
+  const startDate = startOfWeek(monthStart)
+  const endDate = endOfWeek(monthEnd)
+  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate })
+
+  // Weekly View Logic (based on selected date)
+  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
+  const weekViewDays = Array.from({ length: 6 }).map((_, i) => addDays(weekStart, i + 2)) // Wed - Mon (matching mockup feel)
+
   return (
-    <div className="bg-white min-h-screen pb-32 animate-in fade-in duration-500">
-      {/* Header Profile Section */}
-      <div className="flex items-center gap-6 mb-10">
-        <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-100 flex-shrink-0">
-          {displayPhoto ? (
-            <img src={displayPhoto} alt={doctor.fullName || "Therapist"} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-50 text-3xl font-bold text-gray-400">
-              {(doctor.fullName || doctor.user.name || "T")[0]}
-            </div>
-          )}
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            {doctor.fullName || doctor.user.name || "Therapist"}
-          </h1>
-          <p className="text-gray-400 font-medium mb-2 lowercase">{specialization}</p>
-          <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-yellow-400">★</span>
-            <span className="text-sm font-bold text-gray-900">5.0</span>
-          </div>
-          <button className="text-xs font-bold text-orange-500 hover:underline">See reviews</button>
-        </div>
-      </div>
-
-      {/* Information Section */}
-      <section className="mb-10">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Information</h3>
-        <div className="space-y-4">
-          <InfoRow label="Specialization" value={specialization} />
-          <InfoRow label="Location" value="Main Office, Online" />
-          <InfoRow label="Years experiences" value={`${doctor.yearsOfExperience || "5"}+`} />
-          <InfoRow label="Phone number" value="(217) 555-1234" />
-          <InfoRow label="Reviews" value="104" />
-        </div>
-      </section>
-
-      {/* Working Hours Section */}
-      <section className="mb-10">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Working Hours</h3>
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium">Mon-Fri</span>
-            <span className="text-gray-900 font-bold">{doctor.availability?.startTime || "08:00"}-{doctor.availability?.endTime || "19:00"}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-400 font-medium">Sat-Sun</span>
-            <span className="text-gray-900 font-bold">09:00-13:00</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Booking Section */}
-      <section className="mb-10">
-        <h3 className="text-lg font-bold text-gray-900 mb-6">Make an appointment</h3>
-        
-        <div className="mb-8">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-300 mb-4">Choose Day</p>
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-            {availableDates.map((item) => (
-              <button
-                key={item.date}
-                onClick={() => setSelectedDate(item.date)}
-                className={`flex-shrink-0 w-16 h-20 rounded-2xl border-2 flex flex-col items-center justify-center transition-all ${
-                  selectedDate === item.date 
-                  ? "border-orange-500 bg-orange-500 text-white shadow-lg shadow-orange-100" 
-                  : item.isFull
-                    ? "border-red-300 bg-white text-black opacity-40"
-                    : "border-green-400 bg-white text-black hover:border-green-500"
-                }`}
-              >
-                <span className={`text-[9px] font-black mb-1 ${selectedDate === item.date ? "text-white" : "opacity-40"}`}>{item.dayName}</span>
-                <span className="text-lg font-black">{item.dayNum}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-between items-end mb-4">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Choose Time</p>
-          {now && (
-            <p className="text-[9px] font-bold text-red-500 uppercase tracking-tight animate-pulse">
-              Current UTC: {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" })}
-            </p>
-          )}
-        </div>
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-            {availableSlots.length > 0 ? (
-              availableSlots.map((slot) => (
-                <button
-                  key={slot.time}
-                  disabled={slot.isBooked}
-                  onClick={() => setSelectedTime(slot.time)}
-                  className={`py-3 rounded-full border-2 text-xs font-bold transition-all ${
-                    selectedTime === slot.time 
-                    ? "border-orange-500 bg-orange-500 text-white shadow-lg shadow-orange-100" 
-                    : slot.isBooked
-                      ? "border-red-200 bg-white text-black opacity-30 cursor-not-allowed"
-                      : "border-green-400 bg-white text-black hover:border-green-500"
-                  }`}
-                >
-                  {slot.time}
-                </button>
-              ))
+    <div className="bg-white rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden flex flex-col p-8 mb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      
+      {/* Top Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 pb-8 border-b border-gray-50">
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-50 relative shrink-0">
+            {displayPhoto ? (
+              <Image src={displayPhoto} alt={doctor.fullName || "Therapist"} fill className="object-cover" />
             ) : (
-              <p className="col-span-full text-xs text-gray-400 font-medium py-4 italic">Please select a date first</p>
+              <div className="w-full h-full flex items-center justify-center bg-gray-50 text-2xl font-bold text-gray-300">
+                {(doctor.fullName || "T")[0]}
+              </div>
             )}
           </div>
-
-        <div className="mt-8 space-y-3">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-300 mb-2">Reason for appointment</p>
-          <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Ex: Anxiety, workplace stress, etc."
-            className="w-full p-4 bg-gray-50 rounded-2xl border-2 border-transparent focus:border-orange-500 focus:bg-white outline-none min-h-[100px] text-sm font-medium transition-all"
-          />
+          <div>
+            <h1 className="text-2xl font-black text-gray-900 leading-tight">
+                {doctor.fullName || doctor.user.name || "Therapist"}
+            </h1>
+            <h2 className="text-xl font-bold text-gray-800 mt-0.5">
+                {specialization}: 1-on-1 Session
+            </h2>
+          </div>
         </div>
-      </section>
-
-      {/* Sticky Bottom Button */}
-      <div className="sticky bottom-0 left-0 right-0 p-6 -mx-6 bg-white/80 backdrop-blur-xl border-t border-gray-100 flex justify-center z-50">
-        <button
-          onClick={handleBooking}
-          disabled={isBooking || !selectedDate || !selectedTime || !reason.trim()}
-          className="w-full max-w-xl py-5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-2xl font-bold text-lg shadow-xl shadow-orange-100 transition-all flex items-center justify-center gap-3"
-        >
-          {isBooking ? (
-            <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
-          ) : (
-            "Book an appointment"
-          )}
-        </button>
+        
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2.5 text-gray-500 font-bold text-sm">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+            <span>60 min appointments</span>
+            <span className="bg-gray-100 px-3 py-1 rounded-md text-gray-700 text-[12px] ml-2">{specialization}</span>
+          </div>
+          <div className="flex items-center gap-2.5 text-gray-500 font-bold text-sm">
+            <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z" />
+            </svg>
+            <span>Hey Attrangi Meet video conference info added after booking</span>
+          </div>
+        </div>
       </div>
-    </div>
-  )
-}
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between items-center">
-      <span className="text-gray-400 font-medium">{label}</span>
-      <span className="text-gray-900 font-bold">{value}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        {/* Left Column: Info & Month Calendar */}
+        <div className="lg:col-span-4 border-r border-gray-50 pr-8">
+            <div className="mb-10 pb-8 border-b border-gray-50">
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6">Therapist Info</h3>
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-bold">Experience</span>
+                        <span className="text-gray-900 font-black">{doctor.yearsOfExperience || "5"}+ Years</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-bold">Location</span>
+                        <span className="text-gray-900 font-black">Main Office, Online</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 font-bold">Fee</span>
+                        <span className="text-gray-900 font-black">₹{doctor.consultationFee}</span>
+                    </div>
+                </div>
+
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mt-8 mb-6">Working Hours</h3>
+                <div className="space-y-3">
+                    <div className="flex justify-between items-center text-[12px]">
+                        <span className="text-gray-500 font-bold">Mon - Fri</span>
+                        <span className="text-gray-900 font-black">{doctor.availability?.startTime || "09:00"} - {doctor.availability?.endTime || "17:00"}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[12px]">
+                        <span className="text-gray-500 font-bold">Sat - Sun</span>
+                        <span className="text-gray-900 font-black">09:00 - 13:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 className="text-lg font-black text-gray-800 mb-6">Select an appointment time</h3>
+            
+            <div className="flex items-center justify-between mb-6">
+                <span className="font-extrabold text-[15px] text-gray-800">{format(currentMonth, "MMMM yyyy")}</span>
+                <div className="flex gap-2">
+                    <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-1 text-gray-400 hover:text-gray-800 transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-1 text-gray-400 hover:text-gray-800 transition-colors">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-y-2 mb-4">
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+                    <div key={d} className="text-[10px] font-black text-gray-300 text-center">{d}</div>
+                ))}
+                {calendarDays.map((date, i) => (
+                    <button
+                        key={i}
+                        onClick={() => setSelectedDate(date)}
+                        disabled={!isSameMonth(date, monthStart)}
+                        className={`w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold transition-all mx-auto
+                            ${!isSameMonth(date, monthStart) ? 'text-gray-200 cursor-default' : 
+                              isSameDay(date, selectedDate) ? 'bg-orange-600 text-white shadow-lg shadow-orange-100' : 
+                              'text-gray-600 hover:bg-orange-50'}
+                            ${isSameDay(date, new Date()) && !isSameDay(date, selectedDate) ? 'text-orange-600 outline outline-1 outline-orange-100' : ''}
+                        `}
+                    >
+                        {format(date, "d")}
+                    </button>
+                ))}
+            </div>
+
+            <div className="mt-8">
+                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">Reason for appointment</p>
+                <textarea
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                    placeholder="Briefly describe your needs..."
+                    className="w-full p-4 bg-gray-50 rounded-xl border-2 border-transparent focus:border-orange-500 focus:bg-white outline-none min-h-[120px] text-sm font-medium transition-all"
+                />
+            </div>
+        </div>
+
+        {/* Right Column: Weekly Slots */}
+        <div className="lg:col-span-8">
+            <div className="flex justify-between items-center mb-8">
+                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Available Slots (UTC)</span>
+                <span className="text-gray-400 text-xs font-bold">(GMT+00:00) Coordinated Universal Time</span>
+            </div>
+
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+                {weekViewDays.map((dayDate, i) => {
+                    const slots = getSlotsForDate(dayDate)
+                    const isSelectedDay = isSameDay(dayDate, selectedDate)
+                    
+                    return (
+                        <div key={i} className="flex flex-col items-center min-w-[120px] shrink-0">
+                            <div className={`text-center mb-6 py-2 px-4 rounded-xl transition-all ${isSelectedDay ? 'bg-orange-50' : ''}`}>
+                                <p className="text-[11px] font-black text-gray-400 uppercase tracking-tighter mb-1">{format(dayDate, "EEE")}</p>
+                                <p className="text-xl font-black text-gray-900">{format(dayDate, "d")}</p>
+                            </div>
+                            
+                            <div className="flex flex-col gap-3 w-full">
+                                {slots.length > 0 ? (
+                                    slots.map((slot, si) => (
+                                        <button
+                                            key={si}
+                                            disabled={slot.status !== 'available'}
+                                            onClick={() => {
+                                                setSelectedDate(dayDate)
+                                                setSelectedTime(slot.time)
+                                            }}
+                                            className={`py-3 px-4 rounded-xl border-2 text-[13px] font-extrabold transition-all text-center
+                                                ${selectedTime === slot.time && isSelectedDay
+                                                    ? "bg-orange-600 border-orange-600 text-white shadow-md"
+                                                    : slot.status === 'booked'
+                                                        ? "border-red-100 bg-red-50 text-red-500 cursor-not-allowed opacity-70"
+                                                        : slot.status === 'unavailable'
+                                                            ? "border-gray-50 bg-gray-50 text-gray-300 cursor-not-allowed"
+                                                            : "border-blue-100 text-blue-600 hover:border-orange-600 hover:bg-orange-600 hover:text-white"
+                                                }
+                                            `}
+                                        >
+                                            {slot.time}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <div className="h-0.5 w-6 bg-gray-100 rounded-full mx-auto mt-4" />
+                                )}
+                            </div>
+                        </div>
+                    )
+                })}
+            </div>
+
+            <div className="mt-12 flex justify-end">
+                <button
+                    onClick={handleBooking}
+                    disabled={isBooking || !selectedDate || !selectedTime || !reason.trim()}
+                    className="px-10 py-5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-2xl font-black text-lg shadow-xl shadow-orange-100 transition-all flex items-center justify-center gap-4 min-w-[300px]"
+                >
+                    {isBooking ? (
+                        <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                        "Confirm Appointment"
+                    )}
+                </button>
+            </div>
+        </div>
+
+      </div>
+
     </div>
   )
 }

@@ -77,13 +77,13 @@ const CreditCardIcon = ({ className }: IconProps) => (
 
 const LeafIcon = ({ className }: IconProps) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
     </svg>
 )
 
 const SidebarToggleIcon = ({ className, isCollapsed }: IconProps & { isCollapsed: boolean }) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" 
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
         className={`${iconBase} transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""} ${className ?? ""}`}>
         <polyline points="15 18 9 12 15 6" />
     </svg>
@@ -109,9 +109,9 @@ export default function Sidebar() {
 
     return (
         <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-[#131316] border-r border-[#27272a] z-40`}>
-            
+
             {/* Toggle Button centered on the vertical border */}
-            <button 
+            <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute top-1/2 -translate-y-1/2 -right-3.5 text-zinc-400 hover:text-white transition-colors z-50 bg-[#18181b] p-1.5 rounded-full border border-[#3f3f46] shadow-lg flex items-center justify-center cursor-pointer"
                 aria-label="Toggle Sidebar"
@@ -121,7 +121,7 @@ export default function Sidebar() {
             </button>
 
             <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden shadow-inner ${isCollapsed ? "px-3 md:px-0" : "px-5"}`}>
-                
+
                 {/* Header / Logo */}
                 <Link href="/patient/dashboard" className={`flex items-center gap-3 mb-10 transition-all ${isCollapsed ? "justify-center mt-2" : "pl-2"}`}>
                     <div className="shrink-0 bg-white rounded-xl p-1.5 shadow-sm">
@@ -142,7 +142,7 @@ export default function Sidebar() {
                     <nav className="flex flex-col gap-1.5">
                         {generalItems.map((item) => {
                             const isActive = pathname === item.href || (item.href !== '/patient/dashboard' && pathname.startsWith(item.href.split('?')[0]) && item.label !== "Calendar")
-                            
+
                             return (
                                 <Link
                                     key={item.label}
@@ -150,8 +150,8 @@ export default function Sidebar() {
                                     title={isCollapsed ? item.label : undefined}
                                     className={`flex items-center justify-between rounded-2xl transition-all duration-300 font-bold
                                         ${isCollapsed ? "p-3 justify-center" : "px-4 py-3"}
-                                        ${isActive 
-                                            ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5" 
+                                        ${isActive
+                                            ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5"
                                             : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
                                         }
                                     `}
@@ -174,7 +174,7 @@ export default function Sidebar() {
                     <nav className="flex flex-col gap-1.5">
                         {toolItems.map((item) => {
                             const isActive = pathname === item.href
-                            
+
                             return (
                                 <Link
                                     key={item.label}
@@ -182,8 +182,8 @@ export default function Sidebar() {
                                     title={isCollapsed ? item.label : undefined}
                                     className={`flex items-center justify-between rounded-2xl transition-all duration-300 font-bold relative
                                         ${isCollapsed ? "p-3 justify-center" : "px-4 py-3"}
-                                        ${isActive 
-                                            ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5" 
+                                        ${isActive
+                                            ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5"
                                             : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
                                         }
                                     `}
@@ -216,11 +216,11 @@ export default function Sidebar() {
                         </button>
                     </div>
                 )}
-                
+
                 {/* Collapsed State CTA */}
                 {isCollapsed && (
                     <div className="mt-auto mb-6 mx-auto w-full flex justify-center px-2">
-                        <button 
+                        <button
                             className="w-12 h-12 bg-white hover:bg-zinc-200 text-black rounded-full shadow-lg flex items-center justify-center transition-all"
                             title="Book Appointment"
                         >

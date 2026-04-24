@@ -3,7 +3,6 @@ import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import Sidebar from "@/components/patient/Sidebar"
 import PaymentPanel from "@/components/appointments/PaymentPanel"
 
 export default async function AppointmentPaymentPage({
@@ -68,24 +67,21 @@ export default async function AppointmentPaymentPage({
 
   if (!appointment) {
     return (
-      <div className="flex h-screen w-full bg-[var(--color-bg)] text-[var(--color-text-primary)] overflow-hidden">
-        <Sidebar />
-        <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
-          <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="card p-8 text-center max-w-2xl mx-auto mt-20">
-              <h2 className="text-2xl font-semibold mb-4">Appointment Not Found</h2>
-              <p className="text-[var(--color-text-secondary)] mb-6">
-                The appointment you're looking for doesn't exist.
-              </p>
-              <Link
-                href="/patient/appointments"
-                className="inline-block px-6 py-3 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-all"
-              >
-                View schedule
-              </Link>
-            </div>
-          </main>
-        </div>
+      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="card p-8 text-center max-w-2xl mx-auto mt-20">
+            <h2 className="text-2xl font-semibold mb-4">Appointment Not Found</h2>
+            <p className="text-[var(--color-text-secondary)] mb-6">
+              The appointment you're looking for doesn't exist.
+            </p>
+            <Link
+              href="/patient/appointments"
+              className="inline-block px-6 py-3 bg-[var(--color-accent)] text-white rounded-lg font-medium hover:opacity-90 transition-all"
+            >
+              View schedule
+            </Link>
+          </div>
+        </main>
       </div>
     )
   }
@@ -105,13 +101,10 @@ export default async function AppointmentPaymentPage({
   }
 
   return (
-    <div className="flex h-screen w-full bg-white text-gray-900 overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 min-w-0 h-full overflow-y-auto w-full bg-gray-50/30">
-        <main className="max-w-lg mx-auto py-12">
-          <PaymentPanel appointment={appointment} />
-        </main>
-      </div>
+    <div className="flex-1 min-w-0 h-full overflow-y-auto w-full bg-gray-50/30">
+      <main className="max-w-lg mx-auto py-12">
+        <PaymentPanel appointment={appointment} />
+      </main>
     </div>
   )
 }
