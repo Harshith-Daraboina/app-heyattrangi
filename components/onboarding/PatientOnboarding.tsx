@@ -12,11 +12,12 @@ type OnboardingData = {
   reasons: string[]
 }
 
-const STEPS_COUNT = 5 // Number of question steps (Step 0 to 4)
+const STEPS_COUNT = 5
 
 export default function PatientOnboarding() {
   const router = useRouter()
   const { data: session } = useSession()
+
   const [step, setStep] = useState(0)
   const [data, setData] = useState<OnboardingData>({
     mood: "",
@@ -25,37 +26,34 @@ export default function PatientOnboarding() {
   })
   const [isLoading, setIsLoading] = useState(false)
 
-  const userName = session?.user?.name?.split(" ")[0] || "there"
+  const userName = session?.user?.name?.split(" ")[0] || "Sam" // Fallback to Sam for demo
 
   const handleNext = () => setStep((s) => s + 1)
   const handleBack = () => setStep((s) => s - 1)
-  const handleSkip = () => setStep(STEPS_COUNT) // Skip to final screen
+  const handleSkip = () => setStep(5)
 
   const handleFinish = async () => {
     setIsLoading(true)
     try {
-      // In a real app, we'd save the specific onboarding data here
-      // For now, let's trigger the existing onboarding API to mark as PATIENT
-      // and redirect to dashboard
       const response = await fetch("/api/onboarding/patient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-           age: "18", // Default or gathered if needed
-           gender: "Not specified",
-           healthConcerns: data.reasons,
-           emergencyContact: "Not specified",
-           emergencyPhone: "0000000000",
+          age: "18",
+          gender: "Not specified",
+          healthConcerns: data.reasons,
+          emergencyContact: "Not specified",
+          emergencyPhone: "0000000000",
         }),
       })
 
       if (response.ok) {
         router.push("/patient/dashboard")
       } else {
-        alert("Something went wrong. Let's try again.")
+        alert("Something went wrong.")
       }
-    } catch (error) {
-      console.error("Onboarding error:", error)
+    } catch (err) {
+      console.error(err)
     } finally {
       setIsLoading(false)
     }
@@ -71,116 +69,125 @@ export default function PatientOnboarding() {
   }
 
   return (
-    <div className="relative min-h-[600px] w-full flex flex-col items-center">
-      {/* Background shapes (Decorative) */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-100/50 rounded-full blur-3xl -z-10 translate-x-20 -translate-y-20" />
-      <div className="absolute top-40 right-20 w-40 h-40 bg-orange-100/50 rounded-full blur-2xl -z-10" />
-      <div className="absolute bottom-0 left-0 w-80 h-80 bg-orange-50/50 rounded-full blur-3xl -z-10 -translate-x-20 translate-y-20" />
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#fdf8f4] overflow-hidden font-sans">
+      
+      {/* Background Abstract Shapes */}
+      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-[#6a805d]/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute top-10 right-20 w-32 h-32 bg-[#fad9bb] rounded-full opacity-60" />
+      <div className="absolute top-5 right-5 w-12 h-32 bg-[#c08d6d] rounded-full opacity-40 rotate-12" />
 
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
-          initial={{ opacity: 0, scale: 0.98, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: -10 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="w-full max-w-2xl bg-[#FFF8F4] border border-[#E8E0D8]/60 rounded-[40px] shadow-2xl shadow-orange-900/5 p-12 lg:p-16 relative overflow-hidden flex flex-col items-center text-center min-h-[480px]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4 }}
+          className="relative w-full max-w-4xl px-4 flex flex-col items-center"
         >
-          {/* Progress Bar (Visible from Step 2 to 4) */}
-          {step >= 2 && step < STEPS_COUNT && (
-            <div className="absolute top-8 right-12 w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-               <motion.div 
-                 className="h-full bg-emerald-600" 
-                 initial={{ width: "20%" }}
-                 animate={{ width: `${(step / STEPS_COUNT) * 100}%` }}
-               />
+          {/* Main Content Card */}
+          <div className="relative w-full bg-[#fdf1e4] rounded-[48px] p-10 md:p-16 flex flex-col items-center shadow-2xl shadow-orange-900/10 min-h-[480px]">
+            
+            {/* Progress Bar (Visible from Step 2 to 4) */}
+            {step >= 2 && step <= 4 && (
+              <div className="absolute top-8 right-12 w-32 h-1.5 bg-[#e8e0d8] rounded-full overflow-hidden">
+                <motion.div 
+                  className="h-full bg-[#6a805d]" 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(step / STEPS_COUNT) * 100}%` }}
+                />
+              </div>
+            )}
+
+            {/* Content Switcher */}
+            <div className="flex-1 w-full flex flex-col items-center justify-center text-center z-10">
+              {step === 0 && <WelcomeScreen userName={userName} />}
+              {step === 1 && <PrivacyScreen />}
+              {step === 2 && <MoodScreen selected={data.mood} onSelect={(m) => setData({ ...data, mood: m })} />}
+              {step === 3 && <ExperienceScreen selected={data.experience} onSelect={(e) => setData({ ...data, experience: e })} />}
+              {step === 4 && <ReasonScreen selected={data.reasons} onToggle={toggleReason} />}
+              {step === 5 && <FinalScreen userName={userName} />}
             </div>
-          )}
 
-          {/* Screen Content */}
-          <div className="flex-1 w-full flex flex-col items-center">
-            {step === 0 && <WelcomeScreen userName={userName} />}
-            {step === 1 && <PrivacyScreen />}
-            {step === 2 && <MoodScreen selected={data.mood} onSelect={(m) => setData({ ...data, mood: m })} />}
-            {step === 3 && <ExperienceScreen selected={data.experience} onSelect={(e) => setData({ ...data, experience: e })} />}
-            {step === 4 && <ReasonScreen selected={data.reasons} onToggle={toggleReason} />}
-            {step === 5 && <FinalScreen userName={userName} />}
-          </div>
+            {/* Navigation Buttons */}
+            <div className="mt-12 flex flex-col items-center gap-6 z-10">
+              <div className="flex items-center gap-4">
+                {step === 0 && (
+                  <button onClick={handleSkip} className="px-10 py-3.5 rounded-2xl bg-[#e8e0d8]/80 hover:bg-[#e8e0d8] text-[#666] font-bold text-sm transition-all">
+                    Skip
+                  </button>
+                )}
+                {step > 0 && step < 5 && (
+                  <button onClick={handleBack} className="px-10 py-3.5 rounded-2xl bg-[#e8e0d8]/80 hover:bg-[#e8e0d8] text-[#666] font-bold text-sm transition-all">
+                    Back
+                  </button>
+                )}
+                
+                {step < 5 ? (
+                  <button 
+                    onClick={handleNext}
+                    className="px-12 py-3.5 rounded-2xl bg-[#f4a261] hover:bg-[#e76f51] text-white font-black text-sm shadow-xl shadow-orange-200 transition-all flex items-center gap-2"
+                  >
+                    {step === 4 ? "Finish" : "Continue"} <span className="text-lg">→</span>
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleFinish}
+                    disabled={isLoading}
+                    className="px-14 py-4 rounded-2xl bg-[#f4a261] hover:bg-[#e76f51] text-white font-black text-base shadow-xl shadow-orange-200 transition-all flex items-center gap-2"
+                  >
+                    {isLoading ? "Starting..." : "Welcome to Attrangi!"} <span className="text-xl">→</span>
+                  </button>
+                )}
+              </div>
 
-          {/* Navigation Controls */}
-          <div className="mt-12 w-full flex flex-col items-center gap-6">
-            <div className="flex items-center gap-4">
-              {step === 0 ? (
-                <button 
-                  onClick={handleSkip}
-                  className="px-8 py-3 rounded-2xl bg-[#E8E0D8]/40 hover:bg-[#E8E0D8]/60 text-[#666666] font-bold text-sm transition-colors"
-                >
-                  Skip
-                </button>
-              ) : step < STEPS_COUNT ? (
-                <button 
-                  onClick={handleBack}
-                  className="px-8 py-3 rounded-2xl bg-[#E8E0D8]/40 hover:bg-[#E8E0D8]/60 text-[#666666] font-bold text-sm transition-colors"
-                >
-                  Back
-                </button>
-              ) : null}
-
-              {step < STEPS_COUNT - 1 ? (
-                <button 
-                  onClick={handleNext}
-                  className="px-10 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm shadow-xl shadow-orange-200 transition-all flex items-center gap-2"
-                >
-                  Continue →
-                </button>
-              ) : step === STEPS_COUNT - 1 ? (
-                <button 
-                  onClick={handleNext}
-                  className="px-10 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm shadow-xl shadow-orange-200 transition-all flex items-center gap-2"
-                >
-                  Continue →
-                </button>
-              ) : (
-                <button 
-                  onClick={handleFinish}
-                  disabled={isLoading}
-                  className="px-10 py-4 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-base shadow-xl shadow-orange-200 transition-all flex items-center gap-2"
-                >
-                  {isLoading ? "Joining..." : "Welcome to Attrangi! →"}
-                </button>
+              {/* Progress Dots Indicator */}
+              {step < 5 && (
+                <div className="flex gap-2.5">
+                  {[...Array(5)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className={`h-2 w-2 rounded-full transition-all duration-300 ${
+                        i === step ? "bg-[#f4a261] w-4" : "bg-[#e8e0d8]"
+                      }`} 
+                    />
+                  ))}
+                </div>
               )}
             </div>
 
-            {/* Dots indicator */}
-            {step < STEPS_COUNT && (
-              <div className="flex gap-2">
-                {[...Array(STEPS_COUNT)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`h-2 w-2 rounded-full transition-colors ${i === step ? "bg-orange-400" : "bg-[#E8E0D8]"}`} 
-                  />
-                ))}
-              </div>
+            {/* Absolute Illustrations */}
+            {(step === 0 || step === 1) && (
+              <motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="absolute bottom-4 left-6 pointer-events-none"
+              >
+                <Image 
+                  src={step === 0 ? "/onboarding_images/6.png" : "/onboarding_images/2.png"} 
+                  alt="Onboarding Illustration" 
+                  width={280} 
+                  height={200}
+                  className="object-contain"
+                />
+              </motion.div>
             )}
-          </div>
 
-          {/* Illustrations */}
-          <div className="absolute bottom-0 left-0 w-full pointer-events-none p-0 overflow-hidden">
-             {step === 0 && (
-               <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex justify-start">
-                 <Image src="/onboarding_images/6.png" alt="Welcome" width={240} height={160} className="object-contain" />
-               </motion.div>
-             )}
-             {(step === 1 || step === 2) && (
-               <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="flex justify-start">
-                 <Image src="/onboarding_images/2.png" alt="Privacy" width={200} height={200} className="object-contain" />
-               </motion.div>
-             )}
-             {step === 5 && (
-               <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="flex justify-start">
-                 <Image src="/onboarding_images/4.png" alt="Final" width={220} height={220} className="object-contain" />
-               </motion.div>
-             )}
+            {step === 5 && (
+              <motion.div 
+                initial={{ opacity: 0, x: -40 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="absolute bottom-4 left-6 pointer-events-none"
+              >
+                <Image 
+                  src="/onboarding_images/5.png" 
+                  alt="Final Illustration" 
+                  width={220} 
+                  height={220}
+                  className="object-contain"
+                />
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </AnimatePresence>
@@ -188,16 +195,16 @@ export default function PatientOnboarding() {
   )
 }
 
-// --- Screens Components ---
+// --- SCREEN COMPONENTS ---
 
 function WelcomeScreen({ userName }: { userName: string }) {
   return (
-    <div className="flex flex-col items-center">
-      <h2 className="text-[32px] font-bold text-[#1A1A2E] mb-6">Welcome {userName},</h2>
-      <div className="space-y-4 max-w-md mx-auto text-[#666666] leading-relaxed">
+    <div className="max-w-md">
+      <h2 className="text-4xl font-black text-gray-900 mb-6 tracking-tight">Welcome {userName},</h2>
+      <div className="space-y-4 text-lg font-medium text-gray-600 leading-relaxed">
         <p>This is a safe and private space for you.</p>
         <p>I&apos;m here to listen and support you at your pace.</p>
-        <p className="font-bold text-[#1A1A2E] mt-8">To understand you better, can I ask a few quick questions?</p>
+        <p className="text-gray-900 font-bold mt-8">To understand you better, can I ask a few quick questions?</p>
       </div>
     </div>
   )
@@ -205,14 +212,14 @@ function WelcomeScreen({ userName }: { userName: string }) {
 
 function PrivacyScreen() {
   return (
-    <div className="flex flex-col items-center">
-      <div className="space-y-6 max-w-md mx-auto text-[#666666] leading-relaxed">
-        <p className="text-[#1A1A2E] font-medium">This is a safe and private space for you.</p>
-        <div className="italic">
-           <p>Your conversations are private</p>
-           <p>You&apos;re in control of what you share</p>
+    <div className="max-w-md">
+      <div className="space-y-6 text-lg font-medium text-gray-600 leading-relaxed">
+        <p>This is a safe and private space for you.</p>
+        <div className="p-6 bg-white/40 rounded-3xl border border-white/60">
+           <p className="font-bold text-gray-900 mb-2">Your conversations are private.</p>
+           <p>You&apos;re in control of what you share.</p>
         </div>
-        <p className="text-[#1A1A2E] font-bold text-lg mt-10">You&apos;re not alone. We&apos;re here to support you.</p>
+        <p className="text-2xl font-black text-gray-900 mt-10">You&apos;re not alone. We&apos;re here to support you.</p>
       </div>
     </div>
   )
@@ -228,21 +235,23 @@ function MoodScreen({ selected, onSelect }: { selected: string; onSelect: (m: st
   ]
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <h2 className="text-2xl font-bold text-[#1A1A2E] mb-12">How are you feeling today?</h2>
-      <div className="flex flex-wrap justify-center gap-4">
+    <div className="w-full">
+      <h2 className="text-3xl font-black text-gray-900 mb-12 tracking-tight">How are you feeling today?</h2>
+      <div className="flex flex-wrap justify-center gap-5">
         {moods.map((m) => (
           <button
             key={m.label}
             onClick={() => onSelect(m.label)}
-            className={`w-20 h-20 rounded-2xl flex flex-col items-center justify-center transition-all ${
+            className={`w-24 h-24 rounded-[32px] flex flex-col items-center justify-center transition-all duration-300 ${
               selected === m.label 
-                ? "bg-orange-200 border-2 border-orange-400 scale-105" 
-                : "bg-[#E8E0D8]/30 hover:bg-[#E8E0D8]/50 border-2 border-transparent"
+                ? "bg-[#f4a261] text-white shadow-xl shadow-orange-200 scale-110" 
+                : "bg-white/60 text-gray-400 hover:bg-white hover:text-gray-900"
             }`}
           >
-            <span className="text-3xl mb-1">{m.icon}</span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#666666]">{m.label}</span>
+            <span className="text-4xl mb-2">{m.icon}</span>
+            <span className={`text-[10px] font-black uppercase tracking-widest ${selected === m.label ? "text-white" : "text-gray-400"}`}>
+              {m.label}
+            </span>
           </button>
         ))}
       </div>
@@ -258,21 +267,21 @@ function ExperienceScreen({ selected, onSelect }: { selected: string; onSelect: 
   ]
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <h2 className="text-2xl font-bold text-[#1A1A2E] mb-12 max-w-sm">What is your experience level with therapy?</h2>
-      <div className="flex flex-col sm:flex-row gap-4 w-full px-4">
+    <div className="w-full max-w-2xl">
+      <h2 className="text-3xl font-black text-gray-900 mb-12 tracking-tight">What is your experience level with therapy?</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {options.map((opt) => (
           <button
             key={opt.id}
             onClick={() => onSelect(opt.id)}
-            className={`flex-1 p-6 rounded-2xl text-left transition-all ${
+            className={`p-7 rounded-[32px] text-left transition-all duration-300 ${
               selected === opt.id 
-                ? "bg-orange-200 border-2 border-orange-400 ring-4 ring-orange-400/10" 
-                : "bg-[#E8E0D8]/30 hover:bg-[#E8E0D8]/50 border-2 border-transparent"
+                ? "bg-[#f4a261] text-white shadow-xl shadow-orange-200 scale-105" 
+                : "bg-white/60 text-gray-600 hover:bg-white"
             }`}
           >
-            <h4 className="font-bold text-[#1A1A2E] mb-1">{opt.title}</h4>
-            <p className="text-xs text-[#666666]">{opt.sub}</p>
+            <h4 className="font-black text-lg mb-2 leading-tight">{opt.title}</h4>
+            <p className={`text-xs font-medium ${selected === opt.id ? "text-white/80" : "text-gray-400"}`}>{opt.sub}</p>
           </button>
         ))}
       </div>
@@ -282,31 +291,33 @@ function ExperienceScreen({ selected, onSelect }: { selected: string; onSelect: 
 
 function ReasonScreen({ selected, onToggle }: { selected: string[]; onToggle: (r: string) => void }) {
   const reasons = [
-    "Stress & anxiety",
-    "Falling asleep",
-    "Personal growth",
-    "Work & productivity",
-    "Movement & sport",
-    "Physical health",
-    "University & college",
+    { label: "Stress & anxiety", bg: "bg-[#7196cb]/20", text: "text-[#7196cb]", card: "bg-[#7196cb]" },
+    { label: "Falling asleep", bg: "bg-[#545a7d]/20", text: "text-[#545a7d]", card: "bg-[#545a7d]" },
+    { label: "Personal growth", bg: "bg-[#a686b2]/20", text: "text-[#a686b2]", card: "bg-[#a686b2]" },
+    { label: "Work & productivity", bg: "bg-[#587c6b]/20", text: "text-[#587c6b]", card: "bg-[#587c6b]" },
+    { label: "Revise & repeat", bg: "bg-[#dc7a6b]/20", text: "text-[#dc7a6b]", card: "bg-[#dc7a6b]" },
+    { label: "Physical health", bg: "bg-[#e8b38a]/20", text: "text-[#e8b38a]", card: "bg-[#e8b38a]" },
   ]
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <h2 className="text-2xl font-bold text-[#1A1A2E] mb-4">What brings you to Attrangi?</h2>
-      <p className="text-sm text-[#666666] mb-10">Choose topics to focus on:</p>
-      <div className="grid grid-cols-1 gap-3 w-full max-w-md px-4">
+    <div className="w-full max-w-lg">
+      <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tight">What brings you to Attrangi?</h2>
+      <p className="text-gray-500 font-medium mb-10">We&apos;ll tailor the experience for you.</p>
+      <div className="grid grid-cols-1 gap-3.5">
         {reasons.map((r) => (
           <button
-            key={r}
-            onClick={() => onToggle(r)}
-            className={`w-full p-4 rounded-xl text-left font-bold transition-all ${
-              selected.includes(r)
-                ? "bg-orange-600 text-white shadow-lg -translate-y-0.5"
-                : "bg-white border border-[#E8E0D8] text-[#1A1A2E] hover:border-orange-300"
+            key={r.label}
+            onClick={() => onToggle(r.label)}
+            className={`w-full p-5 rounded-2xl flex justify-between items-center transition-all duration-300 font-black ${
+              selected.includes(r.label)
+                ? `${r.card} text-white shadow-lg -translate-y-1`
+                : `${r.bg} ${r.text} hover:scale-[1.02]`
             }`}
           >
-            {r}
+            <span>{r.label}</span>
+            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${selected.includes(r.label) ? "border-white" : "border-current opacity-40"}`}>
+               {selected.includes(r.label) && <div className="w-2 h-2 bg-white rounded-full" />}
+            </div>
           </button>
         ))}
       </div>
@@ -316,11 +327,10 @@ function ReasonScreen({ selected, onToggle }: { selected: string[]; onToggle: (r
 
 function FinalScreen({ userName }: { userName: string }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full py-10">
-      <h2 className="text-2xl italic font-medium text-[#1A1A2E] max-w-xs leading-relaxed text-center">
-        Thanks for sharing {userName}. We&apos;re here with you.
+    <div className="max-w-md">
+      <h2 className="text-3xl italic font-black text-gray-900 leading-[1.2] mb-12">
+        Thanks for sharing {userName}.<br />We&apos;re here with you.
       </h2>
     </div>
   )
 }
-

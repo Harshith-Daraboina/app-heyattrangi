@@ -22,13 +22,18 @@ function OnboardingContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 py-12 px-4">
-      <div className="max-w-3xl mx-auto">
-        {role === "PATIENT" && <PatientOnboarding />}
-        {role === "CAREGIVER" && <CaregiverOnboarding />}
-        {role === "DOCTOR" && <DoctorOnboarding />}
-        {role === "ADMIN" && <AdminOnboarding />}
-      </div>
+    <div className="min-h-screen">
+      {role === "PATIENT" ? (
+        <PatientOnboarding />
+      ) : (
+        <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 py-12 px-4">
+          <div className="max-w-3xl mx-auto">
+            {role === "CAREGIVER" && <CaregiverOnboarding />}
+            {role === "DOCTOR" && <DoctorOnboarding />}
+            {role === "ADMIN" && <AdminOnboarding />}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
