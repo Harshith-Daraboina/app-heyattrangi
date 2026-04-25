@@ -97,9 +97,18 @@ const generalItems = [
 ]
 
 const toolItems = [
-    { label: "Pragya AI", href: "/patient/ai-bot", badge: 2, icon: <ChatIcon /> },
-    { label: "Billing", href: "/patient/billing", icon: <CreditCardIcon /> },
-    { label: "Care Credits", href: "/patient/credits", icon: <LeafIcon /> },
+    {
+        label: "Pragya AI",
+        href: "/patient/ai-bot",
+        icon: (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-orange-500">
+                <path d="M12 2L15 8L21 11L15 14L12 20L9 14L3 11L9 8L12 2Z" fill="currentColor" fillOpacity="0.2" />
+                <path d="m5 3 3 2L5 7 2 5z" fill="currentColor" />
+                <path d="m19 17 3 2-3 2-2-2z" fill="currentColor" />
+            </svg>
+        )
+    },
+    // { label: "Messages", href: "/patient/messages", badge: 1, icon: <ChatIcon /> },
     { label: "Profile", href: "/patient/profile", icon: <SettingsIcon /> },
 ]
 
@@ -120,20 +129,25 @@ export default function Sidebar() {
                 <SidebarToggleIcon className="w-4 h-4" isCollapsed={isCollapsed} />
             </button>
 
-            <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden shadow-inner ${isCollapsed ? "px-3 md:px-0" : "px-5"}`}>
+            <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden shadow-inner ${isCollapsed ? "px-3 md:px-0" : "pl-3 pr-5"}`}>
 
                 {/* Header / Logo */}
-                <Link href="/patient/dashboard" className={`flex items-center gap-3 mb-10 transition-all ${isCollapsed ? "justify-center mt-2" : "pl-2"}`}>
-                    <div className="shrink-0 bg-white rounded-xl p-1.5 shadow-sm">
+                <Link href="/patient/dashboard" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-6 gap-3"}`}>
+                    <div className="shrink-0">
                         <Image
                             src="/images/logo.png"
-                            alt="Attrangi Logo"
-                            width={32}
-                            height={32}
+                            alt="Logo"
+                            width={isCollapsed ? 36 : 40}
+                            height={isCollapsed ? 36 : 40}
                             className="object-contain"
                         />
                     </div>
-                    {!isCollapsed && <h2 className="text-xl font-bold tracking-tight text-white whitespace-nowrap">hey attrangi</h2>}
+                    {!isCollapsed && (
+                        <div className="flex items-center gap-0.5 tracking-tighter">
+                            <span className="text-2xl font-black text-white">hey</span>
+                            <span className="text-2xl font-black text-[var(--color-brand)]">attrangi</span>
+                        </div>
+                    )}
                 </Link>
 
                 {/* General Section */}
@@ -205,9 +219,27 @@ export default function Sidebar() {
                     </nav>
                 </div>
 
-                {/* Bottom CTA */}
+                {/* Mood Atmosphere Video */}
                 {!isCollapsed && (
-                    <div className="mt-auto mb-6 mx-4">
+                    <div className="mt-8 mb-6 mx-4 rounded-2xl overflow-hidden aspect-video relative border border-white/10 group">
+                        <video
+                            src="/videos/mood.mp4"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-transparent to-transparent" />
+                        <div className="absolute bottom-3 left-3">
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Atmosphere</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Bottom CTA */}
+                {/* {!isCollapsed && (
+                    <div className="mb-6 mx-4">
                         <button className="w-full bg-white hover:bg-zinc-200 text-black rounded-[14px] py-3.5 shadow-lg flex items-center justify-center gap-2.5 transition-all">
                             <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center shrink-0">
                                 <span className="text-white text-base leading-none font-medium mb-[1px]">+</span>
@@ -215,7 +247,7 @@ export default function Sidebar() {
                             <span className="text-[14px] font-bold tracking-wide">Book Appointment</span>
                         </button>
                     </div>
-                )}
+                )} */}
 
                 {/* Collapsed State CTA */}
                 {isCollapsed && (

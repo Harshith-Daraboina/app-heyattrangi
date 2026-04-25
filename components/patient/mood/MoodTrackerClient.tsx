@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
-import { format, isWithinInterval, subDays } from "date-fns"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   COPING_SUGGESTIONS,
@@ -10,6 +9,10 @@ import {
   PRESET_TAGS,
   type MoodKey,
 } from "@/lib/mood/constants"
+
+// Sub-components
+import MoodGauge from "./MoodGauge"
+import MoodHistory from "./MoodHistory"
 
 export type MoodEntryRow = {
   id: string
@@ -24,43 +27,6 @@ export type MoodEntryRow = {
   craving_intensity: number | null
   craving_trigger: string[]
   created_at: string
-}
-
-function moodEmoji(mood: string): string {
-  return MOOD_OPTIONS.find((m) => m.key === mood)?.emoji ?? "😐"
-}
-
-function isPresetTag(tag: string): boolean {
-  return (PRESET_TAGS as readonly string[]).includes(tag)
-}
-
-function partitionTags(tagsList: string[]): { preset: string[]; custom: string[] } {
-  const preset: string[] = []
-  const custom: string[] = []
-  for (const t of tagsList) {
-    if (isPresetTag(t)) preset.push(t)
-    else custom.push(t)
-  }
-  return { preset, custom }
-}
-
-function noteSentimentHint(note: string): string | null {
-  if (!note.trim()) return null
-  if (/(hopeless|hurt myself|kill myself|end my life|can't go on)/i.test(note)) {
-    return "If you might be in danger, contact local emergency services or a crisis helpline right away. You deserve support."
-  }
-  if (/\b(overwhelm|overwhelmed|anxious|panic)\b/i.test(note)) {
-    return "When stress feels sharp, try slowing your breath or stepping away for five minutes."
-  }
-  if (/\b(lonely|alone|isolated)\b/i.test(note)) {
-    return "Feeling alone is heavy. One small connection—a message or voice note—can help."
-  }
-  return null
-}
-
-function randomCoping(mood: MoodKey): string {
-  const list = COPING_SUGGESTIONS[mood]
-  return list[Math.floor(Math.random() * list.length)] ?? list[0]
 }
 
 type Props = {
@@ -80,116 +46,34 @@ export default function MoodTrackerClient({
   const [streak, setStreak] = useState(initialStreak)
   const [totalCheckIns, setTotalCheckIns] = useState(initialTotal)
 
+  // Navigation View
+  const [view, setView] = useState<"track" | "history">("track")
+
+  // Form State
   const [mood, setMood] = useState<MoodKey | null>(null)
   const [moodScore, setMoodScore] = useState(5)
   const [tags, setTags] = useState<string[]>([])
   const [customTagInput, setCustomTagInput] = useState("")
   const [note, setNote] = useState("")
-  const noteRef = useRef<HTMLTextAreaElement>(null)
-
   const [energyLevel, setEnergyLevel] = useState(5)
   const [stressLevel, setStressLevel] = useState(5)
   const [sleepQuality, setSleepQuality] = useState(5)
 
-  const [expandedId, setExpandedId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
-
-  const [toast, setToast] = useState<{
-    type: "success" | "error"
-    title: string
-    body?: string
-    coping?: string
-  } | null>(null)
-
-  const adjustNoteHeight = useCallback(() => {
-    const el = noteRef.current
-    if (!el) return
-    el.style.height = "auto"
-    el.style.height = `${Math.min(220, Math.max(96, el.scrollHeight))}px`
-  }, [])
-
-  useEffect(() => {
-    adjustNoteHeight()
-  }, [note, adjustNoteHeight])
+  const [toast, setToast] = useState<{ type: "success" | "error"; title: string; body?: string } | null>(null)
 
   useEffect(() => {
     if (!toast) return
-    const t = setTimeout(() => setToast(null), 5200)
+    const t = setTimeout(() => setToast(null), 5000)
     return () => clearTimeout(t)
   }, [toast])
 
-  const selectMood = (key: MoodKey) => {
-    setMood(key)
-    const def = MOOD_OPTIONS.find((m) => m.key === key)?.defaultScore ?? 5
-    setMoodScore(def)
-    setValidationError(null)
-  }
-
-  const toggleTag = (tag: string) => {
-    setTags((prev) => {
-      if (prev.includes(tag)) return prev.filter((x) => x !== tag)
-      if (prev.length >= 20) return prev
-      return [...prev, tag]
-    })
-  }
-
-  const addCustomTag = () => {
-    const s = customTagInput.trim().slice(0, 40)
-    if (!s) return
-    setTags((prev) => {
-      if (prev.includes(s) || prev.length >= 20) return prev
-      return [...prev, s]
-    })
-    setCustomTagInput("")
-  }
-
-  const last7DaysEntries = useMemo(() => {
-    const end = new Date()
-    const start = subDays(end, 6)
-    start.setHours(0, 0, 0, 0)
-    return entries.filter((e) =>
-      isWithinInterval(new Date(e.created_at), { start, end }),
-    )
-  }, [entries])
-
-  const daySummaries = useMemo(() => {
-    const byDay = new Map<string, MoodEntryRow>()
-    for (const e of entries) {
-      const day = format(new Date(e.created_at), "yyyy-MM-dd")
-      const existing = byDay.get(day)
-      if (!existing || new Date(e.created_at) > new Date(existing.created_at)) {
-        byDay.set(day, e)
-      }
-    }
-    const days: { label: string; key: string; entry: MoodEntryRow | null }[] = []
-    for (let i = 6; i >= 0; i--) {
-      const d = subDays(new Date(), i)
-      const key = format(d, "yyyy-MM-dd")
-      days.push({
-        key,
-        label: format(d, "EEE"),
-        entry: byDay.get(key) ?? null,
-      })
-    }
-    return days
-  }, [entries])
-
-  const badges = useMemo(() => {
-    const list: { icon: string; label: string }[] = []
-    if (totalCheckIns >= 1) list.push({ icon: "✨", label: "First step" })
-    if (streak >= 3) list.push({ icon: "🔥", label: `${streak}-day streak` })
-    if (streak >= 7) list.push({ icon: "🌿", label: "Week of care" })
-    if (totalCheckIns >= 30) list.push({ icon: "⭐", label: "30 check-ins" })
-    return list
-  }, [streak, totalCheckIns])
-
   const save = async () => {
     if (!mood) {
-      setValidationError("Choose how you’re feeling today.")
+      setToast({ type: "error", title: "Wait!", body: "Please select your mood first." })
       return
     }
-    setValidationError(null)
+
     setSubmitting(true)
     try {
       const res = await fetch("/api/patient/mood", {
@@ -204,47 +88,23 @@ export default function MoodTrackerClient({
           stress_level: stressLevel,
           sleep_quality: sleepQuality,
           craving: false,
-          craving_intensity: undefined,
-          craving_trigger: [],
         }),
       })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        setToast({
-          type: "error",
-          title: "Couldn’t save",
-          body: typeof data.error === "string" ? data.error : "Try again in a moment.",
-        })
-        return
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save")
 
-      const entry = data.entry as MoodEntryRow
-      const newStreak = typeof data.streak === "number" ? data.streak : streak
-      const newTotal =
-        typeof data.total_check_ins === "number" ? data.total_check_ins : totalCheckIns + 1
+      setEntries((prev) => [data.entry, ...prev])
+      setStreak(data.streak)
+      setTotalCheckIns(data.total_check_ins)
+      setToast({ type: "success", title: "Mood Logged!", body: "Great job checking in with yourself." })
 
-      setEntries((prev) => [entry, ...prev])
-      setStreak(newStreak)
-      setTotalCheckIns(newTotal)
-
-      const coping = randomCoping(mood)
-      const sentiment = noteSentimentHint(note)
-      setToast({
-        type: "success",
-        title: "Saved your mood",
-        body: sentiment ?? undefined,
-        coping,
-      })
-
+      // Clear form
+      setMood(null)
       setNote("")
       setTags([])
-      setMood(null)
-      setMoodScore(5)
-      setEnergyLevel(5)
-      setStressLevel(5)
-      setSleepQuality(5)
-    } catch {
-      setToast({ type: "error", title: "Network error", body: "Check your connection and try again." })
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } catch (error: any) {
+      setToast({ type: "error", title: "Error", body: error.message })
     } finally {
       setSubmitting(false)
     }
@@ -252,466 +112,215 @@ export default function MoodTrackerClient({
 
   if (!canLog) {
     return (
-      <div className="mx-auto w-full max-w-lg px-4 py-12 sm:px-6">
-        <div
-          className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <p className="text-[var(--text-lg)] font-semibold text-[var(--color-text-primary)]">
-            Mood check-ins use your care profile
-          </p>
-          <p
-            className="mt-3 text-[var(--color-text-secondary)]"
-            style={{ fontSize: "var(--text-base)", lineHeight: "var(--leading-loose)" }}
-          >
-            This tracker is set up for people with a patient profile. If you’re a caregiver, you can
-            return to your dashboard or complete onboarding as a patient when appropriate.
-          </p>
-          <Link
-            href="/patient/dashboard"
-            className="mt-8 inline-flex items-center justify-center rounded-[var(--radius-md)] px-5 py-3 font-medium text-white transition-opacity hover:opacity-95"
-            style={{ background: "var(--color-brand)" }}
-          >
-            Back to dashboard
-          </Link>
-        </div>
+      <div className="mx-auto w-full max-w-lg px-4 py-12 text-center">
+        <h2 className="text-xl font-bold text-[var(--color-text-primary)]">Access Restricted</h2>
+        <p className="mt-2 text-[var(--color-text-secondary)]">Please complete your patient profile to use the Mood Tracker.</p>
+        <Link href="/patient/dashboard" className="mt-6 inline-block rounded-lg bg-[var(--color-brand)] px-6 py-2 text-white">
+          Back to Dashboard
+        </Link>
       </div>
     )
   }
 
   return (
-    <div className="relative pb-32 lg:pb-28">
+    <div className="min-h-screen bg-[var(--color-bg)] pb-32 pt-6">
+      {/* Toast Notification */}
       <AnimatePresence>
         {toast && (
           <motion.div
-            initial={{ opacity: 0, y: -12 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed left-4 right-4 top-20 z-[60] mx-auto max-w-md rounded-[var(--radius-lg)] border px-4 py-3 shadow-lg sm:left-auto sm:right-8"
-            style={{
-              background:
-                toast.type === "success" ? "var(--color-surface)" : "var(--color-surface)",
-              borderColor: toast.type === "success" ? "var(--color-accent)" : "var(--color-error)",
-            }}
-            role="status"
+            exit={{ opacity: 0, y: -20 }}
+            className={`fixed top-6 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 rounded-2xl border p-4 shadow-xl backdrop-blur-md ${toast.type === "success" ? "border-green-200 bg-white/90" : "border-red-200 bg-white/90"
+              }`}
           >
-            <p className="font-semibold text-[var(--color-text-primary)]">{toast.title}</p>
-            {toast.body && (
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{toast.body}</p>
-            )}
-            {toast.coping && (
-              <p className="mt-2 border-t border-[var(--color-border)] pt-2 text-sm text-[var(--color-accent)]">
-                <span className="font-medium">Try this: </span>
-                {toast.coping}
-              </p>
-            )}
+            <p className="font-bold text-[var(--color-text-primary)]">{toast.title}</p>
+            {toast.body && <p className="text-sm text-[var(--color-text-secondary)]">{toast.body}</p>}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 lg:max-w-2xl lg:py-8">
-        {(badges.length > 0 || streak > 0) && (
-          <div className="mb-6 flex flex-wrap items-center gap-2">
-            {streak > 0 && (
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
-                style={{
-                  background: "var(--color-brand-light)",
-                  color: "var(--color-brand-dark)",
-                }}
-              >
-                <span aria-hidden>🔥</span>
-                {streak}-day streak
-              </span>
-            )}
-            {badges
-              .filter((b) => !b.label.includes("streak"))
-              .map((b) => (
-                <span
-                  key={b.label}
-                  className="inline-flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-[var(--color-surface-raised)] px-3 py-1 text-xs font-medium text-[var(--color-text-secondary)]"
-                >
-                  <span aria-hidden>{b.icon}</span>
-                  {b.label}
-                </span>
-              ))}
-          </div>
-        )}
-
-        <section
-          className="rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.05)] sm:p-6"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] sm:text-xl">
-            How do you feel right now?
-          </h2>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Tap the face that fits best. You can adjust intensity below.
-          </p>
-
-          <div className="mt-5 grid grid-cols-5 gap-2 sm:gap-3">
-            {MOOD_OPTIONS.map((opt) => {
-              const selected = mood === opt.key
-              return (
-                <motion.button
-                  key={opt.key}
-                  type="button"
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                  onClick={() => selectMood(opt.key)}
-                  className="flex flex-col items-center gap-1 rounded-[var(--radius-lg)] border-2 px-1 py-3 text-center sm:py-4"
-                  style={{
-                    borderColor: selected ? "var(--color-brand)" : "var(--color-border)",
-                    background: selected ? "var(--color-brand-light)" : "var(--color-surface-raised)",
-                    boxShadow: selected ? "0 6px 20px rgba(232,114,42,0.15)" : undefined,
-                  }}
-                >
-                  <span className="text-2xl sm:text-3xl" aria-hidden>
-                    {opt.emoji}
-                  </span>
-                  <span className="text-[10px] font-medium leading-tight text-[var(--color-text-secondary)] sm:text-xs">
-                    {opt.label}
-                  </span>
-                </motion.button>
-              )
-            })}
-          </div>
-
-          {validationError && (
-            <p className="mt-3 text-sm font-medium text-[var(--color-error)]" role="alert">
-              {validationError}
-            </p>
-          )}
-
-          <div className="mt-6">
-            <SliderRow
-              label="Mood intensity"
-              hint="1 = low · 10 = strong"
-              value={moodScore}
-              onChange={setMoodScore}
-            />
-          </div>
-        </section>
-
-        <section
-          className="mt-5 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.05)] sm:p-6"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">What’s going on?</h2>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-            Pick any that apply. Add your own short tag if you like.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {PRESET_TAGS.map((tag) => {
-              const on = tags.includes(tag)
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className="rounded-full border px-3 py-1.5 text-sm font-medium transition-all duration-300"
-                  style={{
-                    borderColor: on ? "var(--color-accent)" : "var(--color-border)",
-                    background: on ? "var(--color-accent-light)" : "var(--color-surface-raised)",
-                    color: "var(--color-text-primary)",
-                  }}
-                >
-                  {tag}
-                </button>
-              )
-            })}
-          </div>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <input
-              type="text"
-              value={customTagInput}
-              onChange={(e) => setCustomTagInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomTag())}
-              placeholder="Custom tag"
-              maxLength={40}
-              className="auth-form-control min-w-0 flex-1 rounded-[var(--radius-md)]"
-            />
+      <div className="mx-auto max-w-5xl px-4">
+        {/* Navigation Tabs */}
+        <div className="mb-10 flex items-center justify-between">
+          <div className="flex gap-2 bg-white/50 p-1.5 rounded-full border border-white/40">
             <button
-              type="button"
-              onClick={addCustomTag}
-              className="rounded-[var(--radius-md)] border border-[var(--color-accent)] px-4 py-2.5 text-sm font-medium text-[var(--color-accent)] transition-opacity hover:opacity-90"
+              onClick={() => setView("track")}
+              className={`rounded-full px-8 py-2 text-sm font-bold transition-all ${view === "track" ? "bg-[var(--color-brand)] text-white shadow-lg" : "text-[var(--color-text-secondary)] hover:bg-white"
+                }`}
             >
-              Add tag
+              Log Mood
+            </button>
+            <button
+              onClick={() => setView("history")}
+              className={`rounded-full px-8 py-2 text-sm font-bold transition-all ${view === "history" ? "bg-[var(--color-brand)] text-white shadow-lg" : "text-[var(--color-text-secondary)] hover:bg-white"
+                }`}
+            >
+              History
             </button>
           </div>
 
-          {tags.some((t) => !isPresetTag(t)) && (
-            <div className="mt-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
-                Custom tags
-              </p>
-              <p className="mt-1 text-sm text-[var(--color-text-secondary)]">
-                Tap a tag to remove it from this check-in.
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {tags
-                  .filter((t) => !isPresetTag(t))
-                  .map((tag) => (
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Daily Streak</span>
+              <span className="text-sm font-bold text-[var(--color-brand)]">{streak} Days 🔥</span>
+            </div>
+          </div>
+        </div>
+
+        {view === "history" ? (
+          <MoodHistory entries={entries} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 items-start">
+
+            <section className="col-span-full md:col-span-4 rounded-[2.5rem] bg-white p-10 border border-[var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
+              <MoodGauge
+                selectedMood={mood}
+                onSelect={(m) => {
+                  setMood(m)
+                  const def = MOOD_OPTIONS.find((o) => o.key === m)?.defaultScore || 5
+                  setMoodScore(def)
+                }}
+              />
+              <div className="mt-12 pt-8 border-t border-dashed border-[var(--color-border)]">
+                <h3 className="mb-4 text-center font-bold text-xs uppercase tracking-widest text-[var(--color-text-muted)]">Mood Intensity</h3>
+                <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                     <button
-                      key={tag}
-                      type="button"
-                      onClick={() => toggleTag(tag)}
-                      aria-label={`Remove custom tag ${tag}`}
-                      className="inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-sm font-medium transition-all duration-300"
-                      style={{
-                        borderColor: "var(--color-brand)",
-                        background: "var(--color-brand-light)",
-                        color: "var(--color-brand-dark)",
-                      }}
+                      key={num}
+                      onClick={() => setMoodScore(num)}
+                      className={`h-10 flex items-center justify-center rounded-xl border font-bold text-sm transition-all ${moodScore === num
+                        ? "bg-[var(--color-brand)] text-white border-[var(--color-brand)] shadow-md"
+                        : "bg-[var(--color-surface-raised)] text-[var(--color-text-secondary)] border-[var(--color-border)] hover:border-[var(--color-brand)]"
+                        }`}
                     >
-                      <span>{tag}</span>
-                      <span className="text-base leading-none opacity-70" aria-hidden>
-                        ×
-                      </span>
+                      {num}
                     </button>
                   ))}
-              </div>
-            </div>
-          )}
-        </section>
-
-        <section
-          className="mt-5 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.05)] sm:p-6"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Notes</h2>
-          <p className="mt-1 text-sm text-[var(--color-text-secondary)]">Optional — your space to reflect.</p>
-          <textarea
-            ref={noteRef}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="What made you feel this way?"
-            rows={3}
-            maxLength={2000}
-            className="auth-form-control mt-3 min-h-[96px] w-full resize-none rounded-[var(--radius-md)] leading-relaxed"
-          />
-        </section>
-
-        <section
-          className="mt-5 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.05)] sm:p-6"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">More detail</h2>
-          <div className="mt-5 space-y-5">
-            <SliderRow label="Energy" hint="Low → high" value={energyLevel} onChange={setEnergyLevel} />
-            <SliderRow label="Stress" hint="Low → high" value={stressLevel} onChange={setStressLevel} />
-            <SliderRow
-              label="Sleep quality"
-              hint="1 rough · 10 rested"
-              value={sleepQuality}
-              onChange={setSleepQuality}
-            />
-          </div>
-        </section>
-
-        <section
-          className="mt-8 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-[0_4px_24px_rgba(0,0,0,0.05)] sm:p-6"
-          style={{ transitionDuration: "300ms" }}
-        >
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Last 7 days</h2>
-            <span className="text-xs text-[var(--color-text-muted)]">{last7DaysEntries.length} logs</span>
-          </div>
-          <div className="mt-4 flex justify-between gap-1">
-            {daySummaries.map((d) => (
-              <div key={d.key} className="flex flex-1 flex-col items-center gap-1">
-                <span className="text-[10px] font-medium uppercase text-[var(--color-text-muted)]">
-                  {d.label}
-                </span>
-                <div
-                  className="flex h-12 w-full max-w-[44px] items-center justify-center rounded-[var(--radius-md)] border text-lg sm:h-14 sm:max-w-[52px]"
-                  style={{
-                    borderColor: "var(--color-border)",
-                    background: d.entry ? "var(--color-brand-light)" : "var(--color-surface-raised)",
-                  }}
-                >
-                  {d.entry ? moodEmoji(d.entry.mood) : "·"}
                 </div>
               </div>
-            ))}
-          </div>
+            </section>
 
-          <ul className="mt-6 space-y-3">
-            {entries.slice(0, 14).map((e) => {
-              const open = expandedId === e.id
-              return (
-                <li
-                  key={e.id}
-                  className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface-raised)] transition-shadow duration-300 hover:shadow-md"
-                >
+            {/* 3. Quote / Streak Box - Small (Col Span 2) */}
+            <div className="col-span-full md:col-span-2 flex flex-col gap-6 h-full">
+              <div className="flex-1 rounded-[2.5rem] bg-[var(--color-brand-light)]/30 p-8 flex flex-col items-center justify-center text-center border border-orange-100 border-dashed">
+                <span className="text-4xl mb-4">✨</span>
+                <p className="text-sm font-medium text-[var(--color-brand-dark)]">"You don't have to be positive all the time. It's okay to feel however you feel."</p>
+              </div>
+            </div>
+
+            {/* 4. Metrics Grid - Medium (Col Span 3) */}
+            <section className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col gap-6">
+              <h3 className="text-lg font-bold">Vital Metrics</h3>
+
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">Energy</p>
+                    <span className="text-xs font-bold text-[var(--color-brand)]">{energyLevel}/10</span>
+                  </div>
+                  <input
+                    type="range" min="1" max="10" value={energyLevel}
+                    onChange={(e) => setEnergyLevel(parseInt(e.target.value))}
+                    className="w-full accent-[var(--color-brand)] h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">Stress</p>
+                    <span className="text-xs font-bold text-red-500">{stressLevel}/10</span>
+                  </div>
+                  <input
+                    type="range" min="1" max="10" value={stressLevel}
+                    onChange={(e) => setStressLevel(parseInt(e.target.value))}
+                    className="w-full accent-red-400 h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-xs font-bold uppercase tracking-wide text-[var(--color-text-secondary)]">Sleep</p>
+                    <span className="text-xs font-bold text-blue-500">{sleepQuality}/10</span>
+                  </div>
+                  <input
+                    type="range" min="1" max="10" value={sleepQuality}
+                    onChange={(e) => setSleepQuality(parseInt(e.target.value))}
+                    className="w-full accent-blue-400 h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {/* 5. Tags Selection - Medium (Col Span 3) */}
+            <section className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col h-full">
+              <h3 className="mb-4 text-lg font-bold">What's happening?</h3>
+              <div className="flex flex-wrap gap-2 mb-auto">
+                {PRESET_TAGS.map((tag) => (
                   <button
-                    type="button"
-                    onClick={() => setExpandedId(open ? null : e.id)}
-                    className="flex w-full items-center gap-3 px-4 py-3 text-left"
+                    key={tag}
+                    onClick={() => setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
+                    className={`rounded-full border px-4 py-2 text-xs font-bold transition-all ${tags.includes(tag)
+                        ? "border-[var(--color-brand)] bg-orange-50 text-[var(--color-brand)]"
+                        : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-orange-200"
+                      }`}
                   >
-                    <span className="text-2xl">{moodEmoji(e.mood)}</span>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-[var(--color-text-primary)]">
-                        {format(new Date(e.created_at), "MMM d · h:mm a")}
-                      </p>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
-                        Score {e.mood_score}/10
-                        {(() => {
-                          const { custom } = partitionTags(e.tags)
-                          if (custom.length === 0) return null
-                          return (
-                            <span className="mt-0.5 block text-[var(--color-text-primary)]">
-                              Custom: {custom.join(", ")}
-                            </span>
-                          )
-                        })()}
-                      </p>
-                    </div>
-                    <span className="text-[var(--color-text-muted)]">{open ? "▲" : "▼"}</span>
+                    {tag}
                   </button>
-                  <AnimatePresence initial={false}>
-                    {open && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="border-t border-[var(--color-border)]"
-                      >
-                        <div className="space-y-2 px-4 py-3 text-sm text-[var(--color-text-secondary)]">
-                          <p>
-                            <span className="font-medium text-[var(--color-text-primary)]">Energy </span>
-                            {e.energy_level}/10 ·{" "}
-                            <span className="font-medium text-[var(--color-text-primary)]">Stress </span>
-                            {e.stress_level}/10 ·{" "}
-                            <span className="font-medium text-[var(--color-text-primary)]">Sleep </span>
-                            {e.sleep_quality}/10
-                          </p>
-                          {e.tags.length > 0 && (
-                            <div className="space-y-1.5">
-                              {(() => {
-                                const { preset, custom } = partitionTags(e.tags)
-                                return (
-                                  <>
-                                    {preset.length > 0 && (
-                                      <p>
-                                        <span className="font-medium text-[var(--color-text-primary)]">
-                                          Tags:{" "}
-                                        </span>
-                                        {preset.join(", ")}
-                                      </p>
-                                    )}
-                                    {custom.length > 0 && (
-                                      <div>
-                                        <p className="font-medium text-[var(--color-text-primary)]">
-                                          Custom tags
-                                        </p>
-                                        <div className="mt-1.5 flex flex-wrap gap-1.5">
-                                          {custom.map((t) => (
-                                            <span
-                                              key={t}
-                                              className="rounded-full border border-[var(--color-brand)] bg-[var(--color-brand-light)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-brand-dark)]"
-                                            >
-                                              {t}
-                                            </span>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </>
-                                )
-                              })()}
-                            </div>
-                          )}
-                          {e.note && (
-                            <p>
-                              <span className="font-medium text-[var(--color-text-primary)]">Note: </span>
-                              {e.note}
-                            </p>
-                          )}
-                          {e.craving && (
-                            <p>
-                              <span className="font-medium text-[var(--color-text-primary)]">Craving </span>
-                              intensity {e.craving_intensity ?? "—"}
-                              {e.craving_trigger.length > 0
-                                ? ` · ${e.craving_trigger.join(", ")}`
-                                : ""}
-                            </p>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </li>
-              )
-            })}
-          </ul>
-          {entries.length === 0 && (
-            <p className="mt-4 text-center text-sm text-[var(--color-text-secondary)]">
-              Your check-ins will show up here. One tap a day is enough to start.
-            </p>
-          )}
-        </section>
+                ))}
+              </div>
 
-        <p
-          className="mt-8 text-center text-xs text-[var(--color-text-muted)]"
-          style={{ lineHeight: "var(--leading-loose)" }}
-        >
-          This tracker supports self-awareness and relapse prevention. It does not replace professional
-          care. If you&apos;re in crisis, contact local emergency services or a helpline.
-        </p>
-      </div>
+              <div className="mt-6 flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Custom..."
+                  value={customTagInput}
+                  onChange={(e) => setCustomTagInput(e.target.value)}
+                  className="auth-form-control rounded-2xl h-10 text-sm"
+                />
+                <button
+                  onClick={() => {
+                    if (customTagInput.trim()) {
+                      setTags([...tags, customTagInput.trim()])
+                      setCustomTagInput("")
+                    }
+                  }}
+                  className="rounded-2xl border border-[var(--color-brand)] px-4 font-bold text-xs text-[var(--color-brand)]"
+                >
+                  Add
+                </button>
+              </div>
+            </section>
 
-      <div
-        className="sticky bottom-0 z-50 border-t border-[var(--color-border)] bg-[var(--color-surface)]/95 px-4 py-3 backdrop-blur-md"
-        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
-      >
-        <div className="mx-auto flex max-w-xl justify-center sm:px-6 lg:max-w-2xl">
-          <motion.button
-            type="button"
-            whileTap={{ scale: 0.98 }}
-            transition={{ duration: 0.3 }}
-            disabled={submitting}
-            onClick={save}
-            className="w-full rounded-[var(--radius-lg)] px-6 py-3.5 text-base font-semibold text-white shadow-[0_8px_24px_rgba(232,114,42,0.35)] transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-60"
-            style={{ background: "var(--color-brand)" }}
-          >
-            {submitting ? "Saving…" : "Save mood"}
-          </motion.button>
-        </div>
-      </div>
-    </div>
-  )
-}
+            {/* 6. Expression Analysis (Notes) - Full Width */}
+            <section className="col-span-full rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold">Expression Analysis</h3>
+                <button className="flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 text-xs font-bold text-[var(--color-brand)]">
+                  <span>🎤</span> Voice Input
+                </button>
+              </div>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder="I'm feeling..."
+                className="auth-form-control min-h-[150px] rounded-[2rem] p-8 text-lg border-dashed border-2"
+              />
+            </section>
 
-function SliderRow({
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  label: string
-  hint: string
-  value: number
-  onChange: (n: number) => void
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-[var(--color-text-primary)]">{label}</span>
-        <span className="text-sm tabular-nums text-[var(--color-accent)]">{value}</span>
+            {/* 7. Save Button Area */}
+            <div className="col-span-full pt-4 pb-10">
+              <button
+                onClick={save}
+                disabled={submitting}
+                className="w-full rounded-[2rem] bg-[var(--color-text-primary)] py-5 text-xl font-bold text-white shadow-2xl hover:scale-[1.01] transition-transform disabled:opacity-50"
+              >
+                {submitting ? "Saving Check-in..." : "Save Log →"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-      <p className="text-xs text-[var(--color-text-muted)]">{hint}</p>
-      <input
-        type="range"
-        min={1}
-        max={10}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 h-2 w-full cursor-pointer appearance-none rounded-full bg-[var(--color-border)] accent-[var(--color-brand)]"
-        style={{ accentColor: "var(--color-brand)" }}
-      />
     </div>
   )
 }

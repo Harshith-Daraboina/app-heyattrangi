@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+import Link from "next/link"
 import { getCurrentUser } from "@/lib/auth"
 import ProfileForm from "@/components/profile/PatientProfileForm"
 import SignOutButton from "@/components/auth/SignOutButton"
@@ -50,6 +51,47 @@ async function ProfileContent() {
           }}
           role={user.role}
         />
+
+        {/* Account & Billing Section */}
+        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link 
+            href="/patient/billing"
+            className="group flex items-center justify-between p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                  <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800">Billing & Invoices</h3>
+                <p className="text-sm text-gray-500">Manage your payments and history</p>
+              </div>
+            </div>
+            <span className="text-gray-400 group-hover:text-blue-600 transition-colors">→</span>
+          </Link>
+
+          <Link 
+            href="/patient/credits"
+            className="group flex items-center justify-between p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                  <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-800">Care Credits</h3>
+                <p className="text-sm text-gray-500">View and redeem your rewards</p>
+              </div>
+            </div>
+            <span className="text-gray-400 group-hover:text-emerald-600 transition-colors">→</span>
+          </Link>
+        </div>
       </main>
     </div>
   )
