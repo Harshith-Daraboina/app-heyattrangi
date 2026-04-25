@@ -56,7 +56,7 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
 
     return (
         <div className="hidden xl:flex flex-col w-[400px] bg-white h-full px-5 py-5 relative">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                     <button className="w-9 h-9 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm ring-4 ring-gray-50/50">
                         <SearchIcon className="w-3.5 h-3.5" />
@@ -66,25 +66,6 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                         <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-500 rounded-full border border-white" />
                     </button>
                 </div>
-            </div>
-
-            {/* Upcoming Sessions Section */}
-            <div className="mb-4">
-                <h3 className="text-[15px] font-black text-gray-900 mb-3 text-center">Upcoming sessions</h3>
-                {displayAppointments.length > 0 ? (
-                    <div className="bg-[#f0f9f1] rounded-[24px] p-4 shadow-sm border border-[#e2ece3] flex items-center justify-between">
-                        <div>
-                            <span className="text-[11px] font-black text-gray-700">Session in 5 mins</span>
-                        </div>
-                        <button className="bg-[#a3d1ac] hover:bg-[#92c59c] text-white font-black py-1.5 px-4 rounded-full transition-colors text-[11px]">
-                            Join now
-                        </button>
-                    </div>
-                ) : (
-                    <div className="bg-gray-50 rounded-[20px] p-4 border border-gray-100 text-center">
-                        <span className="text-[11px] font-bold text-gray-400">No sessions today</span>
-                    </div>
-                )}
             </div>
 
             {/* Schedule Section */}
