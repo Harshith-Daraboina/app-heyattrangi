@@ -1,132 +1,168 @@
 "use client"
 
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import SignOutButton from "@/components/auth/SignOutButton"
-import type { ReactNode } from "react"
 
+// --- Icons ---
 type IconProps = { className?: string }
+const iconBase = "h-5 w-5 shrink-0"
 
-const iconBase = "h-5 w-5 stroke-[2] shrink-0"
-
-const HomeIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+const GridIcon = ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
     </svg>
 )
 
 const CalendarIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-        <line x1="16" y1="2" x2="16" y2="6"></line>
-        <line x1="8" y1="2" x2="8" y2="6"></line>
-        <line x1="3" y1="10" x2="21" y2="10"></line>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
 )
 
 const ClockIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <circle cx="12" cy="12" r="9"></circle>
-        <polyline points="12 7 12 12 15 15"></polyline>
-    </svg>
-)
-
-const FileIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-        <polyline points="14 2 14 8 20 8"></polyline>
-        <line x1="16" y1="13" x2="8" y2="13"></line>
-        <line x1="16" y1="17" x2="8" y2="17"></line>
-        <polyline points="10 9 9 9 8 9"></polyline>
-    </svg>
-)
-
-const UsersIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-        <circle cx="9" cy="7" r="4"></circle>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
     </svg>
 )
 
 const SettingsIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
-        <circle cx="12" cy="12" r="3"></circle>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
 )
 
-const HelpIcon = ({ className }: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" className={`${iconBase} ${className ?? ""}`}>
-        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+const SidebarToggleIcon = ({ className, isCollapsed }: IconProps & { isCollapsed: boolean }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+        className={`${iconBase} transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""} ${className ?? ""}`}>
+        <polyline points="15 18 9 12 15 6" />
     </svg>
 )
 
-const navItems = [
-    { label: "Dashboard", href: "/doctor/dashboard", icon: <HomeIcon /> },
-    { label: "Schedule", href: "/doctor/appointments", icon: <CalendarIcon /> },
+interface SidebarItem {
+    label: string
+    href: string
+    icon: ReactNode
+}
+
+const navItems: SidebarItem[] = [
+    { label: "Dashboard", href: "/doctor/dashboard", icon: <GridIcon /> },
+    { label: "Appointments", href: "/doctor/appointments", icon: <CalendarIcon /> },
     { label: "Availability", href: "/doctor/availability", icon: <ClockIcon /> },
     { label: "Profile", href: "/doctor/profile", icon: <SettingsIcon /> },
 ]
 
 export default function DoctorSidebar() {
     const pathname = usePathname()
+    const [isCollapsed, setIsCollapsed] = useState(false)
 
     return (
-        <aside className="flex flex-col items-center bg-[#18181b] w-[90px] h-full py-8 text-gray-400 relative shrink-0 z-40 overflow-y-auto">
-            <Link
-                href="/doctor/dashboard"
-                className="mb-10 block"
+        <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-[#131316] border-r border-[#27272a] z-40`}>
+            
+            {/* Toggle Button */}
+            <button
+                onClick={() => setIsCollapsed(!isCollapsed)}
+                className="absolute top-1/2 -translate-y-1/2 -right-3.5 text-zinc-400 hover:text-white transition-colors z-50 bg-[#18181b] p-1.5 rounded-full border border-[#3f3f46] shadow-lg flex items-center justify-center cursor-pointer"
+                aria-label="Toggle Sidebar"
             >
-                <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center shadow-sm p-1.5 mx-auto">
-                    <Image
-                        src="/images/logo.png"
-                        alt="Attrangi Logo"
-                        width={40}
-                        height={40}
-                        className="w-full h-full object-contain"
-                        priority
-                    />
-                </div>
-            </Link>
+                <SidebarToggleIcon className="w-4 h-4" isCollapsed={isCollapsed} />
+            </button>
 
-            <nav className="flex-1 w-full space-y-6 flex flex-col items-center">
-                {navItems.map((item) => {
-                    const isActive = pathname === item.href
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            title={item.label}
-                            className={`relative flex flex-col items-center justify-center w-full h-[60px] transition-colors group
-                                ${isActive ? "text-white" : "hover:text-gray-200"}
-                            `}
-                        >
-                            {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-1 bg-orange-400 rounded-r-full" />
-                            )}
-                            <div className="relative">
-                                <span className={`block transition-transform ${isActive ? '' : 'group-hover:scale-110'}`}>
-                                    {item.icon}
-                                </span>
-                                {isActive && <span className="text-[9px] font-bold absolute -bottom-4 left-1/2 -translate-x-1/2 text-orange-400 whitespace-nowrap">{item.label}</span>}
+            <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden ${isCollapsed ? "px-3 md:px-0" : "pl-3 pr-5"}`}>
+                
+                {/* Logo */}
+                <Link href="/doctor/dashboard" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-8 gap-3"}`}>
+                    <div className="shrink-0">
+                        <Image
+                            src="/images/logo.png"
+                            alt="Logo"
+                            width={isCollapsed ? 36 : 40}
+                            height={isCollapsed ? 36 : 40}
+                            className="object-contain"
+                        />
+                    </div>
+
+                    {!isCollapsed && (
+                        <div className="flex flex-col -gap-1">
+                            <div className="flex items-center gap-0 tracking-tighter">
+                                <span className="text-2xl font-extrabold text-white">hey</span>
+                                <span className="text-2xl font-extrabold text-blue-500">attrangi</span>
                             </div>
-                        </Link>
-                    )
-                })}
-            </nav>
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] leading-none">DOCTOR PORTAL</span>
+                        </div>
+                    )}
 
-            <div className="mt-auto space-y-6 flex flex-col items-center w-full">
-                <button className="text-gray-400 hover:text-white transition-colors" title="Help">
-                    <HelpIcon className="w-5 h-5" />
-                </button>
-                <SignOutButton className="p-0 border-0 bg-transparent text-gray-400 hover:text-white hover:bg-transparent shadow-none" />
-            </div>
-        </aside>
+                </Link>
+
+                {/* Main Nav */}
+                <nav className="flex flex-col gap-1.5 flex-1">
+                    {!isCollapsed && <h3 className="text-[11px] font-bold text-zinc-500 mb-3 px-4 uppercase tracking-widest">Main Menu</h3>}
+                    {navItems.map((item) => {
+                        const isActive = pathname === item.href
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                title={isCollapsed ? item.label : undefined}
+                                className={`flex items-center gap-3 rounded-2xl transition-all duration-300 font-bold
+                                    ${isCollapsed ? "p-3 justify-center" : "px-4 py-3.5"}
+                                    ${isActive
+                                        ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5"
+                                        : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                                    }
+                                `}
+                            >
+                                <div className={`${isActive ? "text-blue-400" : "text-zinc-400"}`}>
+                                    {item.icon}
+                                </div>
+                                {!isCollapsed && <span className="text-[13px] whitespace-nowrap">{item.label}</span>}
+                            </Link>
+                        )
+                    })}
+                </nav>
+
+                {/* Atmosphere Video (Professional Version) */}
+                {!isCollapsed && (
+                    <div className="mt-8 mb-6 mx-2 rounded-2xl overflow-hidden aspect-video relative border border-white/5 group">
+                        <video
+                            src="/videos/mood.mp4"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-transparent to-transparent" />
+                        <div className="absolute bottom-3 left-3">
+                            <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">Clinical Environment</p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Sign Out */}
+                <div className={`mt-auto pt-6 border-t border-white/5 ${isCollapsed ? "flex justify-center" : ""}`}>
+                    <SignOutButton className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 text-sm font-medium text-red-400 hover:bg-red-500/10 ${isCollapsed ? "justify-center p-3" : "px-4 py-3"}`}>
+                        {!isCollapsed && <span>Sign Out</span>}
+                        {isCollapsed && (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
+                            </svg>
+                        )}
+                    </SignOutButton>
+                </div>
+            </aside>
+        </div>
     )
 }

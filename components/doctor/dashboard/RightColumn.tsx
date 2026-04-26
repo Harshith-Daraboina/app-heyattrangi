@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, subMonths, isSameDay, getDay } from "date-fns"
 
@@ -23,53 +24,56 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
     const displayAppointments = upcomingAppointments && upcomingAppointments.length > 0 ? upcomingAppointments.slice(0, 3) : []
 
     return (
-        <div className="hidden xl:flex flex-col w-[340px] bg-white h-full px-8 py-10 relative">
-            <div className="flex items-center justify-between mb-8">
-                <h3 className="text-lg font-bold text-gray-900">Scheduled Sessions</h3>
-            </div>
+        <div className="hidden xl:flex flex-col w-[360px] bg-white h-full px-8 py-10 relative border-l border-gray-100">
+            <header className="flex items-center justify-between mb-8">
+                <h3 className="text-xl font-black text-gray-900 tracking-tight">Calendar</h3>
+                <div className="flex gap-2">
+                    <button onClick={handlePrevMonth} className="w-8 h-8 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" /></svg>
+                    </button>
+                    <button onClick={handleNextMonth} className="w-8 h-8 rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-50 transition-all">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M9 18l6-6 6-6" className="rotate-180" /></svg>
+                    </button>
+                </div>
+            </header>
 
-            {/* Calendar Area */}
-            <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.03)] border border-gray-100 mb-6">
-                <div className="flex gap-2 p-1 bg-gray-50 rounded-xl mb-6">
-                    <button className="flex-1 bg-white text-gray-800 text-xs font-bold py-2 rounded-lg shadow-sm">Monthly</button>
-                    <button className="flex-1 text-gray-500 hover:text-gray-800 text-xs font-bold py-2 rounded-lg transition-colors">Daily</button>
+            {/* Calendar Grid */}
+            <div className="bg-gray-50/50 rounded-[32px] p-6 border border-gray-100 mb-10 shadow-sm">
+                <div className="flex items-center justify-between mb-6 px-2">
+                    <h4 className="font-black text-[15px] text-gray-900">{format(currentDate, "MMMM yyyy")}</h4>
                 </div>
 
-                <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-bold text-sm text-gray-800">{format(currentDate, "MMMM yyyy")}</h4>
-                    <div className="flex gap-2">
-                        <button onClick={handlePrevMonth} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 text-xs transition-colors hover:text-gray-800">‹</button>
-                        <button onClick={handleNextMonth} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-gray-400 text-xs transition-colors hover:text-gray-800">›</button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-7 gap-y-3 gap-x-1 text-center mb-2">
+                <div className="grid grid-cols-7 gap-y-2 text-center">
                     {days.map((d, i) => (
-                        <div key={`header-${i}`} className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{d}</div>
+                        <div key={`header-${i}`} className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">{d}</div>
                     ))}
 
                     {emptyDays.map((_, i) => (
-                        <div key={`empty-${i}`} className="flex justify-center" />
+                        <div key={`empty-${i}`} className="w-9 h-9" />
                     ))}
 
                     {daysInMonth.map((date, i) => {
                         const isSelected = isSameDay(date, selectedDate)
+                        const isToday = isSameDay(date, new Date())
                         const hasAppointment = upcomingAppointments && upcomingAppointments.some(apt => isSameDay(new Date(apt.appointmentDate), date))
 
                         return (
-                            <div key={`day-${i}`} className="flex justify-center relative">
+                            <div key={`day-${i}`} className="flex justify-center relative py-1">
                                 <button
                                     onClick={() => setSelectedDate(date)}
-                                    className={`w-7 h-7 flex items-center justify-center text-xs font-bold rounded-full relative z-10 transition-colors
-                        ${isSelected
-                                            ? 'bg-teal-500 text-white shadow-md shadow-teal-500/30'
-                                            : 'text-gray-600 hover:bg-gray-100 cursor-pointer'}
-                      `}
+                                    className={`w-9 h-9 flex items-center justify-center text-[13px] font-black rounded-xl relative z-10 transition-all
+                                        ${isSelected
+                                            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-110'
+                                            : isToday 
+                                                ? 'bg-blue-50 text-blue-600 ring-1 ring-blue-100'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }
+                                    `}
                                 >
                                     {format(date, "d")}
                                 </button>
                                 {hasAppointment && !isSelected && (
-                                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-teal-500/80" />
+                                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-400" />
                                 )}
                             </div>
                         )
@@ -77,44 +81,70 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                 </div>
             </div>
 
-            {/* Upcoming Item list */}
-            <div className="space-y-4 flex-1 overflow-y-auto pr-2 pb-16">
-                {displayAppointments.length > 0 ? (
-                    displayAppointments.map((apt, i) => {
-                        const bgClass = i % 2 === 0 ? "bg-[#f4f9f9] border-[#e2eff0] hover:bg-[#ebf5f5]" : "bg-[#fffcf4] border-[#feedd6] hover:bg-[#fff9e8]"
-                        const iconBg = i % 2 === 0 ? "bg-teal-100" : "bg-orange-100"
+            {/* Upcoming Sessions List */}
+            <div className="flex-1 flex flex-col min-h-0">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-black text-gray-900 tracking-tight">Today's Queue</h3>
+                    <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">{displayAppointments.length} Total</span>
+                </div>
 
-                        return (
-                            <div key={apt.id} className={`p-4 rounded-2xl border flex items-center justify-between group cursor-pointer transition-colors ${bgClass}`}>
+                <div className="space-y-4 overflow-y-auto pr-2 pb-6 custom-scrollbar">
+                    {displayAppointments.length > 0 ? (
+                        displayAppointments.map((apt, i) => (
+                            <div key={apt.id} className="group bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all cursor-pointer flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-10 h-10 rounded-full ${iconBg} flex items-center justify-center overflow-hidden shrink-0 border-2 border-white shadow-sm`}>
-                                        <span className="text-xl relative -bottom-1">🧑</span>
+                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
+                                        {apt.patient?.user?.image ? (
+                                            <div className="w-full h-full rounded-xl overflow-hidden relative">
+                                                <Image src={apt.patient.user.image} alt="Patient" fill className="object-cover" />
+                                            </div>
+                                        ) : (
+                                            <span>🧑</span>
+                                        )}
                                     </div>
-                                    <div>
-                                        <h5 className="font-bold text-sm text-gray-900">{apt.patient?.user?.name || "Patient"}</h5>
-                                        <p className="text-xs text-gray-500 font-medium">{format(new Date(apt.appointmentDate), "hh:mm a")} - {format(new Date(apt.appointmentDate), "dd MMM")}</p>
+                                    <div className="flex flex-col">
+                                        <h5 className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{apt.patient?.user?.name || "Patient"}</h5>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="text-[11px] font-bold text-gray-400 tracking-tight">
+                                                {format(new Date(apt.appointmentDate), "hh:mm a")}
+                                            </span>
+                                            <div className="w-1 h-1 rounded-full bg-gray-300" />
+                                            <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">Video</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <Link href={`/doctor/appointments`} className="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-400 group-hover:text-gray-800 transition-colors text-xs border border-gray-100">›</Link>
+                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                                </div>
                             </div>
-                        )
-                    })
-                ) : (
-                    <div className="text-center py-6">
-                        <p className="text-sm text-gray-500 font-medium">No schedule found.</p>
+                        ))
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-10 opacity-30 grayscale">
+                            <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <p className="text-sm font-black uppercase tracking-widest">No active queue</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Bottom Stats Card */}
+                <div className="mt-auto bg-gray-900 rounded-[28px] p-6 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
+                    <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-4">Daily Report</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <p className="text-[22px] font-black tracking-tight">12</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Completed</p>
+                        </div>
+                        <div>
+                            <p className="text-[22px] font-black tracking-tight">$850</p>
+                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Earned</p>
+                        </div>
                     </div>
-                )}
-            </div>
-
-            <div className="absolute bottom-6 left-0 right-0 text-center bg-gradient-to-t from-white via-white to-transparent pt-8 pb-4">
-                <Link href="/doctor/appointments" className="text-xs font-bold text-gray-700 hover:text-black hover:underline underline-offset-4 decoration-2 decoration-teal-500 inline-flex items-center gap-2">
-                    Open Full Calendar <span className="text-lg leading-none">→</span>
-                </Link>
-            </div>
-
-            <div className="absolute -bottom-12 -right-12 w-48 h-48 pointer-events-none opacity-40 mix-blend-multiply">
-                <div className="absolute w-20 h-32 bg-[#a3ddd7] rounded-full rotate-45 right-10 bottom-10 blur-xl"></div>
-                <div className="absolute w-16 h-16 bg-[#e9ccae] rounded-full right-20 bottom-24 blur-xl"></div>
+                    <Link href="/doctor/appointments" className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-xs font-black">
+                        View Full Schedule
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                    </Link>
+                </div>
             </div>
         </div>
     )

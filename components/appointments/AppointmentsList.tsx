@@ -90,7 +90,7 @@ export default function AppointmentsList({ upcomingAppointments, pastAppointment
 
   const handleJoinSession = (link: string | undefined | null) => {
     if (!link) {
-      alert("Meeting link will be shared 10 minutes before the session starts.")
+      alert("Meeting link is not available yet. Please check back soon.")
       return
     }
     window.open(link, "_blank")

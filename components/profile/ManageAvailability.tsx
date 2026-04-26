@@ -51,6 +51,29 @@ export default function ManageAvailability({
     }))
   }
 
+  const addBreak = () => {
+    setAvailability((prev) => ({
+      ...prev,
+      breaks: [...(prev.breaks || []), { startTime: "13:00", endTime: "14:00" }],
+    }))
+  }
+
+  const removeBreak = (index: number) => {
+    setAvailability((prev) => ({
+      ...prev,
+      breaks: prev.breaks.filter((_: any, i: number) => i !== index),
+    }))
+  }
+
+  const updateBreak = (index: number, field: "startTime" | "endTime", value: string) => {
+    setAvailability((prev) => ({
+      ...prev,
+      breaks: prev.breaks.map((b: any, i: number) => 
+        i === index ? { ...b, [field]: value } : b
+      ),
+    }))
+  }
+
   const handleSave = async () => {
     setIsSaving(true)
     try {
@@ -144,7 +167,7 @@ export default function ManageAvailability({
               onChange={(e) =>
                 setAvailability({ ...availability, startTime: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
             />
           </div>
           <div>
@@ -157,9 +180,72 @@ export default function ManageAvailability({
               onChange={(e) =>
                 setAvailability({ ...availability, endTime: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
             />
           </div>
+        </div>
+
+        {/* Breaks / Unavailable Times */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-medium text-gray-700">
+              Breaks / Unavailable Times
+            </label>
+            <button
+              onClick={addBreak}
+              className="text-[13px] font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1.5"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="w-4 h-4">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Add Break
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            {availability.breaks && availability.breaks.length > 0 ? (
+              availability.breaks.map((brk: any, index: number) => (
+                <div key={index} className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100 group transition-all">
+                  <div className="flex-1 grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Start</span>
+                      <input
+                        type="time"
+                        value={brk.startTime}
+                        onChange={(e) => updateBreak(index, "startTime", e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm font-medium"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">End</span>
+                      <input
+                        type="time"
+                        value={brk.endTime}
+                        onChange={(e) => updateBreak(index, "endTime", e.target.value)}
+                        className="w-full px-3 py-1.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm font-medium"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => removeBreak(index)}
+                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                    title="Remove break"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-6 border-2 border-dashed border-gray-100 rounded-2xl">
+                <p className="text-sm text-gray-400 font-medium">No breaks added yet</p>
+              </div>
+            )}
+          </div>
+        </div>
         </div>
 
         {/* Save Button */}
@@ -173,7 +259,6 @@ export default function ManageAvailability({
           </button>
         </div>
       </div>
-    </div>
   )
 }
 

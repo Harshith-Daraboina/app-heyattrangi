@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Generate meeting link and chat channel (placeholder)
-    const meetingLink = `https://meet.attrangi.com/${appointmentId}`
+    const meetingLink = `https://meet-heyattrangi.vercel.app/${appointmentId}`
     const chatChannelId = `chat_${appointmentId}`
 
     await prisma.appointment.update({

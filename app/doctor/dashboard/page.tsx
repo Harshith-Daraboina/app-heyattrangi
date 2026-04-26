@@ -2,7 +2,6 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import Sidebar from "@/components/doctor/Sidebar"
 import SecondaryColumn from "@/components/doctor/dashboard/SecondaryColumn"
 import CenterColumn from "@/components/doctor/dashboard/CenterColumn"
 import RightColumn from "@/components/doctor/dashboard/RightColumn"
@@ -43,9 +42,7 @@ export default async function DoctorDashboard() {
   }
 
   return (
-    <div className="h-screen w-full bg-white font-sans overflow-hidden flex">
-      <Sidebar />
-      <SecondaryColumn />
+    <div className="flex flex-1 w-full relative h-full">
       <CenterColumn displayName={displayName} upcomingAppointments={upcomingAppointments} />
       <RightColumn upcomingAppointments={upcomingAppointments} />
     </div>

@@ -82,7 +82,14 @@ export default function DetailView({ appointment }: { appointment: Appointment }
       alert("Meeting link will be shared 10 minutes before the session starts.")
       return
     }
-    window.open(appointment.meetingLink, "_blank")
+    
+    // If it's an old Jitsi link, alert the user to wait for the updated link from the doctor
+    if (appointment.meetingLink.includes("jit.si")) {
+      alert("The meeting link is being updated to our new secure platform. Please refresh the page in a moment.")
+      return
+    }
+
+    window.open(`${appointment.meetingLink}?user=${encodeURIComponent(appointment.patient.name || "Patient")}&audio=true&video=true`, "_blank")
   }
 
   const handleReschedule = () => {

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import type { Adapter } from "next-auth/adapters"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
   adapter: PrismaAdapter(prisma) as Adapter,
   providers: [
