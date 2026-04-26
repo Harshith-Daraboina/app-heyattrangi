@@ -72,7 +72,7 @@ export default function AppointmentDetailsPanel({
   const router = useRouter()
   const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<"details" | "session" | "payment">("session")
-  
+
   // Rescheduling state
   const [isRescheduling, setIsRescheduling] = useState(false)
   const [selectedDate, setSelectedDate] = useState<string>("")
@@ -100,9 +100,9 @@ export default function AppointmentDetailsPanel({
     const [endHour, endMin] = endTime.split(":").map(Number)
 
     const [y_sel, m_sel, d_sel] = dateStr.split("-").map(Number)
-    const isToday = now.getUTCFullYear() === y_sel && 
-                    now.getUTCMonth() === m_sel - 1 && 
-                    now.getUTCDate() === d_sel
+    const isToday = now.getUTCFullYear() === y_sel &&
+      now.getUTCMonth() === m_sel - 1 &&
+      now.getUTCDate() === d_sel
 
     const nowTime = now.getTime()
     const bufferTime = nowTime + (60 * 60 * 1000)
@@ -116,7 +116,7 @@ export default function AppointmentDetailsPanel({
         const timeStr = slotTime.toLocaleTimeString("en-US", {
           hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC"
         })
-        
+
         const isPastSlot = isToday && (slotTime.getTime() < bufferTime)
         const isBooked = isPastSlot || appointment.doctor.appointments?.some(appt => {
           const apptDate = new Date(appt.appointmentDate)
@@ -134,18 +134,18 @@ export default function AppointmentDetailsPanel({
     const dates: { date: string; dayName: string; dayNum: number; isFull: boolean }[] = []
     if (!appointment.doctor.availability) return dates
     const today = new Date()
-    
+
     const dayNameMap: { [key: number]: string } = {
-      0: "SUNDAY", 1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY", 
+      0: "SUNDAY", 1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY",
       4: "THURSDAY", 5: "FRIDAY", 6: "SATURDAY",
     }
-    
+
     for (let i = 0; i <= 14; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       const dateStr = date.toISOString().split("T")[0]
       const dayName = dayNameMap[date.getDay()]
-      
+
       if (appointment.doctor.availability.availableDays?.includes(dayName)) {
         const daySlots = getSlotsForDate(dateStr)
         const isFull = daySlots.length > 0 && daySlots.every(s => s.isBooked)
@@ -177,7 +177,7 @@ export default function AppointmentDetailsPanel({
       let hour24 = parseInt(hours)
       if (period.toUpperCase() === "PM" && hour24 !== 12) hour24 += 12
       else if (period.toUpperCase() === "AM" && hour24 === 12) hour24 = 0
-      
+
       const [y, m, d] = selectedDate.split("-").map(Number)
       const newDate = new Date(Date.UTC(y, m - 1, d, hour24, parseInt(minutes)))
 
@@ -458,7 +458,7 @@ export default function AppointmentDetailsPanel({
                           >
                             Join Session
                           </a>
-                          <button 
+                          <button
                             onClick={() => setIsRescheduling(true)}
                             className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-all shadow-lg shadow-orange-100"
                           >
@@ -466,14 +466,14 @@ export default function AppointmentDetailsPanel({
                           </button>
                         </div>
                       ) : (
-                        <motion.div 
+                        <motion.div
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="bg-gray-50 rounded-2xl p-6 border-2 border-orange-100"
                         >
                           <div className="flex justify-between items-center mb-6">
                             <h4 className="text-lg font-bold text-gray-900">Select New Slot</h4>
-                            <button 
+                            <button
                               onClick={() => setIsRescheduling(false)}
                               className="text-gray-400 hover:text-gray-600 text-sm font-medium"
                             >
@@ -490,13 +490,12 @@ export default function AppointmentDetailsPanel({
                                   <button
                                     key={item.date}
                                     onClick={() => setSelectedDate(item.date)}
-                                    className={`flex-shrink-0 w-14 h-16 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${
-                                      selectedDate === item.date 
-                                      ? "border-orange-500 bg-orange-500 text-white" 
-                                      : item.isFull
-                                        ? "border-red-200 bg-white opacity-40 grayscale"
-                                        : "border-green-300 bg-white hover:border-green-400"
-                                    }`}
+                                    className={`flex-shrink-0 w-14 h-16 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${selectedDate === item.date
+                                        ? "border-orange-500 bg-orange-500 text-white"
+                                        : item.isFull
+                                          ? "border-red-200 bg-white opacity-40 grayscale"
+                                          : "border-green-300 bg-white hover:border-green-400"
+                                      }`}
                                   >
                                     <span className={`text-[8px] font-black mb-0.5 ${selectedDate === item.date ? "text-white" : "text-gray-400"}`}>{item.dayName}</span>
                                     <span className="text-base font-black">{item.dayNum}</span>
@@ -520,13 +519,12 @@ export default function AppointmentDetailsPanel({
                                       key={slot.time}
                                       disabled={slot.isBooked}
                                       onClick={() => setSelectedTime(slot.time)}
-                                      className={`py-2.5 rounded-full border-2 text-[11px] font-bold transition-all ${
-                                        selectedTime === slot.time 
-                                        ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-100" 
-                                        : slot.isBooked
-                                          ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
-                                          : "border-green-300 bg-white hover:border-green-400"
-                                      }`}
+                                      className={`py-2.5 rounded-full border-2 text-[11px] font-bold transition-all ${selectedTime === slot.time
+                                          ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-100"
+                                          : slot.isBooked
+                                            ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
+                                            : "border-green-300 bg-white hover:border-green-400"
+                                        }`}
                                     >
                                       {slot.time}
                                     </button>
@@ -545,7 +543,7 @@ export default function AppointmentDetailsPanel({
                           </div>
                         </motion.div>
                       )}
-                      
+
                       {!isRescheduling && (
                         <button className="px-4 py-3 bg-gray-100 text-gray-500 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all">
                           Cancel Appointment
