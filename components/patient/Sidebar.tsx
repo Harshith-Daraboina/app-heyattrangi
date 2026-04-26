@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
@@ -89,14 +89,21 @@ const SidebarToggleIcon = ({ className, isCollapsed }: IconProps & { isCollapsed
     </svg>
 )
 
-const generalItems = [
+interface SidebarItem {
+    label: string
+    href: string
+    icon: ReactNode
+    badge?: number
+}
+
+const generalItems: SidebarItem[] = [
     { label: "Dashboard", href: "/patient/dashboard", icon: <GridIcon /> },
     { label: "Therapists", href: "/patient/therapists", icon: <UsersIcon /> },
     { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
     { label: "Mood Tracking", href: "/patient/mood", icon: <ChartIcon /> },
 ]
 
-const toolItems = [
+const toolItems: SidebarItem[] = [
     {
         label: "Pragya AI",
         href: "/patient/ai-bot",
@@ -111,6 +118,7 @@ const toolItems = [
     // { label: "Messages", href: "/patient/messages", badge: 1, icon: <ChatIcon /> },
     { label: "Profile", href: "/patient/profile", icon: <SettingsIcon /> },
 ]
+
 
 export default function Sidebar() {
     const pathname = usePathname()
