@@ -93,7 +93,18 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
       return
     }
 
-    // If no link or old Jitsi link, generate/update via API
+    // Predict the link if it's missing but paid
+    if (!appointment.meetingLink && appointment.paymentStatus === "PAID") {
+      const predictedLink = `https://meet-heyattrangi.vercel.app/${appointment.id}`
+      const linkWithParams = `${predictedLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+      window.open(linkWithParams, "_blank")
+      
+      // Optionally trigger the API in background to save it to DB
+      fetch(`/api/appointments/${appointment.id}/meeting`, { method: 'POST' }).catch(console.error)
+      return
+    }
+
+    // Fallback to existing API generation logic
     setIsGenerating(appointment.id)
     try {
       const res = await fetch(`/api/appointments/${appointment.id}/meeting`, {
@@ -103,7 +114,6 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
         const data = await res.json()
         const linkWithParams = `${data.meetingLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
         window.open(linkWithParams, "_blank")
-        // Reload to update UI with the new link
         router.refresh()
       } else {
         alert("Failed to generate meeting link. Please try again.")
