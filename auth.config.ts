@@ -15,8 +15,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account, profile }) {
-      // Allow sign in
+    async signIn({ user, account }) {
+      if (account?.provider === "google" && user?.email) {
+        const domain = user.email.split("@")[1]?.toLowerCase()
+        if (domain) {
+          const org = await prisma.organization.findFirst({
+            where: {
+              domains: {
+                has: domain,
+              },
+            },
+          })
+
+          if (org && (user.plan !== "ORGANIZATION" || user.orgId !== org.id)) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: {
+                plan: "ORGANIZATION",
+                orgId: org.id,
+              },
+            })
+          }
+        }
+      }
+
       return true
     },
     async redirect({ url, baseUrl }) {
@@ -38,7 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, user }) {
       if (session.user && user) {
         try {
-          // Get user role from database
+          // Get user role and plan from database
           const dbUser = await prisma.user.findUnique({
             where: { id: user.id },
             include: {
@@ -51,9 +73,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           
           session.user.id = user.id
           session.user.role = dbUser?.role || "PATIENT"
+          session.user.plan = dbUser?.plan
+          session.user.orgId = dbUser?.orgId
         } catch (error) {
           console.error("Error in session callback:", error)
-          // Fallback to basic session if database query fails
           session.user.id = user.id
           session.user.role = "PATIENT"
         }

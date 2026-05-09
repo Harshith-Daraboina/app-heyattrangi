@@ -71,7 +71,7 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
     if (!doctor.availability?.availableDays?.includes(dayName)) return []
 
     const now = new Date()
-    const bufferTime = now.getTime() + (60 * 60 * 1000)
+    const bufferTime = now.getTime()
 
     for (let h = startHour; h <= endHour; h++) {
       for (let m = 0; m < 60; m += duration) {

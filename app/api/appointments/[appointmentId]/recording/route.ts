@@ -26,7 +26,7 @@ export async function POST(
         // 2. Trigger Transcription via Standalone Service (Hugging Face)
         const transcriptionServiceUrl = process.env.TRANSCRIPTION_SERVICE_URL || "https://heyattrangi-spaces-open-whisper-be.hf.space/transcribe"
         // Use your public or local URL for the callback
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
         const callbackUrl = `${baseUrl}/api/appointments/${appointmentId}/recording/callback`
 
         try {

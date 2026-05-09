@@ -56,17 +56,6 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
 
     return (
         <div className="hidden xl:flex flex-col w-[400px] bg-white h-full px-5 py-5 relative">
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <button className="w-9 h-9 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm ring-4 ring-gray-50/50">
-                        <SearchIcon className="w-3.5 h-3.5" />
-                    </button>
-                    <button className="w-9 h-9 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-800 hover:border-gray-200 transition-colors bg-white shadow-sm relative ring-4 ring-gray-50/50">
-                        <BellIcon className="w-3.5 h-3.5" />
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-green-500 rounded-full border border-white" />
-                    </button>
-                </div>
-            </div>
 
             {/* Schedule Section */}
             <div className="mb-3">

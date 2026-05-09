@@ -1,41 +1,172 @@
 "use client"
 
-export default function BillingSection() {
+import { User } from "@prisma/client"
+
+interface BillingSectionProps {
+    user: User
+}
+
+const planBillingMap: Record<string, { label: string; price: string; description: string }> = {
+    ESSENTIAL: {
+        label: "Essential",
+        price: "₹49/mo",
+        description: "Core self-care tools, AI interactions, and standard support.",
+    },
+    PREMIUM: {
+        label: "Premium",
+        price: "₹299/mo",
+        description: "Enhanced access, more credits, and premium support.",
+    },
+    ORGANIZATION: {
+        label: "Organization",
+        price: "Billed by your institution",
+        description: "College or corporate plan with organization-managed billing.",
+    },
+}
+
+export default function BillingSection({ user }: BillingSectionProps) {
+    const plan = user.plan || "ESSENTIAL"
+    const billing = planBillingMap[plan] || planBillingMap.ESSENTIAL
+    const isOrg = plan === "ORGANIZATION"
+
     return (
         <div className="space-y-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Balance Card */}
-                <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col justify-between">
-                    <div>
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Available Credits</h2>
-                        <div className="flex items-end gap-2 mb-2">
-                            <span className="text-5xl font-black text-orange-400">1,250</span>
-                            <span className="text-gray-500 font-medium mb-1">Credits</span>
+                <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50">
+                    <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Active Plan</h2>
+                    <p className="text-sm text-gray-500 mb-2">Current subscription</p>
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h3 className="text-2xl font-black text-gray-900">{billing.label}</h3>
+                            <p className="text-sm text-gray-500 mt-1">{billing.description}</p>
                         </div>
-                        <p className="text-xs text-gray-400 font-medium">Used for AI bot interactions and premium features.</p>
+                        <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em]">
+                            {billing.price}
+                        </span>
                     </div>
-                    <button className="mt-8 bg-[#98c99f] text-white px-6 py-3 rounded-2xl text-sm font-bold shadow-sm hover:opacity-90 transition-opacity w-full">
-                        Purchase More Credits
-                    </button>
+                    <div className="mt-6 border-t border-gray-100 pt-5 text-sm text-gray-600 space-y-3">
+                        <div className="flex justify-between">
+                            <span>Billing cycle</span>
+                            <span>{isOrg ? "Organization managed" : "Monthly"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Plan type</span>
+                            <span>{billing.label}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span>Payment method</span>
+                            <span>{isOrg ? "Institution billing" : "Visa •••• 4242"}</span>
+                        </div>
+                    </div>
                 </div>
 
-                {/* Payment Method Card */}
-                <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col justify-between">
-                    <div>
-                        <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Payment Method</h2>
-                        <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-                            <div className="w-12 h-8 bg-blue-900 rounded-md flex items-center justify-center text-white font-bold text-xs italic tracking-tighter">VISA</div>
-                            <div>
-                                <p className="font-bold text-sm text-gray-800">•••• •••• •••• 4242</p>
-                                <p className="text-xs text-gray-500 font-medium">Expires 12/28</p>
+                {/* Compare Plans Section */}
+                <div className="bg-white rounded-[24px] shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50 overflow-hidden">
+                    <div className="p-8 border-b border-gray-50">
+                        <h2 className="text-2xl font-black text-gray-900 mb-1">Compare plans</h2>
+                        <p className="text-sm text-gray-500">Need more details before choosing? <a href="/pricing" className="font-bold text-gray-900 hover:underline">See feature breakdown &darr;</a></p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                        
+                        {/* Essential Plan */}
+                        <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Essential</h3>
+                            <div className="flex items-baseline mb-2">
+                                <span className="text-5xl font-black tracking-tight text-gray-900">₹49</span>
+                                <span className="text-sm text-gray-500 font-medium ml-1">/mo</span>
+                            </div>
+                            <p className="text-sm font-bold text-teal-600 mb-6">Affordable start</p>
+                            <p className="text-sm text-gray-600 mb-8 min-h-[60px]">Core self-care tools, AI interactions, and standard support.</p>
+                            
+                            <div className="space-y-3 mb-8 text-xs">
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Chats</span>
+                                    <span className="font-bold text-gray-900">Limited</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Analytics</span>
+                                    <span className="font-bold text-gray-900">Basic</span>
+                                </div>
+                                <div className="flex justify-between items-center pb-1">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Support</span>
+                                    <span className="font-bold text-gray-900">Standard</span>
+                                </div>
+                            </div>
+                            
+                            <button className="mt-auto w-full py-3 px-2 text-sm lg:text-base bg-[#001e2b] text-white font-bold rounded-lg hover:bg-gray-800 transition-colors">
+                                Current Plan
+                            </button>
+                        </div>
+
+                        {/* Premium Plan */}
+                        <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors md:relative md:before:content-[''] md:before:absolute md:before:top-0 md:before:left-0 md:before:right-0 md:before:h-1 md:before:bg-blue-400 md:before:z-10">
+                            <div className="absolute top-[-12px] left-1/2 -translate-x-1/2 bg-white border border-blue-200 text-blue-500 text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full shadow-sm z-20 whitespace-nowrap hidden md:block">
+                                RECOMMENDED
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">Premium</h3>
+                            <div className="flex items-baseline mb-2">
+                                <span className="text-5xl font-black tracking-tight text-gray-900">₹299</span>
+                                <span className="text-sm text-gray-500 font-medium ml-1">/mo</span>
+                            </div>
+                            <p className="text-sm text-gray-500 mb-6 font-medium">Billed monthly</p>
+                            <p className="text-sm text-gray-600 mb-8 min-h-[60px]">Enhanced access, more credits, and premium support.</p>
+                            
+                            <div className="space-y-3 mb-8 text-xs">
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Chats</span>
+                                    <span className="font-bold text-gray-900">Unlimited</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Analytics</span>
+                                    <span className="font-bold text-gray-900">Advanced</span>
+                                </div>
+                                <div className="flex justify-between items-center pb-1">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Support</span>
+                                    <span className="font-bold text-gray-900">Priority</span>
+                                </div>
+                            </div>
+                            
+                            <button className="mt-auto w-full py-3 px-2 text-sm xl:text-base bg-[#00ed64] text-gray-900 font-bold rounded-lg hover:bg-[#00c753] transition-colors mb-4 whitespace-nowrap">
+                                Upgrade to Premium
+                            </button>
+                            <div className="text-center">
+                                <a href="/pricing" className="text-sm font-bold text-gray-900 hover:underline flex items-center justify-center gap-1">View Premium pricing <span className="text-lg leading-none">&rsaquo;</span></a>
                             </div>
                         </div>
+
+                        {/* Organization Plan */}
+                        <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 mt-2 md:mt-0">Organization</h3>
+                            <div className="flex items-baseline mb-2 mt-3">
+                                <span className="text-3xl font-black tracking-tight text-gray-900 leading-none">Custom</span>
+                            </div>
+                            <p className="text-sm font-bold text-teal-600 mb-6 mt-3">Billed by institution</p>
+                            <p className="text-sm text-gray-600 mb-8 min-h-[60px]">College or corporate plan with organization-managed billing.</p>
+                            
+                            <div className="space-y-3 mb-8 text-xs">
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Users</span>
+                                    <span className="font-bold text-gray-900">Managed</span>
+                                </div>
+                                <div className="flex justify-between items-center border-b border-gray-50 pb-2">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Admin</span>
+                                    <span className="font-bold text-gray-900">Portal</span>
+                                </div>
+                                <div className="flex justify-between items-center pb-1">
+                                    <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Billing</span>
+                                    <span className="font-bold text-gray-900">Centralized</span>
+                                </div>
+                            </div>
+                            
+                            <button className="mt-auto w-full py-3 px-2 text-sm xl:text-base bg-[#001e2b] text-white font-bold rounded-lg hover:bg-gray-800 transition-colors mb-4 whitespace-nowrap">
+                                Contact Sales
+                            </button>
+                            <div className="text-center">
+                                <a href="/pricing" className="text-sm font-bold text-gray-900 hover:underline flex items-center justify-center gap-1">View Org pricing <span className="text-lg leading-none">&rsaquo;</span></a>
+                            </div>
+                        </div>
+
                     </div>
-                    <button className="mt-8 bg-white border-2 border-gray-100 text-gray-600 px-6 py-3 rounded-2xl text-sm font-bold shadow-sm hover:bg-gray-50 hover:text-gray-800 transition-colors w-full">
-                        Update Payment Method
-                    </button>
                 </div>
-            </div>
 
             {/* Transaction History */}
             <div className="bg-white rounded-[24px] p-8 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50">
@@ -46,9 +177,9 @@ export default function BillingSection() {
 
                 <div className="space-y-4">
                     {[
-                        { id: "TXN-8392", date: "24 Oct 2026", desc: "500 Credits Top-up", amount: "$50.00", status: "Success" },
-                        { id: "TXN-8341", date: "15 Oct 2026", desc: "Therapist Appointment Booking", amount: "$120.00", status: "Success" },
-                        { id: "TXN-8205", date: "01 Sep 2026", desc: "Monthly Subscription - Basic", amount: "$29.99", status: "Success" },
+                        { id: "TXN-8392", date: "24 Oct 2026", desc: "500 Credits Top-up", amount: "₹4,199.00", status: "Success" },
+                        { id: "TXN-8341", date: "15 Oct 2026", desc: "Therapist Appointment Booking", amount: "₹9,999.00", status: "Success" },
+                        { id: "TXN-8205", date: "01 Sep 2026", desc: "Monthly Subscription - Premium", amount: "₹2,499.00", status: "Success" },
                     ].map((txn, i) => (
                         <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer">
                             <div className="flex items-center gap-4">
@@ -71,6 +202,8 @@ export default function BillingSection() {
                     <button className="text-xs font-bold text-gray-500 hover:text-gray-800">Load More</button>
                 </div>
             </div>
+
+
         </div>
     )
 }

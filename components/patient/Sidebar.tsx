@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 
 // --- Custom Icons matching the Mockup ---
 type IconProps = { className?: string }
@@ -116,13 +117,13 @@ const toolItems: SidebarItem[] = [
         )
     },
     // { label: "Messages", href: "/patient/messages", badge: 1, icon: <ChatIcon /> },
-    { label: "Profile", href: "/patient/profile", icon: <SettingsIcon /> },
 ]
 
 
 export default function Sidebar() {
     const pathname = usePathname()
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const { data: session } = useSession()
 
     return (
         <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-[#131316] border-r border-[#27272a] z-40`}>
@@ -227,21 +228,57 @@ export default function Sidebar() {
                     </nav>
                 </div>
 
-                {/* Mood Atmosphere Video */}
-                {!isCollapsed && (
-                    <div className="mt-8 mb-6 mx-4 rounded-2xl overflow-hidden aspect-video relative border border-white/10 group">
-                        <video
-                            src="/videos/mood.mp4"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-transparent to-transparent" />
-                        <div className="absolute bottom-3 left-3">
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em]">Atmosphere</p>
-                        </div>
+                {/* Profile Card / Button */}
+                {!isCollapsed ? (
+                    <div className="mt-auto mb-6 mx-4">
+                        <Link
+                            href="/patient/profile"
+                            className="flex items-center gap-3 p-3 bg-[#1e1e24] hover:bg-[#27272a] rounded-2xl border border-white/5 transition-all duration-300 group ring-1 ring-white/5 shadow-md select-none cursor-pointer"
+                        >
+                            <div className="w-10 h-10 rounded-xl overflow-hidden relative bg-zinc-800 shrink-0 border border-white/10 shadow-sm flex items-center justify-center">
+                                {session?.user?.image ? (
+                                    <Image
+                                        src={session.user.image}
+                                        alt={session.user.name || "User"}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm font-bold text-zinc-400">
+                                        {session?.user?.name ? session.user.name[0].toUpperCase() : "U"}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-black text-white leading-none tracking-wide truncate">
+                                    {session?.user?.name || "Patient"}
+                                </span>
+                                <span className="text-[11px] font-bold text-zinc-400 mt-1 uppercase tracking-wider leading-none">
+                                    View Profile
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="mt-auto mb-6 mx-auto w-full flex justify-center px-2">
+                        <Link
+                            href="/patient/profile"
+                            className="w-12 h-12 rounded-2xl overflow-hidden relative bg-[#1e1e24] hover:bg-[#27272a] border border-white/5 transition-all duration-300 group flex items-center justify-center ring-1 ring-white/5 shadow-md cursor-pointer shrink-0"
+                            title={session?.user?.name || "Profile"}
+                        >
+                            {session?.user?.image ? (
+                                <Image
+                                    src={session.user.image}
+                                    alt={session.user.name || "User"}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <span className="text-base font-black text-zinc-400">
+                                    {session?.user?.name ? session.user.name[0].toUpperCase() : "U"}
+                                </span>
+                            )}
+                        </Link>
                     </div>
                 )}
 
@@ -257,17 +294,6 @@ export default function Sidebar() {
                     </div>
                 )} */}
 
-                {/* Collapsed State CTA */}
-                {isCollapsed && (
-                    <div className="mt-auto mb-6 mx-auto w-full flex justify-center px-2">
-                        <button
-                            className="w-12 h-12 bg-white hover:bg-zinc-200 text-black rounded-full shadow-lg flex items-center justify-center transition-all"
-                            title="Book Appointment"
-                        >
-                            <span className="text-black text-2xl leading-none font-medium mb-1">+</span>
-                        </button>
-                    </div>
-                )}
             </aside>
         </div>
     )

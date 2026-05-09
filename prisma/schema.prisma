@@ -18,6 +18,8 @@ model User {
   emailVerified DateTime?
   image         String?
   role          UserRole  @default(PATIENT)
+  plan          PlanType   @default(ESSENTIAL)
+  orgId         String?    @db.ObjectId
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -28,8 +30,24 @@ model User {
   caregiver     Caregiver?
   doctor        Doctor?
   admin         Admin?
+  organization  Organization? @relation(fields: [orgId], references: [id])
   
   @@map("users")
+}
+
+model Organization {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  domains       String[]
+  planType      PlanType  @default(ORGANIZATION)
+  aiLimit       Int?
+  journalingType String?
+  goalType      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  users         User[]
+
+  @@map("organizations")
 }
 
 model Account {
@@ -77,6 +95,12 @@ enum UserRole {
   CAREGIVER
   DOCTOR
   ADMIN
+}
+
+enum PlanType {
+  ESSENTIAL
+  PREMIUM
+  ORGANIZATION
 }
 
 // Patient Model
@@ -287,6 +311,7 @@ model Appointment {
   paymentStatus   PaymentStatus     @default(PENDING)
   meetingLink     String?
   chatChannelId   String?
+  doctorNotes     String?           @db.String
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   
