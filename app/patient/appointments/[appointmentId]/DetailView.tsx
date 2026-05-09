@@ -89,7 +89,15 @@ export default function DetailView({ appointment }: { appointment: Appointment }
       return
     }
 
-    window.open(`${appointment.meetingLink}?user=${encodeURIComponent(appointment.patient.name || "Patient")}&audio=true&video=true`, "_blank")
+    let link = appointment.meetingLink
+    if (link.includes("meet-heyattrangi.vercel.app")) {
+      const baseUrl = link.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+      link = `${baseUrl}/lobby?user=${encodeURIComponent(appointment.patient.name || "Patient")}&audio=true&video=true`
+    } else {
+      link = `${link}?user=${encodeURIComponent(appointment.patient.name || "Patient")}&audio=true&video=true`
+    }
+
+    window.open(link, "_blank")
   }
 
   const handleReschedule = () => {

@@ -62,6 +62,103 @@ export default function MoodTrackerClient({
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState<{ type: "success" | "error"; title: string; body?: string } | null>(null)
 
+  // Guide State (starts automatically as 0 to pop up)
+  const [guideIndex, setGuideIndex] = useState<number | null>(0)
+
+  const GUIDE_STEPS = [
+    {
+      title: "🎭 Select Your Mood",
+      description: "Click on one of the emotions on the Mood Gauge, then rate its intensity from 1 to 10 using the buttons below.",
+      section: "mood-section"
+    },
+    {
+      title: "📊 Rate Vital Metrics",
+      description: "Use the sliders to log your Energy, Stress, and Sleep quality. Keeping these updated helps identify trends over time.",
+      section: "metrics-section"
+    },
+    {
+      title: "🏷️ Tag Activities & Triggers",
+      description: "Select preset tags or add custom tags to record what you're doing or any triggers affecting your mental state.",
+      section: "tags-section"
+    },
+    {
+      title: "✍️ Expression Analysis",
+      description: "Write down your thoughts in the journal. You can also use Voice Input for hand-free expression!",
+      section: "journal-section"
+    }
+  ]
+
+  const handleStepChange = (index: number) => {
+    setGuideIndex(index)
+    const id = GUIDE_STEPS[index].section
+    const el = document.getElementById(id)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }
+
+  const renderSectionGuide = (stepIdx: number) => {
+    if (guideIndex !== stepIdx) return null
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="col-span-full mb-6 flex flex-col md:flex-row items-center gap-6 p-6 bg-gradient-to-r from-orange-50/60 to-amber-50/40 rounded-3xl border border-orange-100/40 shadow-sm relative overflow-hidden"
+      >
+        {/* Gliding Robot */}
+        <div className="relative w-20 h-20 shrink-0 flex items-center justify-center">
+          <motion.img
+            layoutId="robot-companion-avatar"
+            src="/header2.png"
+            alt="Pragya"
+            className="object-contain w-full h-full"
+            transition={{ type: "spring", stiffness: 100, damping: 15 }}
+          />
+        </div>
+
+        {/* Dialog Content */}
+        <div className="flex-1 text-left">
+          <div className="mb-1 flex items-center justify-between">
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--color-brand)]">
+              Guide Step {stepIdx + 1} of {GUIDE_STEPS.length}
+            </span>
+            <button
+              onClick={() => setGuideIndex(null)}
+              className="text-gray-400 hover:text-gray-600 font-bold text-xs font-black uppercase tracking-widest"
+            >
+              ✕ Dismiss Guide
+            </button>
+          </div>
+          <h4 className="text-sm font-black text-gray-900 mb-1">{GUIDE_STEPS[stepIdx].title}</h4>
+          <p className="text-xs text-gray-500 font-medium leading-relaxed mb-4">{GUIDE_STEPS[stepIdx].description}</p>
+          
+          <div className="flex gap-2">
+            <button
+              disabled={stepIdx === 0}
+              onClick={() => handleStepChange(stepIdx - 1)}
+              className="px-4 py-1.5 text-[10px] font-bold border border-gray-200 bg-white rounded-full hover:bg-gray-50 disabled:opacity-30 transition-all active:scale-[0.98]"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={() => {
+                if (stepIdx < GUIDE_STEPS.length - 1) {
+                  handleStepChange(stepIdx + 1)
+                } else {
+                  setGuideIndex(null)
+                }
+              }}
+              className="px-4 py-1.5 text-[10px] font-black bg-[var(--color-brand)] text-white rounded-full shadow-sm transition-all active:scale-[0.98]"
+            >
+              {stepIdx === GUIDE_STEPS.length - 1 ? "Complete Tour 🎉" : "Next Step →"}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
   useEffect(() => {
     if (!toast) return
     const t = setTimeout(() => setToast(null), 5000)
@@ -161,6 +258,15 @@ export default function MoodTrackerClient({
           </div>
 
           <div className="flex items-center gap-4">
+            {guideIndex === null && (
+              <button
+                onClick={() => handleStepChange(0)}
+                className="flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 text-xs font-bold text-[var(--color-brand)] border border-orange-100/60 hover:bg-orange-100/30 transition-colors"
+              >
+                <img src="/header2.png" alt="Robot" className="w-4 h-4 object-contain" />
+                <span>Show Guide</span>
+              </button>
+            )}
             <div className="flex flex-col items-end">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Daily Streak</span>
               <span className="text-sm font-bold text-[var(--color-brand)]">{streak} Days 🔥</span>
@@ -173,7 +279,10 @@ export default function MoodTrackerClient({
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-6 gap-6 items-start">
 
-            <section className="col-span-full md:col-span-4 rounded-[2.5rem] bg-white p-10 border border-[var(--color-border)] shadow-sm hover:shadow-md transition-shadow">
+            {/* Step 1 Guide */}
+            {renderSectionGuide(0)}
+
+            <section id="mood-section" className="col-span-full md:col-span-4 rounded-[2.5rem] bg-white p-10 border border-[var(--color-border)] shadow-sm hover:shadow-md transition-shadow scroll-mt-24">
               <MoodGauge
                 selectedMood={mood}
                 onSelect={(m) => {
@@ -209,8 +318,11 @@ export default function MoodTrackerClient({
               </div>
             </div>
 
+            {/* Step 2 Guide */}
+            {renderSectionGuide(1)}
+
             {/* 4. Metrics Grid - Medium (Col Span 3) */}
-            <section className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col gap-6">
+            <section id="metrics-section" className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col gap-6 scroll-mt-24">
               <h3 className="text-lg font-bold">Vital Metrics</h3>
 
               <div className="space-y-6">
@@ -252,8 +364,11 @@ export default function MoodTrackerClient({
               </div>
             </section>
 
+            {/* Step 3 Guide */}
+            {renderSectionGuide(2)}
+
             {/* 5. Tags Selection - Medium (Col Span 3) */}
-            <section className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col h-full">
+            <section id="tags-section" className="col-span-full md:col-span-3 rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm flex flex-col h-full scroll-mt-24">
               <h3 className="mb-4 text-lg font-bold">What's happening?</h3>
               <div className="flex flex-wrap gap-2 mb-auto">
                 {PRESET_TAGS.map((tag) => (
@@ -261,8 +376,8 @@ export default function MoodTrackerClient({
                     key={tag}
                     onClick={() => setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])}
                     className={`rounded-full border px-4 py-2 text-xs font-bold transition-all ${tags.includes(tag)
-                        ? "border-[var(--color-brand)] bg-orange-50 text-[var(--color-brand)]"
-                        : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-orange-200"
+                      ? "border-[var(--color-brand)] bg-orange-50 text-[var(--color-brand)]"
+                      : "border-[var(--color-border)] text-[var(--color-text-secondary)] hover:border-orange-200"
                       }`}
                   >
                     {tag}
@@ -292,8 +407,11 @@ export default function MoodTrackerClient({
               </div>
             </section>
 
+            {/* Step 4 Guide */}
+            {renderSectionGuide(3)}
+
             {/* 6. Expression Analysis (Notes) - Full Width */}
-            <section className="col-span-full rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm">
+            <section id="journal-section" className="col-span-full rounded-[2.5rem] bg-white p-8 border border-[var(--color-border)] shadow-sm scroll-mt-24">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold">Expression Analysis</h3>
                 <button className="flex items-center gap-2 rounded-full bg-orange-50 px-4 py-2 text-xs font-bold text-[var(--color-brand)]">
@@ -303,8 +421,8 @@ export default function MoodTrackerClient({
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="I'm feeling..."
-                className="auth-form-control min-h-[150px] rounded-[2rem] p-8 text-lg border-dashed border-2"
+                placeholder="Write down your thoughts... Speak from the heart."
+                className="auth-form-control min-h-[200px] rounded-[2rem] p-8 text-lg border-dashed border-2 w-full resize-none focus:border-[var(--color-brand)] outline-none"
               />
             </section>
 

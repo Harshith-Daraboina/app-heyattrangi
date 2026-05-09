@@ -88,7 +88,8 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
   const handleJoinOrCreateSession = async (appointment: Appointment) => {
     // If we have a link and it's already the new domain, open it
     if (appointment.meetingLink && appointment.meetingLink.includes("meet-heyattrangi.vercel.app")) {
-      const linkWithParams = `${appointment.meetingLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+      const baseUrl = appointment.meetingLink.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+      const linkWithParams = `${baseUrl}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
       window.open(linkWithParams, "_blank")
       return
     }
@@ -96,7 +97,7 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
     // Predict the link if it's missing but paid
     if (!appointment.meetingLink && appointment.paymentStatus === "PAID") {
       const predictedLink = `https://meet-heyattrangi.vercel.app/${appointment.id}`
-      const linkWithParams = `${predictedLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+      const linkWithParams = `${predictedLink}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
       window.open(linkWithParams, "_blank")
       
       // Optionally trigger the API in background to save it to DB
@@ -112,7 +113,8 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
       })
       if (res.ok) {
         const data = await res.json()
-        const linkWithParams = `${data.meetingLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+        const baseUrl = data.meetingLink.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+        const linkWithParams = `${baseUrl}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
         window.open(linkWithParams, "_blank")
         router.refresh()
       } else {

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
+import { useSession } from "next-auth/react"
 
 interface Appointment {
   id: string
@@ -83,6 +84,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AppointmentsList({ upcomingAppointments, pastAppointments }: AppointmentsListProps) {
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
@@ -100,6 +102,13 @@ export default function AppointmentsList({ upcomingAppointments, pastAppointment
       alert("Meeting link is not available yet. Please check back soon.")
       return
     }
+
+    if (link.includes("meet-heyattrangi.vercel.app")) {
+      const baseUrl = link.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+      const userName = session?.user?.name || "Patient"
+      link = `${baseUrl}/lobby?user=${encodeURIComponent(userName)}&audio=true&video=true`
+    }
+
     window.open(link, "_blank")
   }
 
