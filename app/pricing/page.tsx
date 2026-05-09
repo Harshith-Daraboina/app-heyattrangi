@@ -58,8 +58,8 @@ export default function PricingPage() {
                             <p className="text-sm font-medium text-gray-500">For those wanting basic tracking tools.</p>
                         </div>
                         <div className="mb-8 relative z-10">
-                            <span className="text-5xl font-black tracking-tighter text-gray-900">Free</span>
-                            <span className="text-gray-500 font-medium">/forever</span>
+                            <span className="text-5xl font-black tracking-tighter text-gray-900">₹49</span>
+                            <span className="text-gray-500 font-medium">/mo</span>
                         </div>
                         <Link href="/auth/signup" className="w-full py-4 text-center rounded-2xl bg-gray-100 text-gray-900 font-bold hover:bg-gray-200 transition-colors mb-10">Get Started</Link>
 
@@ -84,11 +84,11 @@ export default function PricingPage() {
                         <div className="absolute top-0 right-0 bg-[#d8b4e8] text-[#5e3871] font-bold text-[10px] uppercase tracking-widest px-4 py-2 rounded-bl-2xl">Recommended</div>
 
                         <div className="mb-8 relative z-10">
-                            <h3 className="text-xl font-black text-gray-900 mb-2">Patient Plus</h3>
-                            <p className="text-sm font-medium text-gray-700">Full access to comprehensive care.</p>
+                            <h3 className="text-xl font-black text-gray-900 mb-2">Premium</h3>
+                            <p className="text-sm font-medium text-gray-700">Enhanced access, more credits, and premium support.</p>
                         </div>
                         <div className="mb-8 relative z-10 flex items-end">
-                            <span className="text-5xl font-black tracking-tighter text-gray-900">${isAnnual ? '29' : '39'}</span>
+                            <span className="text-5xl font-black tracking-tighter text-gray-900">₹{isAnnual ? '249' : '299'}</span>
                             <span className="text-gray-600 font-medium mb-1">/mo</span>
                         </div>
                         <Link href="/auth/signup" className="w-full py-4 text-center rounded-2xl bg-gray-900 text-white font-bold hover:bg-gray-800 transition-colors mb-10 shadow-lg">Start Free Trial</Link>
@@ -116,12 +116,11 @@ export default function PricingPage() {
                     {/* Therapist Pro */}
                     <div className="bg-[#fff8e7] border border-[#f4b860]/20 rounded-[40px] p-10 flex flex-col relative overflow-hidden">
                         <div className="mb-8 relative z-10">
-                            <h3 className="text-xl font-black text-gray-900 mb-2">Therapist Pro</h3>
-                            <p className="text-sm font-medium text-gray-500">Everything needed to run your practice.</p>
+                            <h3 className="text-xl font-black text-gray-900 mb-2">Organization</h3>
+                            <p className="text-sm font-medium text-gray-500">College or corporate plan with managed billing.</p>
                         </div>
-                        <div className="mb-8 relative z-10 flex items-end">
-                            <span className="text-5xl font-black tracking-tighter text-gray-900">${isAnnual ? '99' : '119'}</span>
-                            <span className="text-gray-500 font-medium mb-1">/mo</span>
+                        <div className="mb-8 relative z-10 flex items-end mt-4 mb-2">
+                            <span className="text-5xl font-black tracking-tighter text-gray-900">Custom</span>
                         </div>
                         <Link href="/auth/signup" className="w-full py-4 text-center rounded-2xl bg-white text-gray-900 font-bold border-2 border-gray-900 hover:bg-gray-50 shadow-[offset-2] transition-all mb-10">Join Network</Link>
 

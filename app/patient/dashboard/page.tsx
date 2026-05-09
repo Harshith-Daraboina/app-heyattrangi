@@ -13,6 +13,7 @@ async function DashboardContent() {
   const user = await getCurrentUser()
   
   const displayName = session?.user?.name || "You"
+  const plan = user?.plan || "ESSENTIAL"
   const patient = await prisma.patient.findUnique({ where: { userId: user?.id } })
 
   let upcomingAppointments: any[] = []
@@ -52,7 +53,7 @@ async function DashboardContent() {
 
   return (
     <div className="flex flex-1 w-full relative h-full">
-      <CenterColumn displayName={displayName} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
+      <CenterColumn displayName={displayName} plan={plan} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
       <RightColumn upcomingAppointments={upcomingAppointments} />
       <DailyRewardPopup />
     </div>

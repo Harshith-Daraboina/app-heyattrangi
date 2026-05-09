@@ -7,9 +7,15 @@ import { useState } from "react"
 
 
 
-export default function CenterColumn({ displayName, upcomingAppointments, dailyTasks = [] }: { displayName: string, upcomingAppointments: any[], dailyTasks?: any[] }) {
+export default function CenterColumn({ displayName, plan, upcomingAppointments, dailyTasks = [] }: { displayName: string, plan?: string, upcomingAppointments: any[], dailyTasks?: any[] }) {
     const [activityFilter, setActivityFilter] = useState('Monthly')
     const [activityFilterOpen, setActivityFilterOpen] = useState(false)
+    const normalizedPlan = plan || 'ESSENTIAL'
+    const planLabelMap: Record<string, string> = {
+        ESSENTIAL: 'Essential',
+        PREMIUM: 'Premium',
+        ORGANIZATION: 'Organization',
+    }
     const chartData = [
         { month: "Jul", value: 30 },
         { month: "Aug", value: 45 },
@@ -31,7 +37,12 @@ export default function CenterColumn({ displayName, upcomingAppointments, dailyT
             <header className="flex items-start justify-between w-full mb-6">
                 <div>
                     <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Hi, {displayName}.</h1>
-                    <p className="text-gray-500 font-medium tracking-wide mt-1">Let's track your health daily!</p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <span className="text-gray-500 font-medium tracking-wide">Let's track your health daily!</span>
+                        <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+                            {planLabelMap[normalizedPlan] ?? normalizedPlan.replace(/_/g, " ")}
+                        </span>
+                    </div>
                 </div>
             </header>
 

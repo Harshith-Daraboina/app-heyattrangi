@@ -88,12 +88,24 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
   const handleJoinOrCreateSession = async (appointment: Appointment) => {
     // If we have a link and it's already the new domain, open it
     if (appointment.meetingLink && appointment.meetingLink.includes("meet-heyattrangi.vercel.app")) {
-      const linkWithParams = `${appointment.meetingLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+      const baseUrl = appointment.meetingLink.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+      const linkWithParams = `${baseUrl}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
       window.open(linkWithParams, "_blank")
       return
     }
 
-    // If no link or old Jitsi link, generate/update via API
+    // Predict the link if it's missing but paid
+    if (!appointment.meetingLink && appointment.paymentStatus === "PAID") {
+      const predictedLink = `https://meet-heyattrangi.vercel.app/${appointment.id}`
+      const linkWithParams = `${predictedLink}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+      window.open(linkWithParams, "_blank")
+      
+      // Optionally trigger the API in background to save it to DB
+      fetch(`/api/appointments/${appointment.id}/meeting`, { method: 'POST' }).catch(console.error)
+      return
+    }
+
+    // Fallback to existing API generation logic
     setIsGenerating(appointment.id)
     try {
       const res = await fetch(`/api/appointments/${appointment.id}/meeting`, {
@@ -101,9 +113,9 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
       })
       if (res.ok) {
         const data = await res.json()
-        const linkWithParams = `${data.meetingLink}?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
+        const baseUrl = data.meetingLink.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+        const linkWithParams = `${baseUrl}/lobby?user=${encodeURIComponent(doctorName)}&audio=true&video=true`
         window.open(linkWithParams, "_blank")
-        // Reload to update UI with the new link
         router.refresh()
       } else {
         alert("Failed to generate meeting link. Please try again.")
@@ -143,9 +155,12 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
     const loading = isGenerating === appointment.id
 
     return (
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 py-6 px-4 border-b border-gray-50 last:border-0 hover:bg-gray-50/80 transition-all rounded-[24px] group">
+      <Link 
+        href={`/doctor/appointments/${appointment.id}`}
+        className="block flex flex-col md:flex-row md:items-center justify-between gap-6 py-6 px-6 border-b border-gray-50 last:border-0 hover:bg-blue-50/40 transition-all rounded-[32px] group relative"
+      >
         <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-white shadow-sm relative shrink-0 bg-gray-100">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-white shadow-sm relative shrink-0 bg-gray-100 group-hover:scale-105 transition-transform">
             {avatar ? (
               <Image src={avatar} alt={patientName} fill className="object-cover" />
             ) : (
@@ -176,11 +191,15 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 relative z-10" onClick={(e) => e.stopPropagation()}>
           {isUpcoming && appointment.status !== "CANCELLED" && (
             <>
               <button 
-                onClick={() => handleJoinOrCreateSession(appointment)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleJoinOrCreateSession(appointment);
+                }}
                 disabled={loading || appointment.paymentStatus !== "PAID"}
                 className={`flex items-center gap-2 px-6 py-3 text-white text-sm font-black rounded-2xl transition-all shadow-lg shadow-blue-100 disabled:opacity-50 disabled:cursor-not-allowed ${
                   appointment.paymentStatus === "PAID" ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400"
@@ -199,7 +218,11 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
                 {appointment.meetingLink ? "Join Session" : loading ? "Generating..." : appointment.paymentStatus === "PAID" ? "Start Session" : "Payment Pending"}
               </button>
               <button 
-                onClick={() => handleCancel(appointment.id)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleCancel(appointment.id);
+                }}
                 className="px-6 py-3 text-red-500 hover:bg-red-50 text-sm font-black rounded-2xl transition-all"
               >
                 Cancel
@@ -207,13 +230,14 @@ export default function DoctorAppointmentsList({ upcomingAppointments, pastAppoi
             </>
           )}
           {!isUpcoming && (
-             <Link href={`/doctor/appointments/${appointment.id}`} className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-black rounded-2xl transition-all">
+             <span className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-black rounded-2xl transition-all">
                 View Case Notes
-             </Link>
+             </span>
           )}
         </div>
-      </div>
+      </Link>
     )
+    
   }
 
   return (

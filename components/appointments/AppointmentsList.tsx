@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
+import { useSession } from "next-auth/react"
 
 interface Appointment {
   id: string
@@ -83,16 +84,31 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function AppointmentsList({ upcomingAppointments, pastAppointments }: AppointmentsListProps) {
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState<"upcoming" | "past">("upcoming")
   const [filterStatus, setFilterStatus] = useState<string>("all")
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
   const router = useRouter()
 
-  const handleJoinSession = (link: string | undefined | null) => {
+  const handleJoinSession = (appointment: Appointment) => {
+    let link = appointment.meetingLink
+    
+    // If no link exists but the appointment is confirmed, generate the predictable link
+    if (!link && (appointment.status === "CONFIRMED" || appointment.status === "PENDING")) {
+      link = `https://meet-heyattrangi.vercel.app/${appointment.id}`
+    }
+
     if (!link) {
       alert("Meeting link is not available yet. Please check back soon.")
       return
     }
+
+    if (link.includes("meet-heyattrangi.vercel.app")) {
+      const baseUrl = link.split('?')[0].replace(/\/lobby$/, '').replace(/\/$/, '')
+      const userName = session?.user?.name || "Patient"
+      link = `${baseUrl}/lobby?user=${encodeURIComponent(userName)}&audio=true&video=true`
+    }
+
     window.open(link, "_blank")
   }
 
@@ -180,7 +196,7 @@ export default function AppointmentsList({ upcomingAppointments, pastAppointment
         <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
           {isUpcoming && (
             <button 
-              onClick={() => handleJoinSession(appointment.meetingLink)}
+              onClick={() => handleJoinSession(appointment)}
               className="flex items-center gap-1.5 px-4 py-2 bg-[#22C55E] hover:bg-[#16A34A] text-white text-[13px] font-bold rounded-xl transition-all shadow-sm shadow-emerald-100"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
