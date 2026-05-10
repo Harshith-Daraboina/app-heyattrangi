@@ -25,20 +25,41 @@ export default async function DoctorDashboard() {
 
   let upcomingAppointments: any[] = []
   if (doctor) {
+    // Step 1: fetch appointments with patient (but NOT user include, to avoid null-relation crash)
     const appointments = await prisma.appointment.findMany({
       where: { doctorId: doctor.id },
-      include: {
-        patient: {
-          include: { user: { select: { name: true, image: true } } },
-        },
-      },
+      include: { patient: true },
       orderBy: { appointmentDate: "asc" },
     })
 
+    // Step 2: collect valid userIds and fetch matching users
+    const patientUserIds = appointments
+      .map((a) => a.patient?.userId)
+      .filter(Boolean) as string[]
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: patientUserIds } },
+      select: { id: true, name: true, image: true },
+    })
+    const userMap = Object.fromEntries(users.map((u) => [u.id, u]))
+
+    // Step 3: merge user back onto patient, skip any orphaned records
     const now = new Date()
-    upcomingAppointments = appointments.filter(
-      (apt) => new Date(apt.appointmentDate) > now && apt.status !== "CANCELLED"
-    )
+    upcomingAppointments = appointments
+      .filter(
+        (apt) =>
+          apt.patient?.userId &&
+          userMap[apt.patient.userId] &&
+          new Date(apt.appointmentDate) > now &&
+          apt.status !== "CANCELLED"
+      )
+      .map((apt) => ({
+        ...apt,
+        patient: {
+          ...apt.patient,
+          user: userMap[apt.patient!.userId],
+        },
+      }))
   }
 
   return (

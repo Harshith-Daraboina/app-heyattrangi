@@ -16,30 +16,49 @@ async function AppointmentsContent() {
 
   const now = new Date()
 
-  // Fetch upcoming appointments
-  const upcomingAppointments = await prisma.appointment.findMany({
+  // Helper: build a userMap from a list of appointments that already have patient.userId
+  async function resolveUsers(apts: { patient: { userId: string } | null }[]) {
+    const ids = apts.map((a) => a.patient?.userId).filter(Boolean) as string[]
+    const users = await prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, name: true, email: true, image: true },
+    })
+    return Object.fromEntries(users.map((u) => [u.id, u]))
+  }
+
+  // Merge user into patient and drop orphaned records (no matching user in DB)
+  function mergeUsers<T extends { patient: { userId: string } | null }>(
+    apts: T[],
+    userMap: Record<string, { id: string; name: string | null; email: string | null; image: string | null }>
+  ) {
+    return apts
+      .filter((a) => a.patient?.userId && userMap[a.patient.userId])
+      .map((a) => ({
+        ...a,
+        patient: { ...a.patient!, user: userMap[a.patient!.userId] },
+      }))
+  }
+
+  // --- Upcoming appointments ---
+  const upcomingRaw = await prisma.appointment.findMany({
     where: {
       doctorId: doctor.id,
       appointmentDate: { gt: now },
       status: { not: "CANCELLED" },
     },
     include: {
-      patient: {
-        include: {
-          user: {
-            select: { name: true, email: true, image: true },
-          },
-        },
-      },
+      patient: true,
       payment: {
         select: { id: true, amount: true, status: true, createdAt: true },
       },
     },
     orderBy: { appointmentDate: "asc" },
   })
+  const upcomingUserMap = await resolveUsers(upcomingRaw)
+  const upcomingAppointments = mergeUsers(upcomingRaw, upcomingUserMap)
 
-  // Fetch past appointments
-  const pastAppointments = await prisma.appointment.findMany({
+  // --- Past appointments ---
+  const pastRaw = await prisma.appointment.findMany({
     where: {
       doctorId: doctor.id,
       OR: [
@@ -49,19 +68,15 @@ async function AppointmentsContent() {
       ],
     },
     include: {
-      patient: {
-        include: {
-          user: {
-            select: { name: true, email: true, image: true },
-          },
-        },
-      },
+      patient: true,
       payment: {
         select: { id: true, amount: true, status: true, createdAt: true },
       },
     },
     orderBy: { appointmentDate: "desc" },
   })
+  const pastUserMap = await resolveUsers(pastRaw)
+  const pastAppointments = mergeUsers(pastRaw, pastUserMap)
 
   return (
     <div className="flex-1 min-w-0 h-full overflow-y-auto w-full relative">
