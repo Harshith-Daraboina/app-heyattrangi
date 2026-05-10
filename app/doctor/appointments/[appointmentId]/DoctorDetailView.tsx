@@ -533,7 +533,7 @@ export default function DoctorDetailView({ appointment }: { appointment: Appoint
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wider">Active Now</span>
-                  </div>
+                  </div> 
                 </div>
               </div>
               <button 
