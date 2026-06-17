@@ -13,13 +13,16 @@ datasource db {
 // NextAuth User model
 model User {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  clerkId       String?
   name          String?
   email         String?   @unique
   emailVerified DateTime?
   image         String?
   role          UserRole  @default(PATIENT)
-  plan          PlanType   @default(ESSENTIAL)
+  plan          PlanType   @default(FREE)
   orgId         String?    @db.ObjectId
+  dailyAiChatCount Int       @default(0)
+  lastAiChatDate   String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   
@@ -31,6 +34,7 @@ model User {
   doctor        Doctor?
   admin         Admin?
   organization  Organization? @relation(fields: [orgId], references: [id])
+  transactions  Transaction[]
   
   @@map("users")
 }
@@ -98,6 +102,7 @@ enum UserRole {
 }
 
 enum PlanType {
+  FREE
   ESSENTIAL
   PREMIUM
   ORGANIZATION
@@ -209,7 +214,8 @@ model Doctor {
   notAcceptingCases String[]        @default([]) // Emergency/crisis, controlled substances, etc.
   
   // Availability & Scheduling (Section 4) - Handled by DoctorAvailability model
-  appointmentDuration Int?          @default(30) // in minutes
+  appointmentDuration Int?          @default(45) // in minutes
+  slotBuffer          Int?          @default(15) // in minutes
   
   // Payment Details (Section 5)
   consultationFee   Float           @default(0)
@@ -232,7 +238,17 @@ model Doctor {
   specialization    String?         // Keeping for backward compatibility
   experience        Int?            // Keeping for backward compatibility
   licenseVerified   Boolean         @default(false)
-  status            DoctorStatus    @default(PENDING)
+  status            DoctorStatus    @default(PENDING_PROFILE)
+  
+  // KYC & Documents
+  aadhaarDocument   String?
+  panDocument       String?
+  panNumber         String?
+  cancelledChequeDocument String?
+  razorpayAccountId String?
+  paymentsEnabled   Boolean         @default(false)
+  payoutStatus      String          @default("PENDING")
+
   availability      DoctorAvailability?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
@@ -245,8 +261,10 @@ model Doctor {
 }
 
 enum DoctorStatus {
-  PENDING
-  APPROVED
+  PENDING_PROFILE
+  PENDING_DOCUMENTS
+  PENDING_REVIEW
+  VERIFIED
   REJECTED
   SUSPENDED
 }
@@ -542,4 +560,21 @@ model Reward {
   createdAt       DateTime @default(now())
 
   @@map("rewards")
+}
+
+// Transaction Model for Top-ups and generalized payments
+model Transaction {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String   @db.ObjectId
+  type              String   // e.g., "CREDIT_TOPUP", "SUBSCRIPTION"
+  amount            Float
+  status            String   // e.g., "SUCCESS", "FAILED"
+  description       String
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  createdAt         DateTime @default(now())
+  
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
 }

@@ -28,7 +28,7 @@ interface Doctor {
   bio: string | null
   consultationFee: number | null
   licenseVerified: boolean
-  status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED"
+  status: "PENDING_PROFILE" | "PENDING_DOCUMENTS" | "PENDING_REVIEW" | "VERIFIED" | "REJECTED" | "SUSPENDED"
   createdAt: Date
   user: {
     id: string
@@ -60,8 +60,8 @@ export default function DoctorVerificationPanel({ doctor }: DoctorVerificationPa
     )
   }
 
-  const handleVerify = async (verified: boolean, action: "APPROVED" | "REJECTED") => {
-    if (!confirm(`Are you sure you want to ${action === "APPROVED" ? "approve" : "reject"} this doctor?`)) {
+  const handleVerify = async (verified: boolean, action: "VERIFIED" | "REJECTED") => {
+    if (!confirm(`Are you sure you want to ${action === "VERIFIED" ? "approve" : "reject"} this doctor?`)) {
       return
     }
 
@@ -79,7 +79,7 @@ export default function DoctorVerificationPanel({ doctor }: DoctorVerificationPa
 
       if (response.ok) {
         router.refresh()
-        alert(`Doctor ${action === "APPROVED" ? "approved" : "rejected"} successfully!`)
+        alert(`Doctor ${action === "VERIFIED" ? "approved" : "rejected"} successfully!`)
       } else {
         const error = await response.json()
         alert(error.error || "Failed to update doctor status")
@@ -122,9 +122,9 @@ export default function DoctorVerificationPanel({ doctor }: DoctorVerificationPa
               </div>
               <span
                 className={`px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
-                  doctor.status === "APPROVED"
+                  doctor.status === "VERIFIED"
                     ? "bg-green-100 text-green-800"
-                    : doctor.status === "PENDING"
+                    : doctor.status === "PENDING_PROFILE" || doctor.status === "PENDING_DOCUMENTS" || doctor.status === "PENDING_REVIEW"
                     ? "bg-orange-100 text-orange-800"
                     : doctor.status === "REJECTED"
                     ? "bg-red-100 text-red-800"
@@ -280,8 +280,8 @@ export default function DoctorVerificationPanel({ doctor }: DoctorVerificationPa
 
           <div className="flex gap-4 pt-4">
             <button
-              onClick={() => handleVerify(true, "APPROVED")}
-              disabled={isUpdating || doctor.status === "APPROVED"}
+              onClick={() => handleVerify(true, "VERIFIED")}
+              disabled={isUpdating || doctor.status === "VERIFIED"}
               className="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md"
             >
               {isUpdating ? "Processing..." : "✓ Approve Doctor"}

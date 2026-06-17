@@ -64,7 +64,7 @@ export default async function TherapistDetailPage({
     },
   })
 
-  if (!doctor || doctor.status !== "APPROVED") {
+  if (!doctor || doctor.status !== "VERIFIED") {
     return (
       <div className="flex-1 min-w-0 h-full overflow-y-auto w-full bg-[var(--color-bg)]">
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

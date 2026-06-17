@@ -10,7 +10,7 @@ export async function POST(req: Request) {
         const { rewardId } = await req.json()
         if (!rewardId) return NextResponse.json({ error: "Missing rewardId" }, { status: 400 })
 
-        const patient = await prisma.patient.findUnique({ where: { userId: user.id } })
+        const patient = await prisma.patient.findUnique({ where: { userId: user?.id || "" } })
         if (!patient) return NextResponse.json({ error: "Patient profile not found" }, { status: 404 })
 
         const reward = await prisma.reward.findUnique({ where: { id: rewardId } })

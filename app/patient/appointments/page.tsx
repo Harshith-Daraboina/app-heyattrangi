@@ -11,7 +11,7 @@ async function AppointmentsContent() {
   if (!user) redirect("/auth/signin")
 
   const patient = await prisma.patient.findUnique({
-    where: { userId: user.id },
+    where: { userId: user?.id || "" },
   })
 
   if (!patient) {

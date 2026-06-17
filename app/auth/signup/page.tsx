@@ -103,33 +103,64 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen w-full flex bg-white font-sans">
       {/* Left Branding Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#fff8e7] relative overflow-hidden flex-col justify-between p-12 xl:p-20">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#f4b860 2px, transparent 2px)", backgroundSize: "30px 30px" }}></div>
+      <div className="hidden lg:flex lg:w-[65%] xl:w-[70%] relative overflow-hidden flex-col justify-between p-12 xl:p-16 bg-[#fafafa]">
+        {/* Animated glowing background lines - Attrangi style */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes shine-sweep {
+              0% { transform: translateX(-100vw) rotate(-15deg); }
+              100% { transform: translateX(100vw) rotate(-15deg); }
+            }
+          `}} />
+          {/* Base gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-[#fff4ec] to-[#ffe8d6] opacity-80"></div>
+          
+          {/* Animated floating blobs (shine effect) */}
+          <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-gradient-to-br from-[#ff6b00]/20 to-transparent rounded-full blur-[80px] animate-[pulse_4s_ease-in-out_infinite]"></div>
+          <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-gradient-to-tr from-[#ff9800]/20 to-transparent rounded-full blur-[80px] animate-[pulse_5s_ease-in-out_infinite] [animation-delay:2s]"></div>
+          <div className="absolute top-[30%] left-[20%] w-[40%] h-[40%] bg-[#ff5252]/10 rounded-full blur-[100px] animate-[pulse_6s_ease-in-out_infinite] [animation-delay:1s]"></div>
+          
+          {/* Static Diagonal bands for structure */}
+          <div className="absolute top-[-50%] left-[0%] w-[15%] h-[200%] bg-white/30 -rotate-[15deg] mix-blend-overlay"></div>
+          <div className="absolute top-[-50%] left-[25%] w-[8%] h-[200%] bg-white/40 -rotate-[15deg] mix-blend-overlay"></div>
+          <div className="absolute top-[-50%] left-[45%] w-[12%] h-[200%] bg-white/20 -rotate-[15deg] mix-blend-overlay"></div>
+          <div className="absolute top-[-50%] left-[70%] w-[20%] h-[200%] bg-white/30 -rotate-[15deg] mix-blend-overlay"></div>
 
-        <div className="relative z-10 w-14 h-14 rounded-2xl bg-gray-900 grid place-items-center shadow-xl">
-          <span className="text-white text-3xl font-black">A</span>
+          {/* Sweeping shining lights perfectly matching the band tilt */}
+          <div className="absolute top-[-50%] bottom-[-50%] w-[40%] h-[200%] bg-gradient-to-r from-transparent via-white/50 to-transparent mix-blend-overlay animate-[shine-sweep_7s_infinite_linear]"></div>
+          <div className="absolute top-[-50%] bottom-[-50%] w-[20%] h-[200%] bg-gradient-to-r from-transparent via-white/70 to-transparent mix-blend-overlay animate-[shine-sweep_11s_infinite_linear_3s]"></div>
         </div>
 
-        <div className="relative z-10 my-auto">
-          <h1 className="text-5xl xl:text-[64px] font-black text-gray-900 leading-[1.05] tracking-tight mb-6">
-            Begin your<br />journey to<br />wellbeing.
-          </h1>
-          <p className="text-lg xl:text-xl font-medium text-gray-700 max-w-md leading-relaxed">
-            Join Attrangi to access personalized care, secure therapy sessions, and a supportive community.
-          </p>
+        <div className="relative z-10 w-fit flex items-center gap-3">
+          <div className="w-8 h-8 grid grid-cols-2 grid-rows-2 gap-[2px]">
+            <div className="bg-[#FFC107] rounded-tl-[4px]"></div>
+            <div className="bg-[#FF5252] rounded-tr-[4px]"></div>
+            <div className="bg-[#FF9800] rounded-bl-[4px]"></div>
+            <div className="bg-[#E64A19] rounded-br-[4px]"></div>
+          </div>
+          <span className="font-extrabold text-2xl tracking-tighter text-gray-900">Hey Attrangi!</span>
         </div>
 
-        {/* Abstract Illustration */}
-        <div className="relative z-10 w-full h-48 mt-12 pl-10 flex items-end">
-          {/* Abstract Sun/Moon shape */}
-          <div className="w-32 h-32 bg-[#ffcfa3] rounded-full absolute bottom-16 -left-8 filter blur-lg opacity-60"></div>
-          <div className="w-48 h-24 bg-[#6a805d] rounded-t-full relative z-20 border-b-4 border-[#4a5d23]"></div>
-          <div className="w-16 h-40 bg-[#e5c6f5] rounded-t-full ml-4 relative z-10 border-l-4 border-[#cda2e3]"></div>
+        <div className="relative z-10 mt-auto">
+          <h2 className="text-2xl xl:text-[28px] font-bold text-[#14293f] leading-snug tracking-tight mb-6 max-w-2xl">
+            Join the community with thousands of people already trusting the website
+          </h2>
+          <div className="flex flex-wrap items-center gap-8 text-[15px] font-semibold text-[#14293f]">
+             <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-light text-[#ff6b00]">✧</span> 24/7 AI Companion
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-light text-[#ff6b00]">✧</span> Verified Therapists
+             </div>
+             <div className="flex items-center gap-2">
+                <span className="text-xl leading-none font-light text-[#ff6b00]">✧</span> Personalized Care
+             </div>
+          </div>
         </div>
       </div>
 
       {/* Right Form Panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 bg-white relative">
+      <div className="w-full lg:w-[35%] xl:w-[30%] flex items-center justify-center p-8 sm:p-12 bg-white relative">
         <div className="w-full max-w-[460px]">
           <div className="mb-8 text-center lg:text-left">
             <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Create your account</h2>
@@ -215,6 +246,20 @@ export default function SignUpPage() {
                       <span>{selectedRole ? 'Continue with Google' : 'Select a role to continue'}</span>
                     </>
                   )}
+                </button>
+
+                <button
+                  type="button"
+                  disabled
+                  className="w-full flex items-center justify-center gap-3 bg-gray-50 text-gray-400 border-2 border-gray-100 rounded-[20px] py-4 cursor-not-allowed relative overflow-hidden group"
+                >
+                  <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.02)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] animate-[shine-sweep_3s_infinite_linear]"></div>
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span className="font-bold text-base flex items-center gap-2">
+                    Continue with Phone <span className="text-[10px] uppercase tracking-wider bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full ml-1 font-black">Coming Soon</span>
+                  </span>
                 </button>
 
                 <div className="relative flex items-center py-2">

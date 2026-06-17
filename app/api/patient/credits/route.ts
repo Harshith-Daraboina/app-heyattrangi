@@ -7,7 +7,7 @@ export async function GET(req: Request) {
         const user = await getCurrentUser()
         if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         
-        const patient = await prisma.patient.findUnique({ where: { userId: user.id } })
+        const patient = await prisma.patient.findUnique({ where: { userId: user?.id || "" } })
         if (!patient) return NextResponse.json({ error: "Patient profile not found" }, { status: 404 })
 
         const wallet = await prisma.careCreditWallet.upsert({

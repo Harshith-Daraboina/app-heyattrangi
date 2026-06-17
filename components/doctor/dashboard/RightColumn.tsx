@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, addMonths, subMonths, isSameDay, getDay } from "date-fns"
 
 const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
@@ -10,6 +10,12 @@ const days = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 export default function RightColumn({ upcomingAppointments }: { upcomingAppointments: any[] }) {
     const [currentDate, setCurrentDate] = useState(new Date())
     const [selectedDate, setSelectedDate] = useState(new Date())
+    const [currentTime, setCurrentTime] = useState(new Date())
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 60000)
+        return () => clearInterval(timer)
+    }, [])
 
     const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1))
     const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1))
@@ -90,34 +96,40 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
 
                 <div className="space-y-4 overflow-y-auto pr-2 pb-6 custom-scrollbar">
                     {displayAppointments.length > 0 ? (
-                        displayAppointments.map((apt, i) => (
-                            <div key={apt.id} className="group bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-100 transition-all cursor-pointer flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
-                                        {apt.patient?.user?.image ? (
-                                            <div className="w-full h-full rounded-xl overflow-hidden relative">
-                                                <Image src={apt.patient.user.image} alt="Patient" fill className="object-cover" />
-                                            </div>
-                                        ) : (
-                                            <span>🧑</span>
-                                        )}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <h5 className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{apt.patient?.user?.name || "Patient"}</h5>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                            <span className="text-[11px] font-bold text-gray-400 tracking-tight">
-                                                {format(new Date(apt.appointmentDate), "hh:mm a")}
-                                            </span>
-                                            <div className="w-1 h-1 rounded-full bg-gray-300" />
-                                            <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">Video</span>
+                        displayAppointments.map((apt, i) => {
+                            const aptTime = new Date(apt.appointmentDate)
+                            const endTime = new Date(aptTime.getTime() + 45 * 60000) // Assumes 45 min duration
+                            const isHappeningNow = currentTime >= aptTime && currentTime <= endTime
+
+                            return (
+                                <div key={apt.id} className={`group bg-white rounded-2xl p-4 border shadow-sm transition-all cursor-pointer flex items-center justify-between ${isHappeningNow ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/30 shadow-md' : 'border-gray-100 hover:border-blue-100 hover:shadow-md'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-lg shadow-inner group-hover:scale-110 transition-transform">
+                                            {apt.patient?.user?.image ? (
+                                                <div className="w-full h-full rounded-xl overflow-hidden relative">
+                                                    <Image src={apt.patient.user.image} alt="Patient" fill className="object-cover" />
+                                                </div>
+                                            ) : (
+                                                <span>🧑</span>
+                                            )}
                                         </div>
-                                    </div>
+                                        <div className="flex flex-col">
+                                            <h5 className="font-black text-sm text-gray-900 group-hover:text-blue-600 transition-colors">{apt.patient?.user?.name || "Patient"}</h5>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className={`text-[11px] font-bold tracking-tight ${isHappeningNow ? 'text-blue-600 animate-pulse' : 'text-gray-400'}`}>
+                                                    {isHappeningNow ? 'HAPPENING NOW' : format(aptTime, "hh:mm a")}
+                                                </span>
+                                                <div className={`w-1 h-1 rounded-full ${isHappeningNow ? 'bg-blue-300' : 'bg-gray-300'}`} />
+                                                <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wide">Video</span>
+                                            </div>
+                                        </div>
                                 </div>
                                 <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
+                                    </div>
                                 </div>
-                            </div>
-                        ))
+                            )
+                        })
                     ) : (
                         <div className="flex flex-col items-center justify-center py-10 opacity-30 grayscale">
                             <svg className="w-12 h-12 mb-3" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -126,25 +138,7 @@ export default function RightColumn({ upcomingAppointments }: { upcomingAppointm
                     )}
                 </div>
 
-                {/* Bottom Stats Card */}
-                <div className="mt-auto bg-gray-900 rounded-[28px] p-6 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl" />
-                    <h4 className="text-[10px] font-black text-white/50 uppercase tracking-[0.2em] mb-4">Daily Report</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <p className="text-[22px] font-black tracking-tight">12</p>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Completed</p>
-                        </div>
-                        <div>
-                            <p className="text-[22px] font-black tracking-tight">$850</p>
-                            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Earned</p>
-                        </div>
-                    </div>
-                    <Link href="/doctor/appointments" className="mt-6 flex items-center justify-center gap-2 w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all text-xs font-black">
-                        View Full Schedule
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" /></svg>
-                    </Link>
-                </div>
+
             </div>
         </div>
     )

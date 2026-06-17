@@ -35,7 +35,7 @@ async function AppointmentDetailContent({ appointmentId }: { appointmentId: stri
 
   // Verify this doctor owns this appointment
   const doctor = await prisma.doctor.findUnique({
-    where: { userId: user.id }
+    where: { userId: user?.id || "" }
   })
   if (!doctor || appointment.doctorId !== doctor.id) {
      redirect("/doctor/appointments")

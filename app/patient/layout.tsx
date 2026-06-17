@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation"
-import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
 import Sidebar from "@/components/patient/Sidebar"
 import LoadingBar from "@/components/ui/LoadingBar"
@@ -9,11 +8,6 @@ export default async function PatientLayout({
 }: {
   children: React.ReactNode
 }) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
 
   const user = await getCurrentUser()
 

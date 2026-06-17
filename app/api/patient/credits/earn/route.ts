@@ -10,7 +10,7 @@ export async function POST(req: Request) {
         const { actionType } = await req.json()
         if (!actionType) return NextResponse.json({ error: "Missing actionType" }, { status: 400 })
 
-        const patient = await prisma.patient.findUnique({ where: { userId: user.id } })
+        const patient = await prisma.patient.findUnique({ where: { userId: user?.id || "" } })
         if (!patient) return NextResponse.json({ error: "Patient profile not found" }, { status: 404 })
 
         const todayStart = new Date()

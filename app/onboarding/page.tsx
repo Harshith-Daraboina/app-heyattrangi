@@ -11,26 +11,72 @@ import AdminOnboarding from "@/components/onboarding/AdminOnboarding"
 function OnboardingContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const role = searchParams.get("role") as UserRole | null
+  const initialRole = searchParams.get("role") as UserRole | null
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)
 
-  if (!role) {
+  useEffect(() => {
+    if (initialRole) {
+      setSelectedRole(initialRole)
+    }
+  }, [initialRole])
+
+  if (!selectedRole) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Invalid role. Please sign in again.</p>
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 py-12 px-4 flex items-center justify-center font-sans">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-xl border border-gray-100">
+          <h2 className="text-2xl font-extrabold text-gray-900 text-center mb-2">Welcome to Hey Attrangi!</h2>
+          <p className="text-gray-500 text-center mb-8 font-medium">Please select your profile type to continue onboarding</p>
+          
+          <div className="space-y-4">
+            <button
+              onClick={() => setSelectedRole("PATIENT")}
+              className="w-full p-5 text-left bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-[#ff6b00] rounded-2xl transition-all"
+            >
+              <h3 className="font-bold text-gray-900">I am a Patient</h3>
+              <p className="text-xs text-gray-400 mt-1 font-medium">Find therapy and track wellbeing</p>
+            </button>
+
+            <button
+              onClick={() => setSelectedRole("DOCTOR")}
+              className="w-full p-5 text-left bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-[#ff6b00] rounded-2xl transition-all"
+            >
+              <h3 className="font-bold text-gray-900">I am a Therapist</h3>
+              <p className="text-xs text-gray-400 mt-1 font-medium">Manage practice and connect</p>
+            </button>
+
+            <button
+              onClick={() => setSelectedRole("CAREGIVER")}
+              className="w-full p-5 text-left bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-[#ff6b00] rounded-2xl transition-all"
+            >
+              <h3 className="font-bold text-gray-900">I am a Caregiver</h3>
+              <p className="text-xs text-gray-400 mt-1 font-medium">Support a loved one's wellness journey</p>
+            </button>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
-      {role === "PATIENT" ? (
+    <div className="min-h-screen relative font-sans">
+      {/* Small top bar to change role if selected by mistake */}
+      <div className="absolute top-4 right-4 z-50">
+        <button
+          onClick={() => setSelectedRole(null)}
+          className="text-xs font-bold text-gray-500 hover:text-[#ff6b00] bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm transition-colors cursor-pointer"
+        >
+          Change Role ({selectedRole === "PATIENT" ? "Patient" : selectedRole === "DOCTOR" ? "Therapist" : "Caregiver"})
+        </button>
+      </div>
+
+      {selectedRole === "PATIENT" ? (
         <PatientOnboarding />
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 py-12 px-4">
-          <div className="max-w-3xl mx-auto">
-            {role === "CAREGIVER" && <CaregiverOnboarding />}
-            {role === "DOCTOR" && <DoctorOnboarding />}
-            {role === "ADMIN" && <AdminOnboarding />}
+          <div className="max-w-3xl mx-auto pt-6">
+            {selectedRole === "CAREGIVER" && <CaregiverOnboarding />}
+            {selectedRole === "DOCTOR" && <DoctorOnboarding />}
+            {selectedRole === "ADMIN" && <AdminOnboarding />}
           </div>
         </div>
       )}
@@ -53,4 +99,3 @@ export default function OnboardingPage() {
     </Suspense>
   )
 }
-

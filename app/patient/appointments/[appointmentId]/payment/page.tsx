@@ -88,7 +88,7 @@ export default async function AppointmentPaymentPage({
 
   // Verify the appointment belongs to the current user
   const patient = await prisma.patient.findUnique({
-    where: { userId: user.id },
+    where: { userId: user?.id || "" },
   })
 
   if (!patient || appointment.patientId !== patient.id) {

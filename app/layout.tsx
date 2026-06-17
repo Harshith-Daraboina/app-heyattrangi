@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Quicksand } from "next/font/google";
 import "./globals.css";
-import SessionProvider from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +12,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Comprehensive mental health support platform connecting patients, caregivers, and therapists",
@@ -21,6 +26,7 @@ export const metadata: Metadata = {
   },
 };
 
+import SessionProvider from "@/components/providers/SessionProvider";
 import { auth } from "@/auth.config";
 
 export default async function RootLayout({
@@ -33,7 +39,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${quicksand.variable} antialiased`}
         suppressHydrationWarning
       >
         <SessionProvider session={session}>{children}</SessionProvider>
