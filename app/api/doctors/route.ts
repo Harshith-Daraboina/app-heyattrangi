@@ -45,6 +45,8 @@ export async function GET(req: NextRequest) {
             consultationTypes: true,
             preferredAgeGroups: true,
             city: true,
+            appointmentDuration: true,
+            slotBuffer: true,
             user: {
               select: {
                 name: true,
@@ -55,6 +57,10 @@ export async function GET(req: NextRequest) {
             availability: {
               select: {
                 isAvailable: true,
+                availableDays: true,
+                startTime: true,
+                endTime: true,
+                breaks: true,
               },
             },
           },

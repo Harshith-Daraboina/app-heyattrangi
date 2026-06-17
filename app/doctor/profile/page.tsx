@@ -19,7 +19,7 @@ export default async function DoctorProfilePage() {
 
   // Fetch doctor details with availability
   const doctor = await prisma.doctor.findUnique({
-    where: { userId: user.id },
+    where: { userId: user?.id || "" },
     include: {
       availability: true,
     },

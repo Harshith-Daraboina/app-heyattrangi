@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
+import { useSession } from "next-auth/react"
 import SignOutButton from "@/components/auth/SignOutButton"
 
 // --- Icons ---
@@ -42,6 +43,29 @@ const SettingsIcon = ({ className }: IconProps) => (
     </svg>
 )
 
+const WalletIcon = ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+        <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+        <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+)
+
+const UsersIcon = ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+)
+
+const SparklesIcon = ({ className }: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`${iconBase} ${className ?? ""}`}>
+        <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
+)
+
 const SidebarToggleIcon = ({ className, isCollapsed }: IconProps & { isCollapsed: boolean }) => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
         className={`${iconBase} transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""} ${className ?? ""}`}>
@@ -58,13 +82,16 @@ interface SidebarItem {
 const navItems: SidebarItem[] = [
     { label: "Dashboard", href: "/doctor/dashboard", icon: <GridIcon /> },
     { label: "Appointments", href: "/doctor/appointments", icon: <CalendarIcon /> },
+    { label: "Case Studies", href: "/doctor/case-studies", icon: <UsersIcon /> },
     { label: "Availability", href: "/doctor/availability", icon: <ClockIcon /> },
-    { label: "Profile", href: "/doctor/profile", icon: <SettingsIcon /> },
+    { label: "Pragya AI", href: "/doctor/pragya", icon: <SparklesIcon /> },
+    { label: "KYC & Payouts", href: "/doctor/payouts", icon: <WalletIcon /> },
 ]
 
 export default function DoctorSidebar() {
     const pathname = usePathname()
     const [isCollapsed, setIsCollapsed] = useState(false)
+    const { data: session } = useSession()
 
     return (
         <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-[#131316] border-r border-[#27272a] z-40`}>
@@ -131,37 +158,62 @@ export default function DoctorSidebar() {
                     })}
                 </nav>
 
-                {/* Atmosphere Video (Professional Version) */}
-                {!isCollapsed && (
-                    <div className="mt-8 mb-6 mx-2 rounded-2xl overflow-hidden aspect-video relative border border-white/5 group">
-                        <video
-                            src="/videos/mood.mp4"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#131316] via-transparent to-transparent" />
-                        <div className="absolute bottom-3 left-3">
-                            <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em]">Clinical Environment</p>
-                        </div>
+
+                {/* Profile Card */}
+                {!isCollapsed ? (
+                    <div className="mt-auto mb-4 mx-4">
+                        <Link
+                            href="/doctor/profile"
+                            className="flex items-center gap-3 p-3 bg-[#1e1e24] hover:bg-[#27272a] rounded-2xl border border-white/5 transition-all duration-300 group ring-1 ring-white/5 shadow-md select-none cursor-pointer"
+                        >
+                            <div className="w-10 h-10 rounded-xl overflow-hidden relative bg-zinc-800 shrink-0 border border-white/10 shadow-sm flex items-center justify-center">
+                                {session?.user?.image ? (
+                                    <Image
+                                        src={session.user.image}
+                                        alt={session.user.name || "User"}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <span className="text-sm font-bold text-zinc-400">
+                                        {session?.user?.name ? session.user.name[0].toUpperCase() : "D"}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm font-black text-white leading-none tracking-wide truncate">
+                                    {session?.user?.name || "Doctor"}
+                                </span>
+                                <span className="text-[11px] font-bold text-zinc-400 mt-1 uppercase tracking-wider leading-none">
+                                    View Profile
+                                </span>
+                            </div>
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="mt-auto mb-4 mx-auto w-full flex justify-center px-2">
+                        <Link
+                            href="/doctor/profile"
+                            className="w-12 h-12 rounded-2xl overflow-hidden relative bg-[#1e1e24] hover:bg-[#27272a] border border-white/5 transition-all duration-300 group flex items-center justify-center ring-1 ring-white/5 shadow-md cursor-pointer shrink-0"
+                            title={session?.user?.name || "Profile"}
+                        >
+                            {session?.user?.image ? (
+                                <Image
+                                    src={session.user.image}
+                                    alt={session.user.name || "User"}
+                                    fill
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <span className="text-base font-black text-zinc-400">
+                                    {session?.user?.name ? session.user.name[0].toUpperCase() : "D"}
+                                </span>
+                            )}
+                        </Link>
                     </div>
                 )}
 
-                {/* Sign Out */}
-                <div className={`mt-auto pt-6 border-t border-white/5 ${isCollapsed ? "flex justify-center" : ""}`}>
-                    <SignOutButton className={`flex items-center gap-3 w-full rounded-xl transition-all duration-200 text-sm font-medium text-red-400 hover:bg-red-500/10 ${isCollapsed ? "justify-center p-3" : "px-4 py-3"}`}>
-                        {!isCollapsed && <span>Sign Out</span>}
-                        {isCollapsed && (
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                                <polyline points="16 17 21 12 16 7" />
-                                <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                        )}
-                    </SignOutButton>
-                </div>
+
             </aside>
         </div>
     )

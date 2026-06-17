@@ -116,7 +116,7 @@ const toolItems: SidebarItem[] = [
             </svg>
         )
     },
-    // { label: "Messages", href: "/patient/messages", badge: 1, icon: <ChatIcon /> },
+    { label: "Billing & Plans", href: "/patient/billing", icon: <CreditCardIcon className="text-[#3b82f6]" /> },
 ]
 
 

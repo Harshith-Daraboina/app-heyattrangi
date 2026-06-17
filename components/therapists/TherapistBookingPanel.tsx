@@ -26,6 +26,7 @@ interface Doctor {
   yearsOfExperience: number | null
   consultationFee: number
   appointmentDuration: number | null
+  slotBuffer?: number | null
   user: {
     id: string
     name: string | null
@@ -37,6 +38,7 @@ interface Doctor {
     startTime: string | null
     endTime: string | null
     isAvailable: boolean
+    breaks?: any
   } | null
   appointments?: { appointmentDate: Date }[]
 }
@@ -62,7 +64,10 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
 
     const startTime = doctor.availability?.startTime || "09:00"
     const endTime = doctor.availability?.endTime || "17:00"
-    const duration = doctor.appointmentDuration || 60
+    
+    const duration = doctor.appointmentDuration || 45
+    const buffer = doctor.slotBuffer !== undefined && doctor.slotBuffer !== null ? doctor.slotBuffer : 15
+    const interval = duration + buffer
 
     const [startHour, startMin] = startTime.split(":").map(Number)
     const [endHour, endMin] = endTime.split(":").map(Number)
@@ -73,27 +78,48 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
     const now = new Date()
     const bufferTime = now.getTime()
 
-    for (let h = startHour; h <= endHour; h++) {
-      for (let m = 0; m < 60; m += duration) {
-        if (h === startHour && m < startMin) continue
-        if (h === endHour && m >= endMin) break
+    const startSlot = new Date(date)
+    startSlot.setHours(startHour, startMin, 0, 0)
+    
+    const endSlot = new Date(date)
+    endSlot.setHours(endHour, endMin, 0, 0)
 
-        const slotTime = new Date(date)
-        slotTime.setHours(h, m, 0, 0)
+    let currentSlot = new Date(startSlot)
 
-        const timeStr = format(slotTime, "h:mm a")
+    while (currentSlot < endSlot) {
+      const timeStr = format(currentSlot, "h:mm a")
+      const isPast = currentSlot.getTime() < bufferTime
+      
+      const isAlreadyBooked = doctor.appointments?.some(appt => {
+        return Math.abs(new Date(appt.appointmentDate).getTime() - currentSlot.getTime()) < 1000
+      }) || false
 
-        const isPast = slotTime.getTime() < bufferTime
-        const isAlreadyBooked = doctor.appointments?.some(appt => {
-          return Math.abs(new Date(appt.appointmentDate).getTime() - slotTime.getTime()) < 1000
-        }) || false
+      const isOverlappingBreak = doctor.availability?.breaks?.some((brk: any) => {
+        if (!brk.startTime || !brk.endTime) return false
+        
+        const [bStartHour, bStartMin] = brk.startTime.split(":").map(Number)
+        const [bEndHour, bEndMin] = brk.endTime.split(":").map(Number)
+        
+        const breakStart = new Date(date)
+        breakStart.setHours(bStartHour, bStartMin, 0, 0)
+        
+        const breakEnd = new Date(date)
+        breakEnd.setHours(bEndHour, bEndMin, 0, 0)
+        
+        const slotStart = currentSlot.getTime()
+        const slotEnd = currentSlot.getTime() + duration * 60000
+        
+        return slotStart < breakEnd.getTime() && breakStart.getTime() < slotEnd
+      }) || false
 
-        slots.push({
-          time: timeStr,
-          status: isAlreadyBooked ? 'booked' : isPast ? 'unavailable' : 'available'
-        })
-      }
+      slots.push({
+        time: timeStr,
+        status: isAlreadyBooked ? 'booked' : (isPast || isOverlappingBreak) ? 'unavailable' : 'available'
+      })
+
+      currentSlot = new Date(currentSlot.getTime() + interval * 60000)
     }
+
     return slots
   }
 
@@ -177,7 +203,7 @@ export default function TherapistBookingPanel({ doctor }: TherapistBookingPanelP
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
-            <span>60 min appointments</span>
+            <span>{doctor.appointmentDuration === 30 ? 45 : (doctor.appointmentDuration || 45)} min appointments</span>
             <span className="bg-gray-100 px-3 py-1 rounded-md text-gray-700 text-[12px] ml-2">{specialization}</span>
           </div>
           <div className="flex items-center gap-2.5 text-gray-500 font-bold text-sm">

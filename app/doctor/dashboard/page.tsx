@@ -21,7 +21,7 @@ export default async function DoctorDashboard() {
 
   const displayName = session.user.name || "Doctor"
 
-  const doctor = await prisma.doctor.findUnique({ where: { userId: user.id } })
+  const doctor = await prisma.doctor.findUnique({ where: { userId: user?.id || "" } })
 
   let upcomingAppointments: any[] = []
   if (doctor) {
@@ -46,13 +46,11 @@ export default async function DoctorDashboard() {
     // Step 3: merge user back onto patient, skip any orphaned records
     const now = new Date()
     upcomingAppointments = appointments
-      .filter(
-        (apt) =>
-          apt.patient?.userId &&
-          userMap[apt.patient.userId] &&
-          new Date(apt.appointmentDate) > now &&
-          apt.status !== "CANCELLED"
-      )
+      .filter((apt) => {
+        const isValidPatient = apt.patient?.userId && userMap[apt.patient.userId]
+        const endTime = new Date(new Date(apt.appointmentDate).getTime() + 45 * 60000)
+        return isValidPatient && endTime > now && apt.status !== "CANCELLED"
+      })
       .map((apt) => ({
         ...apt,
         patient: {

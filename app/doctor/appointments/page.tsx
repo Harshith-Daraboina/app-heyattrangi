@@ -9,7 +9,7 @@ async function AppointmentsContent() {
   if (!user) return null
 
   const doctor = await prisma.doctor.findUnique({
-    where: { userId: user.id },
+    where: { userId: user?.id || "" },
   })
 
   if (!doctor) return null

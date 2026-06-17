@@ -1,10 +1,17 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import useSWR from "swr"
 import { useDebounce } from "@/lib/hooks/useDebounce"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import {
+  format,
+  addDays,
+  subDays,
+  isSameDay,
+} from "date-fns"
 
 interface Doctor {
   id: string
@@ -20,6 +27,8 @@ interface Doctor {
   consultationTypes: string[]
   preferredAgeGroups: string[]
   city: string | null
+  appointmentDuration?: number | null
+  slotBuffer?: number | null
   user: {
     name: string | null
     email: string | null
@@ -27,118 +36,771 @@ interface Doctor {
   }
   availability: {
     isAvailable: boolean
+    availableDays?: string[]
+    startTime?: string | null
+    endTime?: string | null
+    breaks?: any
   } | null
+  appointments?: { appointmentDate: Date }[]
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export default function TherapistList() {
-  const [specialization, setSpecialization] = useState("")
+  const router = useRouter()
+  
+  // Filtering & Sorting states
+  const [specialization, setSpecialization] = useState("") // Default active tab is empty (All Experts)
   const [search, setSearch] = useState("")
+  const [selectedCentre, setSelectedCentre] = useState("")
+  const [selectedLanguage, setSelectedLanguage] = useState("")
+  const [selectedPrice, setSelectedPrice] = useState("")
+  const [selectedGender, setSelectedGender] = useState("")
+  
   const debouncedSearch = useDebounce(search, 500)
 
-  const specializations = [
-    { name: "Psychiatrist", icon: "🩺" },
-    { name: "Psychologist", icon: "🧠" },
-    { name: "Counselor", icon: "🤝" },
-    { name: "Clinical Psychologist", icon: "🛡️" },
-    { name: "Neuropsychologist", icon: "🧬" },
-    { name: "Child Psychologist", icon: "🧸" },
-  ]
+  // Booking states
+  const [bookingDoctor, setBookingDoctor] = useState<Doctor | null>(null)
+  const [activeChannel, setActiveChannel] = useState<{ [doctorId: string]: "Online" | "In-person" }>({})
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<{ [doctorId: string]: string }>({})
+  const [selectedCardDate, setSelectedCardDate] = useState<{ [doctorId: string]: Date }>({})
+  const [reason, setReason] = useState("")
+  const [isBooking, setIsBooking] = useState(false)
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState<Doctor | null>(null)
 
+  // Bookmarks & Collapsible Filters Drawer states
+  const [bookmarks, setBookmarks] = useState<{ [doctorId: string]: boolean }>({})
+  const [showFilterDropdowns, setShowFilterDropdowns] = useState(false)
+
+  // Fetch doctors list
   const { data, isLoading } = useSWR(
     `/api/doctors?${new URLSearchParams({
       ...(specialization && { specialization }),
       ...(debouncedSearch && { search: debouncedSearch }),
+      limit: "40"
     }).toString()}`,
     fetcher
   )
 
-  const doctors = data?.doctors || []
+  const rawDoctors: Doctor[] = data?.doctors || []
+
+  // Client-side filtering
+  const filteredDoctors = rawDoctors
+    .filter((doctor) => {
+      // Centre Filter
+      if (selectedCentre) {
+        if (selectedCentre === "Online") {
+          return doctor.consultationTypes?.some(c => c.toLowerCase().includes("video") || c.toLowerCase().includes("chat"))
+        }
+        return doctor.city?.toLowerCase().includes(selectedCentre.toLowerCase())
+      }
+      return true
+    })
+    .filter((doctor) => {
+      // Language Filter
+      if (selectedLanguage) {
+        return doctor.languagesSpoken?.some(l => l.toLowerCase().includes(selectedLanguage.toLowerCase()))
+      }
+      return true
+    })
+    .filter((doctor) => {
+      // Price Filter
+      if (selectedPrice) {
+        const fee = doctor.consultationFee
+        if (selectedPrice === "low") return fee < 1500
+        if (selectedPrice === "mid") return fee >= 1500 && fee <= 2500
+        if (selectedPrice === "high") return fee > 2500
+      }
+      return true
+    })
+
+  // Helper to generate slots for a specific date per doctor
+  const getSlotsForDate = (doctor: Doctor, date: Date) => {
+    const slots: { time: string; status: 'available' | 'booked' | 'unavailable' }[] = []
+
+    const startTime = doctor.availability?.startTime || "09:00"
+    const endTime = doctor.availability?.endTime || "17:00"
+    
+    const duration = doctor.appointmentDuration || 45
+    const buffer = doctor.slotBuffer !== undefined && doctor.slotBuffer !== null ? doctor.slotBuffer : 15
+    const interval = duration + buffer
+
+    const [startHour, startMin] = startTime.split(":").map(Number)
+    const [endHour, endMin] = endTime.split(":").map(Number)
+
+    const dayName = format(date, "EEEE").toUpperCase()
+    const availableDays = doctor.availability?.availableDays || ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
+    if (!availableDays.includes(dayName)) return []
+
+    const now = new Date()
+    const bufferTime = now.getTime()
+
+    const startSlot = new Date(date)
+    startSlot.setHours(startHour, startMin, 0, 0)
+    
+    const endSlot = new Date(date)
+    endSlot.setHours(endHour, endMin, 0, 0)
+
+    let currentSlot = new Date(startSlot)
+
+    while (currentSlot < endSlot) {
+      const timeStr = format(currentSlot, "h:mm a")
+      const isPast = currentSlot.getTime() < bufferTime
+      
+      const isAlreadyBooked = doctor.appointments?.some(appt => {
+        return Math.abs(new Date(appt.appointmentDate).getTime() - currentSlot.getTime()) < 1000
+      }) || false
+
+      const isOverlappingBreak = doctor.availability?.breaks?.some((brk: any) => {
+        if (!brk.startTime || !brk.endTime) return false
+        
+        const [bStartHour, bStartMin] = brk.startTime.split(":").map(Number)
+        const [bEndHour, bEndMin] = brk.endTime.split(":").map(Number)
+        
+        const breakStart = new Date(date)
+        breakStart.setHours(bStartHour, bStartMin, 0, 0)
+        
+        const breakEnd = new Date(date)
+        breakEnd.setHours(bEndHour, bEndMin, 0, 0)
+        
+        const slotStart = currentSlot.getTime()
+        const slotEnd = currentSlot.getTime() + duration * 60000
+        
+        return slotStart < breakEnd.getTime() && breakStart.getTime() < slotEnd
+      }) || false
+
+      slots.push({
+        time: timeStr,
+        status: isAlreadyBooked ? 'booked' : (isPast || isOverlappingBreak) ? 'unavailable' : 'available'
+      })
+
+      currentSlot = new Date(currentSlot.getTime() + interval * 60000)
+    }
+
+    return slots
+  }
+
+  // Calculate dynamic next available slot for a doctor
+  const getNextAvailableSlot = (doctor: Doctor) => {
+    const today = new Date()
+    for (let i = 0; i < 14; i++) {
+      const targetDate = addDays(today, i)
+      const slots = getSlotsForDate(doctor, targetDate)
+      const firstAvailable = slots.find(s => s.status === 'available')
+      if (firstAvailable) {
+        return `${format(targetDate, "EEE, d MMM")} ${firstAvailable.time}`
+      }
+    }
+    return "No slots available this week"
+  }
+
+  // Handle slot booking checkout
+  const handleBookingConfirm = async () => {
+    if (!bookingDoctor) return
+    const docId = bookingDoctor.id
+    const selectedDate = selectedCardDate[docId] || new Date()
+    const selectedTime = selectedTimeSlot[docId] || getSlotsForDate(bookingDoctor, selectedDate).find(s => s.status === 'available')?.time
+
+    if (!selectedTime) {
+      alert("Please select a time slot.")
+      return
+    }
+    if (!reason.trim()) {
+      alert("Please describe your concerns briefly.")
+      return
+    }
+
+    setIsBooking(true)
+    try {
+      const timeMatch = selectedTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
+      if (!timeMatch) return
+
+      let [, hours, minutes, period] = timeMatch
+      let hour24 = parseInt(hours)
+      if (period.toUpperCase() === "PM" && hour24 !== 12) hour24 += 12
+      else if (period.toUpperCase() === "AM" && hour24 === 12) hour24 = 0
+
+      const appointmentDateTime = new Date(selectedDate)
+      appointmentDateTime.setHours(hour24, parseInt(minutes), 0, 0)
+
+      const response = await fetch("/api/appointments/book", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          doctorId: docId,
+          appointmentDate: appointmentDateTime.toISOString(),
+          reason: reason,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        router.push(`/patient/appointments/${data.appointmentId}/payment`)
+      } else {
+        const error = await response.json()
+        alert(error.error || "Failed to book appointment")
+      }
+    } catch (error) {
+      console.error("Error booking appointment:", error)
+    } finally {
+      setIsBooking(false)
+      setShowBookingModal(false)
+    }
+  }
 
   return (
-    <div className="max-w-[1200px] mx-auto pb-20 px-4 sm:px-6">
-      
-      {/* 1. Header Section */}
-      <div className="pt-8 mb-12">
-        {/* Hero Row */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 relative px-2">
-          <div className="max-w-2xl z-10">
-            <h1 className="text-[36px] font-extrabold text-[#0f172a] leading-[1.1] tracking-tight mb-3">
-               Find the right therapist for you
-            </h1>
-            <p className="text-[15px] font-medium text-gray-400">
-               Curated for you — verified professionals on Attrangi
-            </p>
+    <div className="min-h-screen bg-[#FAF8F5] text-[#1A1A2E] pb-24 font-sans antialiased">
+      <div className="w-full px-6 sm:px-10 py-8">
+        
+        {/* Main Grid Layout: Left/Center panel (col-span-9), Right Sidebar (col-span-3) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
+          
+          {/* =============================================================== */}
+          {/* LEFT/CENTER MAIN COLUMN */}
+          {/* =============================================================== */}
+          <div className="lg:col-span-9 flex flex-col gap-6">
+            
+            {/* Header Title Block */}
+            <div className="text-left">
+              <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
+                Our therapists
+              </h1>
+              <p className="text-xs font-bold text-gray-400 mt-1 leading-normal">
+                Curated for you — verified professionals on <span className="text-[#E36D49] font-black">Attrangi</span>
+              </p>
+            </div>
+
+            {/* Search and Filters Toggle Row */}
+            <div className="flex gap-3.5 w-full">
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  placeholder="Search therapists, specializations, issues..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-100 rounded-2xl text-xs font-bold text-gray-600 outline-none focus:border-orange-300 focus:bg-white shadow-sm transition-all"
+                />
+                <span className="absolute inset-y-0 left-4 flex items-center text-gray-400 text-sm">
+                  🔍
+                </span>
+              </div>
+              <button
+                onClick={() => setShowFilterDropdowns(!showFilterDropdowns)}
+                className={`px-5 py-3 rounded-2xl text-xs font-black tracking-wide flex items-center gap-2 shadow-sm border transition-all duration-300
+                  ${showFilterDropdowns
+                    ? "bg-[#E36D49] border-[#E36D49] text-white"
+                    : "bg-white border-gray-100 text-gray-600 hover:border-orange-200"
+                  }
+                `}
+              >
+                <span>⚙️</span>
+                <span>Filters</span>
+              </button>
+            </div>
+
+            {/* Collapsible Dropdown Filter Drawers */}
+            {showFilterDropdowns && (
+              <div className="flex flex-wrap items-center gap-3.5 w-full bg-white/50 border border-gray-100/50 p-4 rounded-3xl animate-in slide-in-from-top-3 duration-300">
+                {/* Filter: Centre */}
+                <div className="relative flex-1 min-w-[150px]">
+                  <select
+                    value={selectedCentre}
+                    onChange={(e) => setSelectedCentre(e.target.value)}
+                    className="appearance-none w-full bg-white border border-gray-100 px-4 py-2.5 rounded-full text-xs font-bold text-gray-500 shadow-sm hover:border-gray-200 outline-none cursor-pointer pr-9"
+                  >
+                    <option value="">📍 Select Centre</option>
+                    <option value="Online">Online Sessions</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Mumbai">Mumbai</option>
+                  </select>
+                  <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none text-[8px]">▼</span>
+                </div>
+
+                {/* Filter: Language */}
+                <div className="relative flex-1 min-w-[150px]">
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="appearance-none w-full bg-white border border-gray-100 px-4 py-2.5 rounded-full text-xs font-bold text-gray-500 shadow-sm hover:border-gray-200 outline-none cursor-pointer pr-9"
+                  >
+                    <option value="">🗣️ Languages</option>
+                    <option value="English">English</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Telugu">Telugu</option>
+                  </select>
+                  <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none text-[8px]">▼</span>
+                </div>
+
+                {/* Filter: Price */}
+                <div className="relative flex-1 min-w-[150px]">
+                  <select
+                    value={selectedPrice}
+                    onChange={(e) => setSelectedPrice(e.target.value)}
+                    className="appearance-none w-full bg-white border border-gray-100 px-4 py-2.5 rounded-full text-xs font-bold text-gray-500 shadow-sm hover:border-gray-200 outline-none cursor-pointer pr-9"
+                  >
+                    <option value="">🏷️ Price</option>
+                    <option value="low">Under ₹1500</option>
+                    <option value="mid">₹1500 - ₹2500</option>
+                    <option value="high">Above ₹2500</option>
+                  </select>
+                  <span className="absolute inset-y-0 right-3 flex items-center text-gray-400 pointer-events-none text-[8px]">▼</span>
+                </div>
+              </div>
+            )}
+
+            {/* Horizontal Categories Scrollbar Tag Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 w-full border-b border-gray-100">
+              {[
+                { id: "", label: "All Therapists (120)" },
+                { id: "Psychiatrist", label: "Psychiatrist" },
+                { id: "Psychologist", label: "Psychologist" },
+                { id: "Counselor", label: "Counselor" },
+                { id: "Clinical Psychologist", label: "Clinical Psychologist" },
+                { id: "Neuropsychologist", label: "Neuropsychologist" },
+                { id: "Child Psychologist", label: "Child Psychologist" }
+              ].map((cat) => {
+                const isActive = specialization === cat.id
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSpecialization(cat.id)}
+                    className={`px-4 py-2 rounded-full text-[11px] font-bold tracking-wide transition-all shrink-0 border
+                      ${isActive
+                        ? "bg-[#131E29] border-[#131E29] text-white shadow-sm scale-[1.02]"
+                        : "bg-white border-gray-100 text-gray-500 hover:border-gray-200"
+                      }
+                    `}
+                  >
+                    {cat.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Therapists Main Cards Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-2">
+              {isLoading ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="h-[220px] bg-white rounded-[24px] border border-gray-100 animate-pulse shadow-sm"></div>
+                ))
+              ) : filteredDoctors.length > 0 ? (
+                filteredDoctors.map((doctor) => {
+                  const displayPhoto = doctor.profilePhoto || doctor.user.image
+                  const docId = doctor.id
+                  const isBookmarked = bookmarks[docId] || false
+                  const nextSlotLabel = getNextAvailableSlot(doctor)
+
+                  // Determine if we should render our premium professional illustration avatars
+                  const isPlaceholder = !displayPhoto || 
+                    displayPhoto === "null" || 
+                    displayPhoto === "undefined" || 
+                    displayPhoto.includes("googleusercontent.com/a/") ||
+                    doctor.user.name?.includes("Charan")
+
+                  const renderProfessionalAvatar = () => {
+                    if (isPlaceholder) {
+                      if (doctor.user.name?.includes("Charan")) {
+                        // Male psychiatrist illustration
+                        return (
+                          <svg viewBox="0 0 100 100" className="w-full h-full object-cover">
+                            <circle cx="50" cy="50" r="50" fill="#E8F5F5" />
+                            <rect x="46" y="55" width="8" height="15" fill="#E5B28F" />
+                            <circle cx="50" cy="44" r="17" fill="#F2C19E" />
+                            <path d="M33 38c0-8 6-13 17-13s17 5 17 13v3h-34v-3z" fill="#3D3028" />
+                            <path d="M33 46c0 10 7 17 17 17s17-7 17-17h-3v3c0 7-6 11-14 11s-14-4-14-11v-3" fill="#3D3028" />
+                            <path d="M43 51c3 1 11 1 14 0c1-1 1-2 0-2c-2 0-12 0-14 2" fill="#3D3028" />
+                            <circle cx="44" cy="42" r="1.5" fill="#2E2521" />
+                            <circle cx="56" cy="42" r="1.5" fill="#2E2521" />
+                            <circle cx="44" cy="42" r="4.0" fill="none" stroke="#2E2521" strokeWidth="1.2" />
+                            <circle cx="56" cy="42" r="4.0" fill="none" stroke="#2E2521" strokeWidth="1.2" />
+                            <line x1="48" y1="42" x2="52" y2="42" stroke="#2E2521" strokeWidth="1.2" />
+                            <path d="M47 48c1 1 5 1 6 0" fill="none" stroke="#E36D49" strokeWidth="1.5" strokeLinecap="round" />
+                            <path d="M22 85c0-12 10-20 20-20h16c10 0 20 8 20 20v15H22V85z" fill="#E36D49" />
+                            <path d="M50 65l-5 12h10z" fill="#E8F5F5" />
+                          </svg>
+                        )
+                      }
+                      // Female therapist illustration
+                      return (
+                        <svg viewBox="0 0 100 100" className="w-full h-full object-cover">
+                          <circle cx="50" cy="50" r="50" fill="#FFE9DF" />
+                          <circle cx="50" cy="38" r="23" fill="#4B3F38" />
+                          <rect x="46" y="52" width="8" height="15" fill="#F4C3A1" />
+                          <circle cx="50" cy="44" r="17" fill="#FAD4B2" />
+                          <path d="M33 38c0-10 8-16 17-16s17 6 17 16c0 3-1 5-2 5s-2-4-4-4s-3 3-5 3s-3-2-6-2s-6 3-6 3s-1-5-1-5" fill="#4B3F38" />
+                          <circle cx="50" cy="18" r="7" fill="#4B3F38" />
+                          <circle cx="44" cy="44" r="1.5" fill="#2E2521" />
+                          <circle cx="56" cy="44" r="1.5" fill="#2E2521" />
+                          <circle cx="44" cy="44" r="4.5" fill="none" stroke="#E36D49" strokeWidth="1.2" />
+                          <circle cx="56" cy="44" r="4.5" fill="none" stroke="#E36D49" strokeWidth="1.2" />
+                          <line x1="48.5" y1="44" x2="51.5" y2="44" stroke="#E36D49" strokeWidth="1.2" />
+                          <path d="M46 51c1.5 2 5.5 2 7 0" fill="none" stroke="#E36D49" strokeWidth="1.5" strokeLinecap="round" />
+                          <path d="M22 85c0-12 10-20 20-20h16c10 0 20 8 20 20v15H22V85z" fill="#1A6B6B" />
+                          <path d="M50 65l-6 10h12z" fill="#FFF3E8" />
+                        </svg>
+                      )
+                    }
+                    return <Image src={displayPhoto} alt={doctor.user.name || "Doctor"} fill className="object-cover" />
+                  }
+
+                  return (
+                    <div
+                      key={doctor.id}
+                      className="bg-white rounded-3xl p-5 border border-gray-100 flex gap-4 relative shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.03)] hover:border-orange-100/50 transition-all duration-300 text-left"
+                    >
+                      {/* Left Portrait container with soft gradient overlay */}
+                      <div className="w-[130px] h-[180px] rounded-2xl overflow-hidden relative shrink-0 bg-gradient-to-t from-[#FFE9DF] to-[#FFF9F5] border border-orange-50/20 shadow-inner flex items-center justify-center">
+                        {renderProfessionalAvatar()}
+
+                        {/* Top-left availability dot tag pill */}
+                        <div className="absolute top-2.5 left-2.5 bg-white/95 backdrop-blur-[2px] shadow-sm px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide flex items-center gap-1 text-gray-700">
+                          <span className={`w-1.5 h-1.5 rounded-full ${doctor.availability?.isAvailable !== false ? "bg-emerald-500" : "bg-sky-500"}`}></span>
+                          <span>{doctor.availability?.isAvailable !== false ? "Available today" : "Available tomorrow"}</span>
+                        </div>
+                      </div>
+
+                      {/* Right details column */}
+                      <div className="flex-1 flex flex-col justify-between">
+                        {/* Header Details */}
+                        <div className="relative pr-6 text-left">
+                          {/* Bookmark Toggle Icon */}
+                          <button
+                            onClick={() => setBookmarks(prev => ({ ...prev, [docId]: !isBookmarked }))}
+                            className="absolute top-0 right-0 text-gray-300 hover:text-orange-500 transition-colors"
+                          >
+                            <svg 
+                              xmlns="http://www.w3.org/2000/svg" 
+                              viewBox="0 0 24 24" 
+                              fill={isBookmarked ? "#E36D49" : "none"} 
+                              stroke={isBookmarked ? "#E36D49" : "currentColor"} 
+                              strokeWidth="2" 
+                              className="w-5 h-5 transition-all"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                            </svg>
+                          </button>
+
+                          <span className="text-[10px] font-black uppercase tracking-wider text-[#E36D49]">{doctor.specialization || "Psychologist"}</span>
+                          <h3 className="text-[16px] font-black text-gray-900 leading-tight mt-0.5">{doctor.user.name}</h3>
+                          
+                          <p className="text-[10px] font-bold text-gray-400 mt-1 leading-snug">
+                            {doctor.yearsOfExperience || doctor.experience || 5}+ years of experience
+                          </p>
+                        </div>
+
+                        {/* Focus tag pills */}
+                        <div className="flex flex-wrap gap-1 my-2">
+                          {(doctor.secondarySpecializations?.slice(0, 3) || ["Anxiety", "Depression", "Stress"]).map((tag) => (
+                            <span key={tag} className="px-2.5 py-0.5 bg-[#FAF8F5] border border-gray-100/50 rounded-lg text-[9px] font-bold text-gray-600">
+                              {tag}
+                            </span>
+                          ))}
+                          {doctor.secondarySpecializations && doctor.secondarySpecializations.length > 3 && (
+                            <span className="px-2 py-0.5 bg-gray-50 rounded-lg text-[9px] font-bold text-gray-400">
+                              +{doctor.secondarySpecializations.length - 3}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Ratings reviews row */}
+                        <div className="flex items-center gap-1 text-[11px] font-bold text-gray-500 text-left">
+                          <span className="text-yellow-400 text-sm">★</span>
+                          <span className="text-gray-900 font-black">4.9</span>
+                          <span>(128 reviews)</span>
+                        </div>
+
+                        {/* Booking Slots Timing indicator & fee */}
+                        <div className="mt-2 text-[10px] font-bold text-gray-400 text-left">
+                          <span className="text-[#E36D49] font-black">{nextSlotLabel}</span>
+                          <span className="mx-1.5">•</span>
+                          <span>₹{doctor.consultationFee} ({doctor.appointmentDuration || 45} mins)</span>
+                        </div>
+
+                        {/* Solid rust-orange action profile button */}
+                        <button
+                          onClick={() => setShowProfileModal(doctor)}
+                          className="mt-3 bg-[#E36D49] hover:bg-[#d05c38] text-white py-2.5 rounded-2xl text-[11px] font-black flex items-center justify-center gap-1.5 w-full shadow-sm shadow-orange-100 transition-all"
+                        >
+                          <span>View Profile</span>
+                          <span>→</span>
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="col-span-2 bg-white rounded-3xl border border-gray-100 p-12 text-center shadow-sm">
+                  <span className="text-4xl">🔎</span>
+                  <h3 className="text-md font-black text-gray-700 mt-4">No matching experts found</h3>
+                  <p className="text-xs text-gray-400 mt-2 max-w-[280px] mx-auto">Try selecting a different specialization, centre location, or price dropdown filter.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Shield verification guidelines banner */}
+            <div className="bg-[#FAF8F5] border border-gray-100 rounded-2xl p-4 flex items-center justify-between mt-4 text-xs font-bold text-gray-600">
+              <div className="flex items-center gap-2 text-left">
+                <span className="text-lg">🛡️</span>
+                <span>All professionals are verified and follow ethical practice guidelines.</span>
+              </div>
+              <a href="#" className="text-[#E36D49] font-black flex items-center gap-0.5 hover:underline">
+                <span>Learn more</span>
+                <span>&gt;</span>
+              </a>
+            </div>
+
           </div>
 
-          {/* Illustration Container */}
-          <div className="relative hidden lg:block w-[320px] h-[180px] shrink-0">
-             <Image 
-               src="/images/header.png" 
-               alt="Hero Illustration" 
-               width={320} 
-               height={180} 
-               className="object-contain object-right"
-               priority
-             />
+          {/* =============================================================== */}
+          {/* RIGHT SIDEBAR COLUMN */}
+          {/* =============================================================== */}
+          <div className="lg:col-span-3 flex flex-col gap-6">
+            
+            {/* Meditating woman matching assessment banner */}
+            <div className="bg-gradient-to-br from-[#FFF5F0] via-[#FFFBF9] to-[#FFF5F0] border border-orange-100/50 rounded-[32px] p-6 text-left relative overflow-hidden flex flex-col justify-between min-h-[220px] shadow-[0_4px_24px_rgba(227,109,73,0.02)]">
+              {/* Close icon button */}
+              <button className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xs transition-colors z-20">
+                ✕
+              </button>
+
+              <div className="z-10 max-w-[65%]">
+                <h3 className="text-xl font-black text-gray-900 leading-tight">
+                  Find the right therapist for you
+                </h3>
+                <p className="text-[10px] font-bold text-gray-400 mt-2 leading-relaxed">
+                  Take a short assessment and we'll match you with the best fit.
+                </p>
+                <button className="bg-[#131E29] hover:bg-[#1f2f3f] text-white text-[10px] font-black tracking-wider px-5 py-2.5 rounded-full mt-4 flex items-center gap-1.5 transition-all shadow-sm">
+                  <span>TAKE ASSESSMENT</span>
+                  <span>→</span>
+                </button>
+              </div>
+
+              {/* Vector Meditator artwork illustration SVG */}
+              <div className="w-[120px] h-[150px] absolute right-2 bottom-0 opacity-95 shrink-0 z-0">
+                <svg viewBox="0 0 100 120" className="w-full h-full">
+                  {/* Soft Background Leaf Elements */}
+                  <path d="M70,30 C90,45 85,80 60,95 C45,85 50,45 70,30 Z" fill="#FFE9DF" opacity="0.6" />
+                  <path d="M20,60 C10,75 25,100 45,95 C40,80 30,70 20,60 Z" fill="#FFE9DF" opacity="0.4" />
+                  
+                  {/* Meditating figure representation */}
+                  <circle cx="50" cy="40" r="7" fill="#E36D49" />
+                  <path d="M43,37 C43,30 57,30 57,37 C57,40 43,40 43,37 Z" fill="#131E29" />
+                  <path d="M50,47 L50,65" stroke="#E36D49" strokeWidth="4" strokeLinecap="round" />
+                  <path d="M35,75 C35,60 65,60 65,75 Z" fill="#131E29" />
+                  <circle cx="36" cy="68" r="2.5" fill="#E36D49" />
+                  <circle cx="64" cy="68" r="2.5" fill="#E36D49" />
+                </svg>
+              </div>
+            </div>
+
           </div>
+
         </div>
+
       </div>
 
-
-      {/* 4. Therapist Grid */}
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {isLoading ? (
-             Array.from({ length: 6 }).map((_, i) => (
-               <div key={i} className="h-[340px] bg-gray-50 rounded-[24px] animate-pulse"></div>
-             ))
-          ) : doctors.map((doctor: Doctor) => (
-              <div key={doctor.id} className="bg-white rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col group relative transition-all duration-300 w-full hover:shadow-md min-h-[350px]">
-                 <div className="flex items-start justify-between mb-4 gap-4">
-                    <div className="flex items-start gap-4">
-                       <div className="relative w-20 h-20 shrink-0 bg-gray-100 rounded-[20px] overflow-hidden border border-gray-100 flex items-center justify-center">
-                          {doctor.profilePhoto || doctor.user.image ? (
-                             <Image 
-                               src={doctor.profilePhoto || doctor.user.image || "/images/promo_doctor.png"} 
-                               alt={doctor.user.name || "Therapist"} 
-                               fill 
-                               className="object-cover" 
-                             />
-                          ) : (
-                             <span className="text-2xl">🧑</span>
-                          )}
-                       </div>
-                       <div className="flex flex-col pt-0.5">
-                          <h3 className="text-[20px] font-black text-gray-900 leading-tight mb-0.5">{doctor.user.name}</h3>
-                          <p className="text-[13px] font-bold text-gray-400 mb-2">{doctor.primarySpecialization || "Psychiatrist"}</p>
-                          <div className="flex flex-col gap-0.5 text-[12px] font-bold text-gray-400/80">
-                             <span>{doctor.yearsOfExperience || doctor.experience || 6}+ years of experience</span>
-                             <span>Available this week</span>
-                          </div>
-                       </div>
-                    </div>
-                    <div className="text-[12px] font-black text-orange-600 bg-orange-50/60 px-2.5 py-1 rounded-full shrink-0">
-                       45 mins session
-                    </div>
-                 </div>
-
-                 <div className="flex flex-wrap gap-1.5 mb-5">
-                    {["Anxiety", "Depression", "Stress", "Sleep Issues"].map(tag => (
-                       <span key={tag} className="px-3 py-1 bg-gray-50/70 border border-gray-100/60 rounded-full text-[11px] font-bold text-gray-500">
-                          {tag}
-                       </span>
-                    ))}
-                 </div>
-
-                 <div className="mt-auto">
-                    <Link href={`/patient/therapists/${doctor.id}`} className="py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-black text-[13px] shadow-sm hover:scale-[1.01] transition-all flex items-center justify-center select-none w-full">
-                       View Profile
-                    </Link>
-                 </div>
+      {/* =============================================================== */}
+      {/* 5. VALIDAITON CHECKOUT MODAL POPUP */}
+      {/* =============================================================== */}
+      {showBookingModal && bookingDoctor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] max-w-md w-full p-6 shadow-2xl border border-gray-100 flex flex-col gap-5 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-lg font-black text-gray-900">Confirm Booking</h3>
+                <p className="text-xs font-bold text-gray-400 mt-0.5">{bookingDoctor.user.name}</p>
               </div>
-          ))}
-       </div>
+              <button 
+                onClick={() => setShowBookingModal(false)}
+                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Parameter selection details */}
+            <div className="bg-orange-50/10 border border-orange-100/30 rounded-2xl p-4 text-xs font-bold text-gray-600 flex flex-col gap-2">
+              {/* Card nested dynamic slots selector */}
+              <div className="flex items-center justify-between border-b border-gray-50 pb-2 mb-1">
+                <span className="text-gray-400">Select Session Date:</span>
+                <div className="flex items-center gap-1.5">
+                  <button 
+                    onClick={() => {
+                      const d = selectedCardDate[bookingDoctor.id] || new Date()
+                      if (isSameDay(d, new Date())) return
+                      setSelectedCardDate(prev => ({ ...prev, [bookingDoctor.id]: subDays(d, 1) }))
+                      setSelectedTimeSlot(prev => ({ ...prev, [bookingDoctor.id]: "" }))
+                    }}
+                    disabled={isSameDay(selectedCardDate[bookingDoctor.id] || new Date(), new Date())}
+                    className="w-5 h-5 flex items-center justify-center bg-gray-50 text-[10px] disabled:opacity-30 rounded hover:text-orange-500"
+                  >
+                    ◀
+                  </button>
+                  <span className="text-gray-800 text-[11px] font-black">
+                    {format(selectedCardDate[bookingDoctor.id] || new Date(), "d MMM")}
+                  </span>
+                  <button 
+                    onClick={() => {
+                      const d = selectedCardDate[bookingDoctor.id] || new Date()
+                      setSelectedCardDate(prev => ({ ...prev, [bookingDoctor.id]: addDays(d, 1) }))
+                      setSelectedTimeSlot(prev => ({ ...prev, [bookingDoctor.id]: "" }))
+                    }}
+                    className="w-5 h-5 flex items-center justify-center bg-gray-50 text-[10px] rounded hover:text-orange-500"
+                  >
+                    ▶
+                  </button>
+                </div>
+              </div>
+
+              {/* Time selection container */}
+              <div className="flex flex-col gap-2">
+                <span className="text-gray-400">Available slots:</span>
+                <div className="grid grid-cols-3 gap-1.5 max-h-[100px] overflow-y-auto pr-1">
+                  {getSlotsForDate(bookingDoctor, selectedCardDate[bookingDoctor.id] || new Date()).length > 0 ? (
+                    getSlotsForDate(bookingDoctor, selectedCardDate[bookingDoctor.id] || new Date()).map((slot, si) => {
+                      const isSel = selectedTimeSlot[bookingDoctor.id] === slot.time
+                      return (
+                        <button
+                          key={si}
+                          disabled={slot.status !== 'available'}
+                          onClick={() => setSelectedTimeSlot(prev => ({ ...prev, [bookingDoctor.id]: slot.time }))}
+                          className={`py-1.5 rounded-lg border text-[10px] font-black transition-all text-center
+                            ${isSel
+                              ? "bg-[#E36D49] border-[#E36D49] text-white"
+                              : slot.status === 'booked'
+                              ? "border-red-50 bg-red-50/10 text-red-300 cursor-not-allowed"
+                              : slot.status === 'unavailable'
+                              ? "border-gray-50 bg-gray-50/20 text-gray-300 cursor-not-allowed"
+                              : "border-gray-100 bg-white text-gray-500 hover:border-orange-300 hover:text-[#E36D49]"
+                            }
+                          `}
+                        >
+                          {slot.time}
+                        </button>
+                      )
+                    })
+                  ) : (
+                    <span className="text-[10px] font-bold text-gray-400 col-span-3">No available slots on this day.</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Note entry concerns */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-gray-400">Brief Concerns</label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Briefly describe what you'd like to address during this session..."
+                className="w-full p-3.5 bg-gray-50 border border-gray-100 rounded-2xl focus:border-orange-500 focus:bg-white outline-none min-h-[90px] text-xs font-semibold transition-all resize-none placeholder:text-gray-300"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowBookingModal(false)}
+                className="flex-1 py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-black rounded-xl transition-all text-xs"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBookingConfirm}
+                disabled={isBooking || !reason.trim() || !selectedTimeSlot[bookingDoctor.id]}
+                className="flex-1 py-3 bg-[#E36D49] hover:bg-[#c95937] disabled:opacity-50 disabled:pointer-events-none text-white rounded-xl font-black text-xs shadow-md transition-all flex items-center justify-center gap-1.5"
+              >
+                {isBooking ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                ) : (
+                  "Confirm & Pay"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =============================================================== */}
+      {/* 6. PROFILE MODAL POPUP (When VIEW PROFILE is clicked) */}
+      {/* =============================================================== */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-[32px] max-w-lg w-full p-6 shadow-2xl border border-gray-100 flex flex-col gap-6 animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-black text-gray-900">{showProfileModal.user.name}</h3>
+                <p className="text-xs font-bold text-[#E36D49] mt-0.5">
+                  {showProfileModal.primarySpecialization || showProfileModal.specialization || "Psychologist"}
+                </p>
+              </div>
+              <button 
+                onClick={() => setShowProfileModal(null)}
+                className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="w-24 h-24 rounded-full overflow-hidden relative border border-gray-100 shrink-0">
+                {showProfileModal.profilePhoto || showProfileModal.user.image ? (
+                  <Image src={showProfileModal.profilePhoto || showProfileModal.user.image || ""} fill alt="Doctor" className="object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-50 flex items-center justify-center text-3xl">👩‍⚕️</div>
+                )}
+              </div>
+              <div className="text-left flex flex-col justify-center text-xs font-bold text-gray-500 gap-1.5">
+                <p>💼 Years of Experience: <span className="text-gray-900">{showProfileModal.yearsOfExperience || showProfileModal.experience || 5}+ years</span></p>
+                <p>🗣️ Languages: <span className="text-gray-900">{showProfileModal.languagesSpoken?.join(", ") || "English, Hindi"}</span></p>
+                <p>🏷️ Consult fee: <span className="text-gray-900">₹{showProfileModal.consultationFee}</span></p>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-50 pt-4 text-left">
+              <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2">📜 Biography</h4>
+              <p className="text-xs font-semibold text-gray-500 leading-relaxed max-h-[120px] overflow-y-auto">
+                {showProfileModal.bio || `Dr. ${showProfileModal.user.name} is a certified therapist who uses compassionate cognitive behavioral therapies to help patients build resilience, develop strong coping strategies, and manage mental stressors.`}
+              </p>
+            </div>
+
+            <div className="border-t border-gray-50 pt-4 text-left">
+              <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-2.5">💡 Focus Areas</h4>
+              <div className="flex flex-wrap gap-1.5">
+                {(showProfileModal.secondarySpecializations || ["Anxiety guidance", "Relationship skills", "Stress management"]).map((spec) => (
+                  <span key={spec} className="px-3 py-1 bg-gray-50 rounded-lg text-[10px] font-bold text-gray-600 border border-gray-100">
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-gray-50">
+              <button
+                onClick={() => setShowProfileModal(null)}
+                className="flex-1 py-3 bg-gray-50 hover:bg-gray-100 text-gray-600 font-black rounded-xl text-xs transition-all"
+              >
+                Close Profile
+              </button>
+              <button
+                onClick={() => {
+                  setShowProfileModal(null)
+                  setBookingDoctor(showProfileModal)
+                  setSelectedCardDate(prev => ({ ...prev, [showProfileModal.id]: new Date() }))
+                  setShowBookingModal(true)
+                }}
+                className="flex-1 py-3 bg-[#E36D49] hover:bg-[#c95937] text-white font-black rounded-xl text-xs transition-all"
+              >
+                BOOK NOW
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

@@ -1,7 +1,15 @@
 import { NextResponse } from "next/server"
+import { auth } from "@/auth.config"
+import { prisma } from "@/lib/prisma"
 import { getPragyaUpstreamBase } from "@/lib/pragya/upstream"
 
 export async function POST(req: Request) {
+  const session = await auth()
+  
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   let body: unknown
   try {
     body = await req.json()
@@ -21,6 +29,52 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "message is required" }, { status: 400 })
   }
 
+  // Get user details to check plan and track chats
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  })
+
+  if (!dbUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 })
+  }
+
+  const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
+
+  let finalChatCount = 0;
+  const isSameDay = dbUser.lastAiChatDate === today;
+  let currentCount = isSameDay ? dbUser.dailyAiChatCount : 0;
+
+  let limit = Infinity;
+  let limitMessage = "";
+
+  if (dbUser.plan === "FREE") {
+    limit = 10;
+    limitMessage = "You have reached your limit of 10 messages per day on the Free plan. Please upgrade to Essential or Premium for more access!";
+  } else if (dbUser.plan === "ESSENTIAL") {
+    limit = 100;
+    limitMessage = "You have reached your limit of 100 messages per day on the Essential plan. Please upgrade to Premium for more access!";
+  } else if (dbUser.plan === "PREMIUM") {
+    limit = 100;
+    limitMessage = "You have reached your limit of 100 messages per day on the Premium plan. Please upgrade to Organization for unlimited access!";
+  } else if (dbUser.plan === "ORGANIZATION") {
+    limit = 100;
+    limitMessage = "You have reached your limit of 100 messages per day on the Organization plan.";
+  }
+
+  if (currentCount >= limit) {
+    return NextResponse.json({ error: limitMessage }, { status: 429 });
+  }
+
+  // Increment count for today
+  const updated = await prisma.user.update({
+    where: { id: dbUser.id },
+    data: {
+      dailyAiChatCount: currentCount + 1,
+      lastAiChatDate: today,
+    }
+  });
+  finalChatCount = updated.dailyAiChatCount;
+
   const upstream = await fetch(`${getPragyaUpstreamBase()}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,7 +91,7 @@ export async function POST(req: Request) {
 
   try {
     const data = JSON.parse(text) as { reply?: string }
-    return NextResponse.json(data)
+    return NextResponse.json({ ...data, currentCount: finalChatCount, plan: dbUser.plan })
   } catch {
     return NextResponse.json({ error: "Invalid upstream response" }, { status: 502 })
   }

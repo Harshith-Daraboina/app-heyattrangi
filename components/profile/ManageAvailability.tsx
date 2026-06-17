@@ -9,6 +9,8 @@ interface Availability {
   endTime: string | null
   isAvailable: boolean
   breaks?: any
+  appointmentDuration?: number
+  slotBuffer?: number
 }
 
 interface ManageAvailabilityProps {
@@ -34,12 +36,24 @@ export default function ManageAvailability({
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   
+  const initialDuration = currentAvailability?.appointmentDuration || 45
+  const [durationMode, setDurationMode] = useState<"45" | "60" | "custom">(
+    initialDuration === 45 ? "45" : initialDuration === 60 ? "60" : "custom"
+  )
+
+  const initialBuffer = currentAvailability?.slotBuffer ?? 15
+  const [bufferMode, setBufferMode] = useState<"10" | "15" | "30" | "custom">(
+    initialBuffer === 10 ? "10" : initialBuffer === 15 ? "15" : initialBuffer === 30 ? "30" : "custom"
+  )
+
   const [availability, setAvailability] = useState<Availability>({
     availableDays: currentAvailability?.availableDays || [],
     startTime: currentAvailability?.startTime || "09:00",
     endTime: currentAvailability?.endTime || "17:00",
     isAvailable: currentAvailability?.isAvailable ?? true,
     breaks: currentAvailability?.breaks || [],
+    appointmentDuration: initialDuration,
+    slotBuffer: initialBuffer,
   })
 
   const toggleDay = (day: string) => {
@@ -87,6 +101,8 @@ export default function ManageAvailability({
           endTime: availability.endTime,
           isAvailable: availability.isAvailable,
           breaks: availability.breaks,
+          appointmentDuration: availability.appointmentDuration,
+          slotBuffer: availability.slotBuffer,
         }),
       })
 
@@ -153,6 +169,147 @@ export default function ManageAvailability({
               Please select at least one day
             </p>
           )}
+        </div>
+
+        {/* Appointment Slot Duration */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Appointment Slot Duration
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => {
+                setDurationMode("45")
+                setAvailability(prev => ({ ...prev, appointmentDuration: 45 }))
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                durationMode === "45"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              45 Minutes
+            </button>
+            <button
+              onClick={() => {
+                setDurationMode("60")
+                setAvailability(prev => ({ ...prev, appointmentDuration: 60 }))
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                durationMode === "60"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              1 Hour (60 Min)
+            </button>
+            <button
+              onClick={() => {
+                setDurationMode("custom")
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                durationMode === "custom"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              Custom Duration
+            </button>
+
+            {durationMode === "custom" && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                <input
+                  type="number"
+                  min="5"
+                  max="240"
+                  value={availability.appointmentDuration || 45}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) || 45
+                    setAvailability(prev => ({ ...prev, appointmentDuration: val }))
+                  }}
+                  className="w-24 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-center text-sm outline-none"
+                />
+                <span className="text-sm font-bold text-gray-400">minutes</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Break time between slots */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Break Time Between Slots (Buffer)
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => {
+                setBufferMode("10")
+                setAvailability(prev => ({ ...prev, slotBuffer: 10 }))
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                bufferMode === "10"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              10 Minutes
+            </button>
+            <button
+              onClick={() => {
+                setBufferMode("15")
+                setAvailability(prev => ({ ...prev, slotBuffer: 15 }))
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                bufferMode === "15"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              15 Minutes
+            </button>
+            <button
+              onClick={() => {
+                setBufferMode("30")
+                setAvailability(prev => ({ ...prev, slotBuffer: 30 }))
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                bufferMode === "30"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              30 Minutes
+            </button>
+            <button
+              onClick={() => {
+                setBufferMode("custom")
+              }}
+              className={`px-5 py-2.5 rounded-xl border-2 text-sm font-bold transition-all ${
+                bufferMode === "custom"
+                  ? "border-blue-500 bg-blue-50/50 text-blue-700"
+                  : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              Custom Break
+            </button>
+
+            {bufferMode === "custom" && (
+              <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2 duration-300">
+                <input
+                  type="number"
+                  min="0"
+                  max="120"
+                  value={availability.slotBuffer ?? 15}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value) ?? 15
+                    setAvailability(prev => ({ ...prev, slotBuffer: val }))
+                  }}
+                  className="w-24 px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-center text-sm outline-none"
+                />
+                <span className="text-sm font-bold text-gray-400">minutes</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Working Hours */}

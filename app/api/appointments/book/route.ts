@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 })
     }
 
-    if (doctor.status !== "APPROVED") {
+    if (doctor.status !== "VERIFIED") {
       return NextResponse.json({ error: "Doctor is not available for booking" }, { status: 400 })
     }
 

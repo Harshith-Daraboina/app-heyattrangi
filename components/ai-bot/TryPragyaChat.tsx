@@ -44,7 +44,15 @@ function getBotExpression(text: string): string {
   return "DEFAULT"
 }
 
-export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
+export default function TryPragyaChat({ 
+  sessionId, 
+  initialPlan = "FREE", 
+  initialChatCount = 0 
+}: { 
+  sessionId: string; 
+  initialPlan?: string; 
+  initialChatCount?: number; 
+}) {
   const [hasStarted, setHasStarted] = useState(false)
   const [selectedMode, setSelectedMode] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -56,7 +64,18 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
   const [summaryReport, setSummaryReport] = useState<string | null>(null)
   const [summaryError, setSummaryError] = useState<string | null>(null)
   const [summarizeHint, setSummarizeHint] = useState<string | null>(null)
+  
+  const [plan, setPlan] = useState(initialPlan)
+  const [chatCount, setChatCount] = useState(initialChatCount)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (initialPlan) setPlan(initialPlan)
+  }, [initialPlan])
+
+  useEffect(() => {
+    if (initialChatCount !== undefined) setChatCount(initialChatCount)
+  }, [initialChatCount])
 
   const hasUserMessages = useMemo(() => messages.some((m) => m.role === "user"), [messages])
 
@@ -90,17 +109,29 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
         body: JSON.stringify({ session_id: sessionId, message: userMsg }),
       })
 
-      if (!res.ok) throw new Error("Failed to send message")
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        const errorMessage = errorData.error || "Failed to send message"
+        throw new Error(errorMessage)
+      }
 
-      const data = (await res.json()) as { reply?: string }
+      const data = (await res.json()) as { reply?: string; currentCount?: number; plan?: string }
       const reply = typeof data.reply === "string" ? data.reply : "Sorry, I didn't get a proper reply."
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
       setBotExpression(getBotExpression(reply))
-    } catch (error) {
+      
+      if (typeof data.currentCount === "number") {
+        setChatCount(data.currentCount)
+      }
+      if (typeof data.plan === "string") {
+        setPlan(data.plan)
+      }
+    } catch (error: any) {
       console.error("Chat error:", error)
+      const errorMsg = error?.message || "Sorry, I'm having trouble connecting right now."
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Sorry, I'm having trouble connecting right now." },
+        { role: "assistant", content: errorMsg },
       ])
     } finally {
       setIsLoading(false)
@@ -246,7 +277,13 @@ export default function TryPragyaChat({ sessionId }: { sessionId: string }) {
               </div>
               <div className="flex flex-col items-start leading-tight">
                 <span className="text-[9px] text-gray-400 uppercase tracking-widest font-black">Available</span>
-                <span className="text-sm font-bold text-gray-800">1,250 Credits</span>
+                <span className="text-sm font-bold text-gray-800">
+                  {plan === "FREE" 
+                    ? `${Math.max(0, 10 - chatCount)} / 10 Chats` 
+                    : (plan === "ESSENTIAL" || plan === "ORGANIZATION") 
+                      ? `${Math.max(0, 100 - chatCount)} / 100 Chats` 
+                      : "Unlimited Chats"}
+                </span>
               </div>
             </div>
           </div>

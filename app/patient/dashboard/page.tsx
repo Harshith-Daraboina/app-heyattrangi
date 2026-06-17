@@ -12,9 +12,11 @@ async function DashboardContent() {
   const session = await auth()
   const user = await getCurrentUser()
   
+  if (!user?.id) return null
+
   const displayName = session?.user?.name || "You"
-  const plan = user?.plan || "ESSENTIAL"
-  const patient = await prisma.patient.findUnique({ where: { userId: user?.id } })
+  const plan = user?.plan || "FREE"
+  const patient = await prisma.patient.findUnique({ where: { userId: user?.id || "" } })
 
   let upcomingAppointments: any[] = []
   let dailyTasks: any[] = []

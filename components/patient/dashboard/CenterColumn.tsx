@@ -4,14 +4,16 @@ import Link from "next/link"
 import Image from "next/image"
 import { format } from "date-fns"
 import { useState } from "react"
+import UpgradeOffersBanner from "./UpgradeOffersBanner"
 
 
 
 export default function CenterColumn({ displayName, plan, upcomingAppointments, dailyTasks = [] }: { displayName: string, plan?: string, upcomingAppointments: any[], dailyTasks?: any[] }) {
     const [activityFilter, setActivityFilter] = useState('Monthly')
     const [activityFilterOpen, setActivityFilterOpen] = useState(false)
-    const normalizedPlan = plan || 'ESSENTIAL'
+    const normalizedPlan = plan || 'FREE'
     const planLabelMap: Record<string, string> = {
+        FREE: 'Free',
         ESSENTIAL: 'Essential',
         PREMIUM: 'Premium',
         ORGANIZATION: 'Organization',
@@ -45,6 +47,12 @@ export default function CenterColumn({ displayName, plan, upcomingAppointments, 
                     </div>
                 </div>
             </header>
+
+            {normalizedPlan === 'FREE' && (
+                <div className="mb-8 w-full">
+                    <UpgradeOffersBanner />
+                </div>
+            )}
 
             {/* Upcoming Appointments */}
             <section className="mb-6 w-full">

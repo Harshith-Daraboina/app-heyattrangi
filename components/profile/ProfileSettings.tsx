@@ -141,7 +141,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
                     )}
 
                     {activeSection === "billing" && (
-                        <BillingSection user={user} />
+                        <BillingSection user={user} isTestMode={true} />
                     )}
 
                     {activeSection === "credits" && (

@@ -173,7 +173,19 @@ export default function DoctorProfileSettings({ user, doctor, session }: DoctorP
             {activeSection === "availability" && (
               <ManageAvailability
                 doctorId={doctor.id}
-                currentAvailability={doctor.availability}
+                currentAvailability={doctor.availability ? {
+                  ...doctor.availability,
+                  appointmentDuration: doctor.appointmentDuration || 45,
+                  slotBuffer: doctor.slotBuffer ?? 15,
+                } : {
+                  availableDays: [],
+                  startTime: "09:00",
+                  endTime: "17:00",
+                  isAvailable: true,
+                  breaks: [],
+                  appointmentDuration: doctor.appointmentDuration || 45,
+                  slotBuffer: doctor.slotBuffer ?? 15,
+                }}
               />
             )}
 
