@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
         where: { id: session.user.id },
         include: {
           patient: true,
-          caregiver: true,
           doctor: true,
           admin: true,
         },
@@ -54,7 +53,6 @@ export async function GET(req: NextRequest) {
             },
             include: {
               patient: true,
-              caregiver: true,
               doctor: true,
               admin: true,
             },
@@ -99,7 +97,6 @@ export async function GET(req: NextRequest) {
       // Redirect based on role (or default dashboard if no role)
       switch (user.role) {
         case "PATIENT":
-        case "CAREGIVER":
           return NextResponse.redirect(new URL("/patient/dashboard", req.url))
         case "DOCTOR":
           return NextResponse.redirect(new URL("/doctor/dashboard", req.url))
@@ -123,9 +120,6 @@ export async function GET(req: NextRequest) {
     switch (user.role) {
       case "PATIENT":
         isOnboardingComplete = !!user.patient
-        break
-      case "CAREGIVER":
-        isOnboardingComplete = !!user.caregiver
         break
       case "DOCTOR":
         isOnboardingComplete = !!user.doctor
@@ -155,7 +149,6 @@ export async function GET(req: NextRequest) {
     console.log("Signup onboarding complete - redirecting to dashboard:", user.role)
     switch (user.role) {
       case "PATIENT":
-      case "CAREGIVER":
         return NextResponse.redirect(new URL("/patient/dashboard", req.url))
       case "DOCTOR":
         return NextResponse.redirect(new URL("/doctor/dashboard", req.url))

@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { useEffect, useState, Suspense } from "react"
 import { UserRole } from "@prisma/client"
 import PatientOnboarding from "@/components/onboarding/PatientOnboarding"
-import CaregiverOnboarding from "@/components/onboarding/CaregiverOnboarding"
+
 import DoctorOnboarding from "@/components/onboarding/DoctorOnboarding"
 import AdminOnboarding from "@/components/onboarding/AdminOnboarding"
 
@@ -44,13 +44,7 @@ function OnboardingContent() {
               <p className="text-xs text-gray-400 mt-1 font-medium">Manage practice and connect</p>
             </button>
 
-            <button
-              onClick={() => setSelectedRole("CAREGIVER")}
-              className="w-full p-5 text-left bg-white hover:bg-gray-50 border-2 border-gray-100 hover:border-[#ff6b00] rounded-2xl transition-all"
-            >
-              <h3 className="font-bold text-gray-900">I am a Caregiver</h3>
-              <p className="text-xs text-gray-400 mt-1 font-medium">Support a loved one's wellness journey</p>
-            </button>
+
           </div>
         </div>
       </div>
@@ -65,7 +59,7 @@ function OnboardingContent() {
           onClick={() => setSelectedRole(null)}
           className="text-xs font-bold text-gray-500 hover:text-[#ff6b00] bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm transition-colors cursor-pointer"
         >
-          Change Role ({selectedRole === "PATIENT" ? "Patient" : selectedRole === "DOCTOR" ? "Therapist" : "Caregiver"})
+          Change Role ({selectedRole === "PATIENT" ? "Patient" : "Therapist"})
         </button>
       </div>
 
@@ -74,7 +68,7 @@ function OnboardingContent() {
       ) : (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50 py-12 px-4">
           <div className="max-w-3xl mx-auto pt-6">
-            {selectedRole === "CAREGIVER" && <CaregiverOnboarding />}
+
             {selectedRole === "DOCTOR" && <DoctorOnboarding />}
             {selectedRole === "ADMIN" && <AdminOnboarding />}
           </div>

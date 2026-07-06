@@ -19,11 +19,10 @@ export async function GET() {
     const patient = await prisma.patient.findUnique({
       where: { userId: session.user.id },
       include: {
-        creditWallet: true
       }
     })
 
-    const walletBalance = patient?.creditWallet?.totalCredits || 0
+    const walletBalance = 0
 
     return NextResponse.json({
       success: true,

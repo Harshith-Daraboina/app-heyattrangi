@@ -18,7 +18,7 @@ export default async function TherapistDetailPage({
 
   const user = await getCurrentUser()
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
+  if (!user || (user.role !== "PATIENT")) {
     redirect("/auth/unauthorized")
   }
 

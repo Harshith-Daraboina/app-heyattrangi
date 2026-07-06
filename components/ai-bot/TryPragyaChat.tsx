@@ -64,6 +64,7 @@ export default function TryPragyaChat({
   const [summaryReport, setSummaryReport] = useState<string | null>(null)
   const [summaryError, setSummaryError] = useState<string | null>(null)
   const [summarizeHint, setSummarizeHint] = useState<string | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
   
   const [plan, setPlan] = useState(initialPlan)
   const [chatCount, setChatCount] = useState(initialChatCount)
@@ -228,6 +229,16 @@ export default function TryPragyaChat({
           <div className="mb-8 mt-auto w-full max-w-[280px] space-y-3">
             <button
               type="button"
+              onClick={() => setHistoryOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-[16px] border border-gray-200 bg-white px-4 py-4 text-[15px] font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50"
+            >
+              <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Chat History
+            </button>
+            <button
+              type="button"
               onClick={resetChat}
               className="flex w-full items-center justify-center gap-2 rounded-[16px] border border-gray-200 bg-white px-4 py-4 text-[15px] font-medium text-gray-600 shadow-sm transition-colors hover:bg-gray-50"
             >
@@ -260,6 +271,15 @@ export default function TryPragyaChat({
             {summarizeHint && (
               <p className="text-center text-[12px] font-medium text-orange-700">{summarizeHint}</p>
             )}
+            
+            <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold text-gray-400">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {plan === "FREE" 
+                ? "No Memory History"
+                : plan === "ESSENTIAL" 
+                  ? "7-Day Memory Active"
+                  : "Long-Term Memory Active"}
+            </div>
           </div>
 
           <div className="mt-auto max-w-[280px] space-y-1.5 px-4 pb-4 text-center">
@@ -280,8 +300,8 @@ export default function TryPragyaChat({
                 <span className="text-sm font-bold text-gray-800">
                   {plan === "FREE" 
                     ? `${Math.max(0, 10 - chatCount)} / 10 Chats` 
-                    : (plan === "ESSENTIAL" || plan === "ORGANIZATION") 
-                      ? `${Math.max(0, 100 - chatCount)} / 100 Chats` 
+                    : plan === "ESSENTIAL"
+                      ? `${Math.max(0, 25 - chatCount)} / 25 Chats` 
                       : "Unlimited Chats"}
                 </span>
               </div>
@@ -406,6 +426,45 @@ export default function TryPragyaChat({
           )}
         </div>
       </div>
+
+      {historyOpen && (
+        <div className="fixed inset-0 z-[100] flex justify-end">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40 transition-opacity duration-300"
+            aria-label="Close history"
+            onClick={() => setHistoryOpen(false)}
+          />
+          <div className="relative z-10 flex w-full max-w-md flex-col bg-white shadow-2xl duration-300 animate-in slide-in-from-right h-full">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+              <h2 className="text-lg font-bold text-gray-800">Chat History</h2>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-orange-50 hover:text-orange-500"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-1 overflow-y-auto p-6 bg-gray-50/30">
+              <div className="space-y-4">
+                <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center shadow-sm">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-orange-50 text-orange-400">
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="mb-1 text-[15px] font-bold text-gray-800">No Past Sessions</h3>
+                  <p className="text-[13px] text-gray-500">
+                    Your previous chat history and summaries will appear here once you've completed some sessions.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {summaryOpen && (
         <div

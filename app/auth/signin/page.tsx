@@ -36,11 +36,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      const timer = setTimeout(() => {
-        checkAndRedirect()
-      }, 2000)
-
-      return () => clearTimeout(timer)
+      checkAndRedirect()
     }
   }, [session, status])
 
@@ -63,8 +59,11 @@ export default function SignInPage() {
             router.push("/admin/dashboard")
             break
           default:
+            router.push("/auth/signup")
             break
         }
+      } else {
+        router.push("/auth/signup")
       }
     } catch (error) {
       console.error("Error checking onboarding:", error)
@@ -170,19 +169,7 @@ export default function SignInPage() {
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button
                       type="button"
-                      onClick={async () => {
-                        const response = await fetch("/api/auth/check-onboarding")
-                        const data = await response.json()
-                        if (data.completed) {
-                          const role = data.role
-                          switch (role) {
-                            case "PATIENT":
-                            case "CAREGIVER": router.push("/patient/dashboard"); break
-                            case "DOCTOR": router.push("/doctor/dashboard"); break
-                            case "ADMIN": router.push("/admin/dashboard"); break
-                          }
-                        }
-                      }}
+                      onClick={checkAndRedirect}
                       className="text-sm bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-md w-full sm:w-auto text-center"
                     >
                       Continue to App

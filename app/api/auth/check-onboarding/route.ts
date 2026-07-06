@@ -14,7 +14,6 @@ export async function GET(req: NextRequest) {
       where: { id: session.user.id },
       include: {
         patient: true,
-        caregiver: true,
         doctor: true,
         admin: true,
       },
@@ -29,9 +28,6 @@ export async function GET(req: NextRequest) {
     switch (user.role) {
       case "PATIENT":
         isCompleted = !!user.patient
-        break
-      case "CAREGIVER":
-        isCompleted = !!user.caregiver
         break
       case "DOCTOR":
         isCompleted = !!user.doctor
