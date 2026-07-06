@@ -11,7 +11,7 @@ export default async function PatientLayout({
 
   const user = await getCurrentUser()
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
+  if (!user || (user.role !== "PATIENT")) {
     redirect("/auth/unauthorized")
   }
 

@@ -37,10 +37,7 @@ async function DashboardContent() {
       (apt) => new Date(apt.appointmentDate) > now && apt.status !== "CANCELLED"
     )
 
-    dailyTasks = await prisma.dailyTask.findMany({
-        where: { patientId: patient.id },
-        orderBy: { dueDate: "asc" }
-    })
+    dailyTasks = []
 
     if (dailyTasks.length === 0) {
         const today = new Date()

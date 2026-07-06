@@ -30,7 +30,6 @@ model User {
   accounts      Account[]
   sessions      Session[]
   patient       Patient?
-  caregiver     Caregiver?
   doctor        Doctor?
   admin         Admin?
   organization  Organization? @relation(fields: [orgId], references: [id])
@@ -96,7 +95,6 @@ model VerificationToken {
 
 enum UserRole {
   PATIENT
-  CAREGIVER
   DOCTOR
   ADMIN
 }
@@ -122,58 +120,15 @@ model Patient {
   
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   appointments Appointment[]
-  tasks       DailyTask[]
-  resourceAccess ResourceAccess[]
-  caregivers  Caregiver[]
-  assessments MentalWellnessAssessment[]
-  moodCheckIns MoodCheckIn[]
   
   // Gamification
   currentStreak   Int               @default(0)
   lastLoginDate   DateTime?
-  creditWallet    CareCreditWallet?
-  creditLogs      CreditLog[]
   
   @@map("patients")
 }
 
-// Daily mood / relapse-prevention check-ins (patient-only)
-model MoodCheckIn {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientId        String   @db.ObjectId
-  mood             String
-  moodScore        Int
-  tags             String[] @default([])
-  note             String?  @db.String
-  energyLevel      Int
-  stressLevel      Int
-  sleepQuality     Int
-  craving          Boolean  @default(false)
-  cravingIntensity Int?
-  cravingTriggers  String[] @default([])
-  createdAt        DateTime @default(now())
 
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@index([patientId, createdAt])
-  @@map("mood_check_ins")
-}
-
-// Caregiver Model
-model Caregiver {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String   @unique @db.ObjectId
-  relationship    String?  // Relationship to patient
-  patientId       String?  @db.ObjectId
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  patient     Patient?     @relation(fields: [patientId], references: [id])
-  appointments Appointment[]
-  
-  @@map("caregivers")
-}
 
 // Doctor Model
 model Doctor {
@@ -321,7 +276,6 @@ model Admin {
 model Appointment {
   id              String            @id @default(auto()) @map("_id") @db.ObjectId
   patientId       String?           @db.ObjectId
-  caregiverId     String?           @db.ObjectId
   doctorId        String            @db.ObjectId
   timeSlotId      String?           @unique @db.ObjectId
   appointmentDate DateTime
@@ -334,7 +288,6 @@ model Appointment {
   updatedAt       DateTime          @updatedAt
   
   patient         Patient?          @relation(fields: [patientId], references: [id])
-  caregiver       Caregiver?        @relation(fields: [caregiverId], references: [id])
   doctor          Doctor            @relation(fields: [doctorId], references: [id])
   timeSlot        TimeSlot?         @relation(fields: [timeSlotId], references: [id])
   payment         Payment?
@@ -404,163 +357,7 @@ model SessionRecording {
   @@map("session_recordings")
 }
 
-// Resource Library
-model Resource {
-  id          String        @id @default(auto()) @map("_id") @db.ObjectId
-  title       String
-  description String?       @db.String
-  type        ResourceType
-  category    String?
-  contentUrl  String?
-  thumbnailUrl String?
-  isPremium   Boolean       @default(false)
-  price       Float         @default(0)
-  status      ResourceStatus @default(ACTIVE)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  
-  access      ResourceAccess[]
-  
-  @@map("resources")
-}
 
-enum ResourceType {
-  ARTICLE
-  VIDEO
-  AUDIO
-  PDF
-  WORKSHEET
-  EXERCISE
-}
-
-enum ResourceStatus {
-  ACTIVE
-  INACTIVE
-  ARCHIVED
-}
-
-// Resource Access
-model ResourceAccess {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientId  String   @db.ObjectId
-  resourceId String   @db.ObjectId
-  purchased  Boolean  @default(false)
-  accessedAt DateTime @default(now())
-  expiresAt  DateTime?
-  
-  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  
-  @@unique([patientId, resourceId])
-  @@map("resource_access")
-}
-
-// Daily Tasks/Activities
-model DailyTask {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  patientId   String       @db.ObjectId
-  title       String
-  description String?      @db.String
-  type        TaskType
-  difficulty  TaskDifficulty @default(EASY)
-  points      Int          @default(10)
-  completed   Boolean      @default(false)
-  completedAt DateTime?
-  dueDate     DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  
-  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
-  @@map("daily_tasks")
-}
-
-// Mental Wellness Assessment (AI Bot)
-model MentalWellnessAssessment {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientId   String   @db.ObjectId
-  
-  // Section 0 - Context
-  userContext Json?    // { status: "STUDENT", ageRange: "18-24" }
-  
-  // Section 1 - Safety (If flagged, assessment stops)
-  safetyFlags Json?    // { harm: false, unsafe: false, psychosis: false }
-  
-  // Section 2 - General Wellbeing
-  wellbeingScore String? // "GOOD", "FAIR", etc.
-  difficultAreas String[] // ["MOOD", "SLEEP"]
-  
-  // Domain Modules (Scores or raw answers)
-  moduleScores   Json?   // { mood: "HIGH", anxiety: "MODERATE" }
-  
-  // Section 3 - Background
-  backgroundFlags Json?
-  
-  // AI Output
-  riskLevel       String? // "LOW", "MILD", "MODERATE", "HIGH"
-  summaryReport   String? @db.String // cached markdown report
-  affectedDomains String[]
-  
-  createdAt   DateTime @default(now())
-  
-  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
-  @@map("mental_wellness_assessments")
-}
-
-enum TaskType {
-  MINDFULNESS
-  EXERCISE
-  JOURNALING
-  READING
-  MEDITATION
-  SKILL_BUILDING
-  CUSTOM
-}
-
-enum TaskDifficulty {
-  EASY
-  MEDIUM
-  HARD
-}
-
-// ----------------------------------------------------------------------
-// Care Credits & Gamification Models
-// ----------------------------------------------------------------------
-
-model CareCreditWallet {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientId       String   @unique @db.ObjectId
-  totalCredits    Int      @default(0)
-  updatedAt       DateTime @updatedAt
-  
-  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  
-  @@map("care_credit_wallets")
-}
-
-model CreditLog {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  patientId       String   @db.ObjectId
-  actionType      String   // e.g., "mood_checkin", "journal_entry", "ai_interaction", "therapy_session"
-  creditsAwarded  Int
-  timestamp       DateTime @default(now())
-
-  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-
-  @@index([patientId, timestamp])
-  @@map("credit_logs")
-}
-
-model Reward {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  name            String
-  creditCost      Int
-  type            String   // "AI", "content", "therapy"
-  createdAt       DateTime @default(now())
-
-  @@map("rewards")
-}
 
 // Transaction Model for Top-ups and generalized payments
 model Transaction {

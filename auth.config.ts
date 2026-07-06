@@ -65,7 +65,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             where: { id: user.id },
             include: {
               patient: true,
-              caregiver: true,
               doctor: true,
               admin: true,
             },

@@ -37,6 +37,7 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
     const [isUpdating, setIsUpdating] = useState<string | null>(null)
     const [transactions, setTransactions] = useState<any[]>([])
     const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
+    const [isMonthly, setIsMonthly] = useState(true)
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -215,7 +216,7 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
             }
         }
 
-        if (currentRank > targetRank) {
+        if (!isTestMode && currentRank > targetRank) {
             return {
                 text: "Already Bought",
                 disabled: true,
@@ -232,13 +233,13 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
             }
         } else if (plan === "ESSENTIAL") {
             return {
-                text: isTestMode ? "Switch to Essential" : "Buy Now",
+                text: isTestMode ? "Switch to Listener" : "Buy Now",
                 disabled: false,
                 className: "bg-white hover:bg-gray-50 text-gray-800 border-gray-200 hover:border-gray-300 shadow-sm cursor-pointer"
             }
         } else if (plan === "PREMIUM") {
             return {
-                text: isTestMode ? "Switch to Premium" : "Upgrade to Premium",
+                text: isTestMode ? "Switch to Companion" : "Upgrade to Companion",
                 disabled: false,
                 className: "bg-orange-500 hover:bg-orange-600 text-white shadow-sm cursor-pointer"
             }
@@ -265,9 +266,9 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
             handlePlanChange(plan)
         } else {
             if (plan === "ESSENTIAL") {
-                handleSubscribe("ESSENTIAL", 49)
+                handleSubscribe("ESSENTIAL", isMonthly ? 49 : 299)
             } else if (plan === "PREMIUM") {
-                handleSubscribe("PREMIUM", 199)
+                handleSubscribe("PREMIUM", isMonthly ? 149 : 699)
             } else if (plan === "ORGANIZATION") {
                 window.location.href = "mailto:sales@heyattrangi.com?subject=Organization Plan Inquiry"
             } else if (plan === "FREE") {
@@ -325,14 +326,29 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
 
             {/* Compare Plans Section Below */}
             <div className="bg-white rounded-[24px] shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] border border-gray-50 overflow-hidden animate-in fade-in duration-300">
-                <div className="p-8 border-b border-gray-50">
-                    <h2 className="text-2xl font-black text-gray-900 mb-1">Compare plans</h2>
-                    <p className="text-sm text-gray-500">
+                <div className="p-8 border-b border-gray-50 flex flex-col items-center text-center">
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">Compare plans</h2>
+                    <p className="text-sm text-gray-500 mb-6">
                         Need more details before choosing?{" "}
                         <a href="/pricing" className="font-bold text-gray-900 hover:underline">
                             See feature breakdown &darr;
                         </a>
                     </p>
+                    {/* Toggle Switch */}
+                    <div className="inline-flex items-center gap-2 bg-gray-100 p-1.5 rounded-full border border-gray-200">
+                        <button 
+                            onClick={() => setIsMonthly(true)}
+                            className={`px-6 py-2 rounded-full font-bold text-sm transition-all duration-300 ${isMonthly ? 'bg-white text-[#0c1421] shadow-sm' : 'text-gray-500 hover:text-[#0c1421]'}`}
+                        >
+                            Monthly
+                        </button>
+                        <button 
+                            onClick={() => setIsMonthly(false)}
+                            className={`px-6 py-2 rounded-full font-bold text-sm transition-all duration-300 ${!isMonthly ? 'bg-white text-[#0c1421] shadow-sm' : 'text-gray-500 hover:text-[#0c1421]'}`}
+                        >
+                            6 Months (Save 20%)
+                        </button>
+                    </div>
                 </div>
                 <div className={`grid grid-cols-1 divide-y lg:divide-y-0 lg:divide-x divide-gray-100 ${
                     isTestMode ? "lg:grid-cols-4" : "lg:grid-cols-3"
@@ -386,34 +402,42 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
 
                     {/* Essential Plan */}
                     <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Essential</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">🎧 Listener</h3>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm line-through text-gray-400 font-bold">₹149</span>
+                            <span className="text-sm line-through text-gray-400 font-bold">
+                                {isMonthly ? '₹149' : '₹899'}
+                            </span>
                             <span className="bg-green-100 text-green-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                                 SAVE 67%
                             </span>
                         </div>
                         <div className="flex items-baseline mb-2">
-                            <span className="text-5xl font-black tracking-tight text-gray-900">₹49</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">/mo</span>
+                            <span className="text-5xl font-black tracking-tight text-gray-900">
+                                {isMonthly ? '₹49' : '₹299'}
+                            </span>
+                            <span className="text-sm text-gray-500 font-medium ml-1">
+                                {isMonthly ? '/mo' : '/6mo'}
+                            </span>
                         </div>
-                        <p className="text-sm font-black text-orange-500 mb-6">Affordable start</p>
+                        <p className="text-sm font-black text-orange-500 mb-6">
+                            {isMonthly ? 'or ₹299/6 months' : 'or ₹49/month'}
+                        </p>
                         <p className="text-sm text-gray-600 mb-8 min-h-[60px]">
-                            Core self-care tools, AI interactions, and standard support.
+                            Daily check-ins, basic mood tracking, and limited voice conversations.
                         </p>
                         
                         <div className="space-y-3 mb-8 text-xs">
                             <div className="flex justify-between items-center border-b border-gray-50 pb-2">
                                 <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Chats</span>
-                                <span className="font-bold text-gray-900">100 / day</span>
+                                <span className="font-bold text-gray-900">25 / day</span>
                             </div>
                             <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Analytics</span>
-                                <span className="font-bold text-gray-900">Basic</span>
+                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Voice</span>
+                                <span className="font-bold text-gray-900">30 min / day</span>
                             </div>
                             <div className="flex justify-between items-center pb-1">
-                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Support</span>
-                                <span className="font-bold text-gray-900">Standard</span>
+                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Memory</span>
+                                <span className="font-bold text-gray-900">7-Day</span>
                             </div>
                         </div>
                         
@@ -441,39 +465,47 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
                     </div>
 
                     {/* Premium Plan (Recommended) */}
-                    <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors relative border-2 border-orange-500 rounded-[20px] shadow-sm bg-white lg:my-[-4px] lg:-translate-y-[2px] z-10 pt-8 lg:pt-10">
+                    <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors relative border-2 border-orange-500 rounded-[20px] shadow-sm bg-white lg:-mt-[6px] lg:mb-0 z-10 pt-8 lg:pt-10">
                         <div className="absolute top-[-14px] left-1/2 -translate-x-1/2 bg-orange-50 border border-orange-200 text-orange-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm z-20 whitespace-nowrap flex items-center gap-1.5">
                             <span className="w-1.5 h-1.5 rounded-full bg-orange-500"></span>
                             RECOMMENDED
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Premium</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">🤝 Companion</h3>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm line-through text-gray-400 font-bold">₹599</span>
+                            <span className="text-sm line-through text-gray-400 font-bold">
+                                {isMonthly ? '₹599' : '₹2799'}
+                            </span>
                             <span className="bg-green-100 text-green-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                                SAVE 67%
+                                SAVE 75%
                             </span>
                         </div>
                         <div className="flex items-baseline mb-2">
-                            <span className="text-5xl font-black tracking-tight text-gray-900">₹199</span>
-                            <span className="text-sm text-gray-500 font-medium ml-1">/sem</span>
+                            <span className="text-5xl font-black tracking-tight text-gray-900">
+                                {isMonthly ? '₹149' : '₹699'}
+                            </span>
+                            <span className="text-sm text-gray-500 font-medium ml-1">
+                                {isMonthly ? '/mo' : '/6mo'}
+                            </span>
                         </div>
-                        <p className="text-sm text-gray-500 mb-6 font-medium">Billed per semester</p>
+                        <p className="text-sm text-gray-500 mb-6 font-medium">
+                            {isMonthly ? 'or ₹699/6 months' : 'or ₹149/month'}
+                        </p>
                         <p className="text-sm text-gray-600 mb-8 min-h-[60px]">
-                            Enhanced access, more credits, and premium support.
+                            Unlimited AI support, real-time insights, and long-term memory.
                         </p>
                         
                         <div className="space-y-3 mb-8 text-xs">
                             <div className="flex justify-between items-center border-b border-gray-50 pb-2">
                                 <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Chats</span>
-                                <span className="font-bold text-gray-900">100 / day</span>
+                                <span className="font-bold text-gray-900">Unlimited</span>
                             </div>
                             <div className="flex justify-between items-center border-b border-gray-50 pb-2">
-                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Analytics</span>
-                                <span className="font-bold text-gray-900">Advanced</span>
+                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Voice</span>
+                                <span className="font-bold text-gray-900">Unlimited</span>
                             </div>
                             <div className="flex justify-between items-center pb-1">
-                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Support</span>
-                                <span className="font-bold text-gray-900">Priority</span>
+                                <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Memory</span>
+                                <span className="font-bold text-gray-900">Long-Term</span>
                             </div>
                         </div>
                         
@@ -502,7 +534,7 @@ export default function BillingSection({ user, isTestMode = false }: BillingSect
 
                     {/* Organization Plan */}
                     <div className="p-6 xl:p-8 flex flex-col hover:bg-gray-50/50 transition-colors">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Organization</h3>
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">🏢 Organization</h3>
                         <div className="flex items-baseline mb-2 mt-6">
                             <span className="text-5xl font-black tracking-tight text-gray-900 leading-none">Custom</span>
                         </div>

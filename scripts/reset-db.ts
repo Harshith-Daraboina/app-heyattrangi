@@ -26,17 +26,7 @@ async function resetDatabase() {
     await prisma.doctorAvailability.deleteMany({})
     console.log("  ✅ Deleted all doctor availability")
 
-    await prisma.resourceAccess.deleteMany({})
-    console.log("  ✅ Deleted all resource access")
 
-    await prisma.resource.deleteMany({})
-    console.log("  ✅ Deleted all resources")
-
-    await prisma.dailyTask.deleteMany({})
-    console.log("  ✅ Deleted all daily tasks")
-
-    await prisma.caregiver.deleteMany({})
-    console.log("  ✅ Deleted all caregivers")
 
     await prisma.doctor.deleteMany({})
     console.log("  ✅ Deleted all doctors")
