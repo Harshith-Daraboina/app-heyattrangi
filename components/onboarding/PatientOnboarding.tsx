@@ -48,7 +48,7 @@ export default function PatientOnboarding() {
       })
 
       if (response.ok) {
-        router.push("/patient/dashboard")
+        router.push("/patient/ai-bot")
       } else {
         alert("Something went wrong.")
       }

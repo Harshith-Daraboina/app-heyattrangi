@@ -20,7 +20,7 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
     const [activeSection, setActiveSection] = useState<Section>("personal")
     const [isSaving, setIsSaving] = useState(false)
 
-    const sidebarItems = [
+    const allSidebarItems = [
         {
             id: "personal",
             label: "Personal Info",
@@ -71,6 +71,13 @@ export default function ProfileSettings({ user }: ProfileSettingsProps) {
             )
         }
     ]
+
+    const isProduction = process.env.NODE_ENV === "production"
+    const hiddenInProd = ["security", "notifications", "billing", "credits"]
+    
+    const sidebarItems = isProduction
+        ? allSidebarItems.filter(item => !hiddenInProd.includes(item.id))
+        : allSidebarItems
 
     return (
         <div className="flex h-full w-full bg-white overflow-hidden">
