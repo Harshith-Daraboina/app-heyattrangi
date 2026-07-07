@@ -98,10 +98,10 @@ interface SidebarItem {
 }
 
 const generalItems: SidebarItem[] = [
-    { label: "Dashboard", href: "/patient/dashboard", icon: <GridIcon /> },
-    { label: "Therapists", href: "/patient/therapists", icon: <UsersIcon /> },
-    { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
-    { label: "Mood Tracking", href: "/patient/mood", icon: <ChartIcon /> },
+    // { label: "Dashboard", href: "/patient/dashboard", icon: <GridIcon /> },
+    // { label: "Therapists", href: "/patient/therapists", icon: <UsersIcon /> },
+    // { label: "Schedule", href: "/patient/appointments", icon: <CalendarIcon /> },
+    // { label: "Mood Tracking", href: "/patient/mood", icon: <ChartIcon /> },
 ]
 
 const toolItems: SidebarItem[] = [
@@ -122,26 +122,26 @@ const toolItems: SidebarItem[] = [
 
 export default function Sidebar() {
     const pathname = usePathname()
-    const [isCollapsed, setIsCollapsed] = useState(false)
+    const [isCollapsed, setIsCollapsed] = useState(true) // Always closed
     const { data: session } = useSession()
 
     return (
         <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-[#131316] border-r border-[#27272a] z-40`}>
 
             {/* Toggle Button centered on the vertical border */}
-            <button
+            {/* <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
                 className="absolute top-1/2 -translate-y-1/2 -right-3.5 text-zinc-400 hover:text-white transition-colors z-50 bg-[#18181b] p-1.5 rounded-full border border-[#3f3f46] shadow-lg flex items-center justify-center cursor-pointer"
                 aria-label="Toggle Sidebar"
                 title="Toggle Sidebar"
             >
                 <SidebarToggleIcon className="w-4 h-4" isCollapsed={isCollapsed} />
-            </button>
+            </button> */}
 
             <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden shadow-inner ${isCollapsed ? "px-3 md:px-0" : "pl-3 pr-5"}`}>
 
                 {/* Header / Logo */}
-                <Link href="/patient/dashboard" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-6 gap-3"}`}>
+                <Link href="/patient/ai-bot" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-6 gap-3"}`}>
                     <div className="shrink-0">
                         <Image
                             src="/images/logo.png"
@@ -160,36 +160,38 @@ export default function Sidebar() {
                 </Link>
 
                 {/* General Section */}
-                <div className={`mb-8 ${isCollapsed ? "px-2" : "pl-2"}`}>
-                    {!isCollapsed && <h3 className="text-[11px] font-bold text-zinc-500 mb-3 px-2 uppercase tracking-wide">General</h3>}
-                    <nav className="flex flex-col gap-1.5">
-                        {generalItems.map((item) => {
-                            const isActive = pathname === item.href || (item.href !== '/patient/dashboard' && pathname.startsWith(item.href.split('?')[0]) && item.label !== "Calendar")
+                {generalItems.length > 0 && (
+                    <div className={`mb-8 ${isCollapsed ? "px-2" : "pl-2"}`}>
+                        {!isCollapsed && <h3 className="text-[11px] font-bold text-zinc-500 mb-3 px-2 uppercase tracking-wide">General</h3>}
+                        <nav className="flex flex-col gap-1.5">
+                            {generalItems.map((item) => {
+                                const isActive = pathname === item.href || (item.href !== '/patient/dashboard' && pathname.startsWith(item.href.split('?')[0]) && item.label !== "Calendar")
 
-                            return (
-                                <Link
-                                    key={item.label}
-                                    href={item.href}
-                                    title={isCollapsed ? item.label : undefined}
-                                    className={`flex items-center justify-between rounded-2xl transition-all duration-300 font-bold
-                                        ${isCollapsed ? "p-3 justify-center" : "px-4 py-3"}
-                                        ${isActive
-                                            ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5"
-                                            : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
-                                        }
-                                    `}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className={`${isActive ? "text-white" : "text-zinc-400"}`}>
-                                            {item.icon}
+                                return (
+                                    <Link
+                                        key={item.label}
+                                        href={item.href}
+                                        title={isCollapsed ? item.label : undefined}
+                                        className={`flex items-center justify-between rounded-2xl transition-all duration-300 font-bold
+                                            ${isCollapsed ? "p-3 justify-center" : "px-4 py-3"}
+                                            ${isActive
+                                                ? "bg-[#27272a] text-white shadow-sm ring-1 ring-white/5"
+                                                : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className={`${isActive ? "text-white" : "text-zinc-400"}`}>
+                                                {item.icon}
+                                            </div>
+                                            {!isCollapsed && <span className="text-sm whitespace-nowrap">{item.label}</span>}
                                         </div>
-                                        {!isCollapsed && <span className="text-sm whitespace-nowrap">{item.label}</span>}
-                                    </div>
-                                </Link>
-                            )
-                        })}
-                    </nav>
-                </div>
+                                    </Link>
+                                )
+                            })}
+                        </nav>
+                    </div>
+                )}
 
                 {/* Tools Section */}
                 <div className={`mb-8 w-full flex-1 ${isCollapsed ? "px-2" : "pl-2"}`}>

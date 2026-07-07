@@ -34,6 +34,7 @@ model User {
   admin         Admin?
   organization  Organization? @relation(fields: [orgId], references: [id])
   transactions  Transaction[]
+  pragyaMessages PragyaChatMessage[]
   
   @@map("users")
 }
@@ -374,4 +375,17 @@ model Transaction {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("transactions")
+}
+
+// AI Bot Chat Message
+model PragyaChatMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  role      String   // "user" or "assistant"
+  content   String   @db.String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("pragya_chat_messages")
 }

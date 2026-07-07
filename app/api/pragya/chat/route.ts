@@ -75,6 +75,15 @@ export async function POST(req: Request) {
   });
   finalChatCount = updated.dailyAiChatCount;
 
+  // Save user message to history
+  await prisma.pragyaChatMessage.create({
+    data: {
+      userId: dbUser.id,
+      role: "user",
+      content: message.trim(),
+    }
+  });
+
   const upstream = await fetch(`${getPragyaUpstreamBase()}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -91,6 +100,18 @@ export async function POST(req: Request) {
 
   try {
     const data = JSON.parse(text) as { reply?: string }
+    
+    // Save assistant reply to history
+    if (data.reply) {
+      await prisma.pragyaChatMessage.create({
+        data: {
+          userId: dbUser.id,
+          role: "assistant",
+          content: data.reply,
+        }
+      });
+    }
+
     return NextResponse.json({ ...data, currentCount: finalChatCount, plan: dbUser.plan })
   } catch {
     return NextResponse.json({ error: "Invalid upstream response" }, { status: 502 })
