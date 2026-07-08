@@ -564,7 +564,7 @@ export default function TryPragyaChat({
                       className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-2 duration-300`}
                     >
                       <div
-                        className={`max-w-[85%] sm:max-w-[75%] rounded-3xl p-5 text-[15px] leading-relaxed shadow-sm ${msg.role === "user"
+                        className={`max-w-[85%] sm:max-w-[75%] rounded-3xl p-5 text-[15px] leading-relaxed shadow-sm whitespace-pre-wrap ${msg.role === "user"
                           ? "bg-gradient-to-r from-orange-600 to-orange-500 text-white rounded-tr-sm shadow-[0_4px_14px_rgba(249,107,19,0.25)]"
                           : msg.isError
                             ? "bg-red-50 text-red-800 rounded-tl-sm border border-red-100 shadow-[0_2px_10px_rgba(220,38,38,0.04)]"
@@ -720,7 +720,7 @@ export default function TryPragyaChat({
                           {msg.role === 'user' ? 'You' : 'Pragya'}
                         </span>
                       </div>
-                      <p className="text-[14px] text-gray-800 leading-relaxed">
+                      <p className="text-[14px] text-gray-800 leading-relaxed whitespace-pre-wrap">
                         {msg.content}
                       </p>
                     </div>
