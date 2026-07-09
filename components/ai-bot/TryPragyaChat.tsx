@@ -92,6 +92,7 @@ export default function TryPragyaChat({
   const [selectedMode, setSelectedMode] = useState<string | null>("direct")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputMessage, setInputMessage] = useState("")
+  const [suggestions, setSuggestions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
   const [lastUserMessage, setLastUserMessage] = useState("")
@@ -187,6 +188,7 @@ export default function TryPragyaChat({
     }
 
     setIsLoading(true)
+    setSuggestions([])
 
     try {
       const res = await fetch("/api/pragya/chat", {
@@ -200,7 +202,7 @@ export default function TryPragyaChat({
         throw new Error(errorData.error || "Failed to connect to the assistant.")
       }
 
-      const data = await res.json() as { reply?: string; currentCount?: number; plan?: string; error?: string }
+      const data = await res.json() as { reply?: string; currentCount?: number; plan?: string; error?: string; suggestions?: string[] }
 
       if (data.error === "LIMIT_REACHED" || (data.currentCount !== undefined && data.currentCount > chatCount)) {
         if (typeof data.currentCount === "number") setChatCount(data.currentCount)
@@ -211,6 +213,9 @@ export default function TryPragyaChat({
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
       setBotExpression(getBotExpression(reply))
+      if (data.suggestions && Array.isArray(data.suggestions)) {
+        setSuggestions(data.suggestions)
+      }
       
     } catch (error: any) {
       console.error("Chat error:", error)
@@ -231,6 +236,7 @@ export default function TryPragyaChat({
   const resetChat = () => {
     setHasStarted(false)
     setSelectedMode("direct")
+    setSuggestions([])
     setMessages([])
     setBotExpression("NEUTRAL")
     setSummaryOpen(false)
@@ -613,7 +619,21 @@ export default function TryPragyaChat({
 
                 {/* Chat Input Field */}
                 <div className="p-4 md:p-6 bg-white border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.02)] z-10">
-                  <div className="max-w-4xl mx-auto">
+                  <div className="max-w-4xl mx-auto relative">
+                    {suggestions.length > 0 && !isLoading && (
+                      <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
+                        {suggestions.map((s, i) => (
+                          <button 
+                            key={i} 
+                            type="button"
+                            onClick={() => setInputMessage(s)}
+                            className="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 text-orange-600 rounded-full text-[13px] font-medium shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex justify-between items-center mb-2 px-2 md:hidden">
                       <span className="text-[12px] text-gray-400 font-bold">
                         {plan !== "PRO" ? `${limitData.remaining} chats remaining today` : ""}
