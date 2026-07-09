@@ -177,6 +177,13 @@ export default function TryPragyaChat({
     }
   }
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputMessage("")
+    setLastUserMessage(suggestion)
+    setMessages((prev) => [...prev, { role: "user", content: suggestion }])
+    sendMessage(undefined, suggestion)
+  }
+
   const sendMessage = async (e?: FormEvent, retryMsg?: string) => {
     e?.preventDefault()
     if ((!inputMessage.trim() && !retryMsg) || isLoading || limitData.isLimitReached) return
@@ -610,7 +617,7 @@ export default function TryPragyaChat({
                           <button 
                             key={i} 
                             type="button"
-                            onClick={() => setInputMessage(s)}
+                            onClick={() => handleSuggestionClick(s)}
                             className="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 text-orange-600 rounded-full text-[13px] font-medium shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
                           >
                             {s}
