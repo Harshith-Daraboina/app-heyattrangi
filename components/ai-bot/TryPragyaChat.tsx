@@ -217,7 +217,7 @@ export default function TryPragyaChat({
       setBotExpression(getBotExpression(reply))
       if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions)
-        setTimeout(() => setShowSuggestions(true), 5000)
+        setTimeout(() => setShowSuggestions(true), 3000)
       }
       
     } catch (error: any) {
