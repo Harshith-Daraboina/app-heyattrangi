@@ -93,6 +93,7 @@ export default function TryPragyaChat({
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputMessage, setInputMessage] = useState("")
   const [suggestions, setSuggestions] = useState<string[]>([])
+  const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
   const [lastUserMessage, setLastUserMessage] = useState("")
@@ -189,6 +190,7 @@ export default function TryPragyaChat({
 
     setIsLoading(true)
     setSuggestions([])
+    setShowSuggestions(false)
 
     try {
       const res = await fetch("/api/pragya/chat", {
@@ -215,6 +217,7 @@ export default function TryPragyaChat({
       setBotExpression(getBotExpression(reply))
       if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions)
+        setTimeout(() => setShowSuggestions(true), 5000)
       }
       
     } catch (error: any) {
@@ -237,6 +240,7 @@ export default function TryPragyaChat({
     setHasStarted(false)
     setSelectedMode("direct")
     setSuggestions([])
+    setShowSuggestions(false)
     setMessages([])
     setBotExpression("NEUTRAL")
     setSummaryOpen(false)
@@ -600,7 +604,7 @@ export default function TryPragyaChat({
                 {/* Chat Input Field */}
                 <div className="p-4 md:p-6 bg-white border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.02)] z-10">
                   <div className="max-w-4xl mx-auto relative">
-                    {suggestions.length > 0 && !isLoading && (
+                    {suggestions.length > 0 && showSuggestions && !isLoading && (
                       <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
                         {suggestions.map((s, i) => (
                           <button 
