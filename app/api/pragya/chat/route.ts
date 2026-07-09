@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Expected JSON object" }, { status: 400 })
   }
 
-  const { session_id, message, preferred_name } = body as Record<string, unknown>
+  const { session_id, message } = body as Record<string, unknown>
   if (typeof session_id !== "string" || !session_id.trim()) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 })
   }
@@ -38,9 +38,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 })
   }
   
-  const nameToUse = (typeof preferred_name === "string" && preferred_name.trim()) 
-    ? preferred_name.trim() 
-    : (dbUser.name ? dbUser.name.split(" ")[0] : "");
+  // Name is not passed to AI to avoid overuse or asking for name
+  const nameToUse = "";
 
   const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
 

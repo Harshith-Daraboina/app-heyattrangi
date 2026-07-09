@@ -194,7 +194,7 @@ export default function TryPragyaChat({
       const res = await fetch("/api/pragya/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId, message: userMsg, preferred_name: preferredName }),
+        body: JSON.stringify({ session_id: sessionId, message: userMsg }),
       })
 
       if (!res.ok) {
@@ -460,17 +460,7 @@ export default function TryPragyaChat({
                   <p className="text-gray-500 mb-8 font-medium">
                     You've used all {limitData.maxChats} chats for your current plan today. Upgrade to continue chatting!
                   </p>
-                                  <div className="mb-8">
-                  <label className="block text-[15px] font-bold text-gray-700 mb-2 ml-1">What should I call you?</label>
-                  <input
-                    type="text"
-                    value={preferredName}
-                    onChange={(e) => setPreferredName(e.target.value)}
-                    placeholder="Enter your preferred name..."
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all bg-gray-50/50 text-[15px]"
-                  />
-                </div>
-
+                  
                 <div className="space-y-4">
                     <a
                       href="/patient/billing"
@@ -488,17 +478,7 @@ export default function TryPragyaChat({
               <div className="w-full max-w-xl px-4 md:px-8 flex flex-col justify-center h-full min-h-[min(100%,700px)] animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out py-8 md:py-12 overflow-y-auto">
                 <h2 className="text-[24px] md:text-[28px] font-bold text-gray-800 mb-6 md:mb-8 tracking-tight md:ml-1 text-center md:text-left">How can I help you today?</h2>
 
-                                <div className="mb-8">
-                  <label className="block text-[15px] font-bold text-gray-700 mb-2 ml-1">What should I call you?</label>
-                  <input
-                    type="text"
-                    value={preferredName}
-                    onChange={(e) => setPreferredName(e.target.value)}
-                    placeholder="Enter your preferred name..."
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all bg-gray-50/50 text-[15px]"
-                  />
-                </div>
-
+                
                 <div className="space-y-4">
                   {CHAT_MODES.map((mode) => (
                     <div
@@ -750,17 +730,7 @@ export default function TryPragyaChat({
               </button>
             </div>
             <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-1 overflow-y-auto p-6 bg-gray-50/30">
-                              <div className="mb-8">
-                  <label className="block text-[15px] font-bold text-gray-700 mb-2 ml-1">What should I call you?</label>
-                  <input
-                    type="text"
-                    value={preferredName}
-                    onChange={(e) => setPreferredName(e.target.value)}
-                    placeholder="Enter your preferred name..."
-                    className="w-full px-5 py-4 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all bg-gray-50/50 text-[15px]"
-                  />
-                </div>
-
+              
                 <div className="space-y-4">
                 {isHistoryLoading ? (
                   <div className="flex justify-center p-8">
