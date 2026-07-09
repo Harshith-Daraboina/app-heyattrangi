@@ -87,7 +87,7 @@ export async function POST(req: Request) {
   const upstream = await fetch(`${getPragyaUpstreamBase()}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: session_id.trim(), message: message.trim() }),
+    body: JSON.stringify({ session_id: session_id.trim(), message: message.trim(), user_name: dbUser.name }),
   })
 
   const text = await upstream.text()
