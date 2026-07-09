@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   
   const nameToUse = (typeof preferred_name === "string" && preferred_name.trim()) 
     ? preferred_name.trim() 
-    : (dbUser.name ? dbUser.name.split(" ")[0] : "User");
+    : (dbUser.name ? dbUser.name.split(" ")[0] : "");
 
   const today = new Date().toISOString().split("T")[0] // YYYY-MM-DD format
 
