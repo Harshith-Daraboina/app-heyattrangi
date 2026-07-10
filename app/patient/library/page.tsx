@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import Image from "next/image"
 
 // --- TYPES ---
 interface JournalEntry {
@@ -27,10 +26,10 @@ export default function LibraryPage() {
 
   // Mood Journal
   const [journalText, setJournalText] = useState<string>("")
-  const [selectedMood, setSelectedMood] = useState<string>("Calm 🍃")
+  const [selectedMood, setSelectedMood] = useState<string>("Calm")
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([
-    { id: "1", date: "July 9, 2026", mood: "Peaceful 🧘‍♀️", text: "Had a great walk outside. Feeling grounded and clear-headed today." },
-    { id: "2", date: "July 8, 2026", mood: "Anxious ⚡", text: "A bit overwhelmed with work today, but took a few deep breaths to reset." }
+    { id: "1", date: "July 9, 2026", mood: "Peaceful", text: "Had a great walk outside. Feeling grounded and clear-headed today." },
+    { id: "2", date: "July 8, 2026", mood: "Anxious", text: "A bit overwhelmed with work today, but took a few deep breaths to reset." }
   ])
 
   // Self Assessment Quiz
@@ -75,7 +74,7 @@ export default function LibraryPage() {
             })
             return 0
           }
-          return prev + 2.5 // Speed up for smooth visual
+          return prev + 2.5
         })
       }, 100)
     } else {
@@ -118,29 +117,37 @@ export default function LibraryPage() {
     setQuizScore(score)
   }
 
-  // --- RENDER SECTIONS ---
   return (
-    <div className="flex-1 h-full overflow-y-auto w-full bg-[#fafdfc] text-gray-800 flex flex-col">
+    <div className="flex-1 h-full overflow-y-auto w-full bg-[#f8fafc] text-slate-800 flex flex-col font-sans">
+      
       {/* Banner / Header */}
-      <div className="bg-gradient-to-r from-teal-50 to-orange-50 px-6 py-8 border-b border-teal-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-white px-8 py-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <button
-            onClick={() => setActiveTab("discover")}
-            className="text-xs font-bold text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-[0.2em] flex items-center gap-1.5 mb-2"
-          >
-            {activeTab !== "discover" ? "← Back to Library" : "Patient Resources"}
-          </button>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+          {activeTab !== "discover" && (
+            <button
+              onClick={() => setActiveTab("discover")}
+              className="text-[11px] font-black text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest flex items-center gap-1 mb-2"
+            >
+              Back to Library
+            </button>
+          )}
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
             {activeTab === "discover" && "Discover & Learn"}
             {activeTab === "wellness" && "Mental Wellness"}
             {activeTab === "distress" && "Distress Signals"}
             {activeTab === "illness" && "Understanding Mental Illness"}
-            {activeTab === "stories" && "Our Success Stories"}
-            {activeTab === "selfhelp" && "Self Help Resource Capsule"}
+            {activeTab === "stories" && "Success Stories"}
+            {activeTab === "selfhelp" && "Self Help Capsule"}
             {activeTab === "brainfood" && "Brain Food Room"}
           </h1>
-          <p className="text-gray-500 font-medium mt-1">
-            Explore calming activities, tips, assessments, and learning modules.
+          <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mt-1">
+            {activeTab === "discover" && "Curated mental health activities and modules"}
+            {activeTab === "wellness" && "Mindfulness, meditation, and guides"}
+            {activeTab === "distress" && "Grounding resources and emergency hotlines"}
+            {activeTab === "illness" && "Symptom recognition and population support"}
+            {activeTab === "stories" && "Real journeys of resilience and recovery"}
+            {activeTab === "selfhelp" && "Diagnostic self-assessments and worksheets"}
+            {activeTab === "brainfood" && "Cognitive focus exercises and journaling"}
           </p>
         </div>
 
@@ -148,16 +155,16 @@ export default function LibraryPage() {
           <div className="relative w-full md:w-80 shrink-0">
             <input
               type="text"
-              placeholder="Search resource library..."
+              placeholder="Search library..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-teal-100 rounded-full px-5 py-2.5 pl-11 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
+              className="w-full bg-slate-50 border border-slate-200/80 rounded-full px-5 py-2.5 pl-11 text-xs font-semibold shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300"
             />
             <svg
-              className="absolute left-4 top-3.5 w-4 h-4 text-gray-400"
+              className="absolute left-4 top-3.5 w-4 h-4 text-slate-400"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
               viewBox="0 0 24 24"
             >
               <circle cx="11" cy="11" r="8" />
@@ -168,175 +175,186 @@ export default function LibraryPage() {
       </div>
 
       <div className="p-6 md:p-8 flex-1 w-full max-w-6xl mx-auto">
+        
         {/* --- DISCOVER HOME PAGE --- */}
         {activeTab === "discover" && (
-          <div className="space-y-8 animate-in fade-in duration-500">
+          <div className="space-y-8 animate-in fade-in duration-300">
+            
             {/* Discover Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
               {/* Category Card: Mental Wellness */}
               <button
                 onClick={() => setActiveTab("wellness")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-teal-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#4facfe] to-[#00f2fe] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-teal-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">🧘‍♀️</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Mental Wellness</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Guided breathing, relaxation, mindfulness scripts, and calm activities.
-                </p>
-                <span className="mt-auto text-teal-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <div className="absolute -right-4 -top-4 w-24 h-24 border border-white/10 rounded-full pointer-events-none"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  5 mins
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Mental Wellness</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Guided breathing, relaxation scripts, and calming guides.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-teal-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
 
               {/* Category Card: Distress Signals */}
               <button
                 onClick={() => setActiveTab("distress")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-rose-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#ff5858] to-[#f09819] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">⚠️</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Distress Signals</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Immediate emergency support, quick grounding tools, and anxiety mitigation.
-                </p>
-                <span className="mt-auto text-rose-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <div className="absolute -left-4 -bottom-4 w-20 h-20 border border-white/10 rounded-full pointer-events-none"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  Immediate
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Distress Signals</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Urgent help contacts and active grounding techniques.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-orange-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
 
               {/* Category Card: Understanding Mental Illness */}
               <button
                 onClick={() => setActiveTab("illness")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-amber-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#30cfd0] to-[#330867] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">🧠</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Understanding Illness</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Educational guides, articles on specific conditions, and special population tips.
-                </p>
-                <span className="mt-auto text-amber-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  Resource Capsule
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Understanding Illness</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Condition reference files and special population checklists.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-[#330867] font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
 
               {/* Category Card: Our Success Stories */}
               <button
                 onClick={() => setActiveTab("stories")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-blue-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#7f53ac] to-[#647dec] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">⭐</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Success Stories</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Real stories from patients, testimonials, and journeys toward healing.
-                </p>
-                <span className="mt-auto text-blue-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  Community
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Success Stories</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Real narratives from people who reclaimed their peace of mind.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-indigo-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
 
               {/* Category Card: Self Help */}
               <button
                 onClick={() => setActiveTab("selfhelp")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-emerald-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#11998e] to-[#38ef7d] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">🌱</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Self Help</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Self-assessments, checklists, guides, and download resources.
-                </p>
-                <span className="mt-auto text-emerald-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  Tools
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Self Help</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Interactive self-diagnostics, files, and printable tracking logs.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-emerald-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
 
-              {/* Category Card: Brain food */}
+              {/* Category Card: Brain Food Room */}
               <button
                 onClick={() => setActiveTab("brainfood")}
-                className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100/80 hover:shadow-md hover:border-purple-200 transition-all flex flex-col text-left group"
+                className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#f857a6] to-[#ff5858] text-white"
               >
-                <div className="w-16 h-16 rounded-2xl bg-purple-50 flex items-center justify-center mb-6 group-hover:scale-105 transition-transform">
-                  <span className="text-2xl">🎨</span>
-                </div>
-                <h3 className="font-extrabold text-lg text-gray-900 mb-2">Brain Food Room</h3>
-                <p className="text-gray-400 font-medium text-sm leading-relaxed mb-4">
-                  Interactive Sudoku puzzles, zen meditations, journaling diary, and coloring canvas.
-                </p>
-                <span className="mt-auto text-purple-600 font-bold text-xs uppercase tracking-widest flex items-center gap-1">
-                  Explore Module <span className="group-hover:translate-x-1 transition-transform">→</span>
+                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
+                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                  10 mins
                 </span>
+                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Brain Food Room</h3>
+                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                  Focus training games, ambient sound, and a thought diary log.
+                </p>
+                <div className="mt-auto self-end flex items-center justify-center bg-white text-rose-500 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                  Start <span>→</span>
+                </div>
               </button>
-            </div>
 
+            </div>
           </div>
         )}
 
         {/* --- 1. MENTAL WELLNESS MODULE --- */}
         {activeTab === "wellness" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
               {/* Interactive Breathing Tool */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[350px]">
-                <h3 className="font-extrabold text-xl mb-2 text-center text-gray-900">Guided Breath Calmer</h3>
-                <p className="text-gray-400 font-medium text-sm text-center mb-8 max-w-sm">
-                  Inhale through the nose, hold, then slowly exhale through the mouth.
-                </p>
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center justify-center min-h-[350px]">
+                <h3 className="font-extrabold text-xl mb-1 text-center text-slate-900">Guided Breath Calmer</h3>
+                <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest mb-6">Breathing Exercise</span>
 
                 {/* Breathing Ball */}
                 <div className="relative w-48 h-48 flex items-center justify-center mb-8">
                   <div
-                    className={`absolute rounded-full bg-teal-400/20 border-2 border-teal-400 transition-all duration-[4000ms] flex flex-col items-center justify-center shadow-inner ${
+                    className={`absolute rounded-full bg-teal-500/10 border-2 border-teal-500/30 transition-all duration-[4000ms] flex flex-col items-center justify-center ${
                       isBreathingActive && breathState === "Inhale"
-                        ? "w-44 h-44 bg-teal-400/40"
+                        ? "w-44 h-44 bg-teal-500/20"
                         : isBreathingActive && breathState === "Hold"
-                        ? "w-44 h-44 bg-emerald-400/40 border-emerald-400"
+                        ? "w-44 h-44 bg-emerald-500/20 border-emerald-500/30"
                         : "w-28 h-28"
                     }`}
                   >
-                    <span className="text-sm font-black text-teal-900 uppercase tracking-widest animate-pulse">
-                      {isBreathingActive ? breathState : "Idle"}
+                    <span className="text-xs font-black text-teal-900 uppercase tracking-widest">
+                      {isBreathingActive ? breathState : "Ready"}
                     </span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setIsBreathingActive(!isBreathingActive)}
-                  className={`px-8 py-3 rounded-full font-black text-sm transition-all shadow-md ${
+                  className={`px-8 py-3.5 rounded-full font-black text-xs uppercase tracking-wider transition-all shadow-md ${
                     isBreathingActive
-                      ? "bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20"
-                      : "bg-teal-500 hover:bg-teal-600 text-white shadow-teal-500/20"
+                      ? "bg-slate-800 hover:bg-slate-900 text-white"
+                      : "bg-teal-500 hover:bg-teal-600 text-white"
                   }`}
                 >
-                  {isBreathingActive ? "Stop Breathing Exercise" : "Start Exercise"}
+                  {isBreathingActive ? "Stop Exercise" : "Start Exercise"}
                 </button>
               </div>
 
-              {/* Learning / Articles */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
-                <h3 className="font-extrabold text-xl text-gray-900">Recommended Audio Guide</h3>
+              {/* Recommended Audios */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
+                <h3 className="font-extrabold text-xl text-slate-900">Recommended Audio Sessions</h3>
                 
                 <div className="space-y-4">
                   {[
-                    { title: "Calming Storm & Ocean Waves", duration: "12 mins", desc: "Perfect for easing pre-sleep anxiety." },
-                    { title: "Deep Muscle Relaxation (PMR)", duration: "18 mins", desc: "Release physical body tension step-by-step." },
-                    { title: "Morning Mindfulness Routine", duration: "5 mins", desc: "Start your day with focused clarity." }
+                    { title: "Calming Storm & Ocean Waves", duration: "12 mins", category: "Ambient" },
+                    { title: "Deep Muscle Relaxation (PMR)", duration: "18 mins", category: "Guided" },
+                    { title: "Morning Mindfulness Routine", duration: "5 mins", category: "Quick Reset" }
                   ].map((audio, i) => (
-                    <div key={i} className="p-4 rounded-2xl bg-teal-50/50 border border-teal-50 flex items-center justify-between gap-4">
+                    <div key={i} className="p-5 rounded-2xl bg-slate-50 border border-slate-100/50 flex items-center justify-between gap-4">
                       <div>
-                        <span className="text-xs font-bold text-teal-600 uppercase tracking-wider">{audio.duration}</span>
-                        <h4 className="font-bold text-gray-900 mt-0.5">{audio.title}</h4>
-                        <p className="text-xs text-gray-400 font-medium mt-1">{audio.desc}</p>
+                        <span className="text-[9px] font-black text-teal-600 uppercase tracking-wider">{audio.duration} • {audio.category}</span>
+                        <h4 className="font-bold text-slate-900 mt-1 text-sm">{audio.title}</h4>
                       </div>
-                      <button className="w-10 h-10 rounded-full bg-teal-500 hover:bg-teal-600 text-white flex items-center justify-center shadow-md shadow-teal-500/10">
-                        ▶
+                      <button className="w-10 h-10 rounded-full bg-teal-500 hover:bg-teal-600 text-white flex items-center justify-center shadow-sm">
+                        <svg className="w-4 h-4 fill-white ml-0.5" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
                       </button>
                     </div>
                   ))}
@@ -348,58 +366,57 @@ export default function LibraryPage() {
 
         {/* --- 2. DISTRESS SIGNALS MODULE --- */}
         {activeTab === "distress" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Interactive 5-4-3-2-1 Grounding Tool */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm min-h-[350px] flex flex-col">
-                <h3 className="font-extrabold text-xl mb-2 text-gray-900">5-4-3-2-1 Grounding Assistant</h3>
-                <p className="text-gray-400 font-medium text-sm mb-6">
-                  Click through each step and focus your attention on your immediate surroundings.
-                </p>
+              
+              {/* Grounding Assistant */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm min-h-[350px] flex flex-col">
+                <h3 className="font-extrabold text-xl mb-1 text-slate-900">5-4-3-2-1 Grounding Assistant</h3>
+                <span className="text-[10px] font-black text-orange-600 uppercase tracking-widest mb-6">Grounding Technique</span>
 
                 <div className="flex-1 flex flex-col justify-center items-center py-6 text-center">
                   {groundingStep === 5 && (
-                    <div className="animate-in zoom-in duration-300">
-                      <span className="text-5xl mb-4 block">👀</span>
-                      <h4 className="text-lg font-black text-rose-600 mb-1">5 things you can SEE</h4>
-                      <p className="text-gray-500 font-medium max-w-xs">Look around and name 5 distinct things you see in your room.</p>
+                    <div className="animate-in fade-in duration-300">
+                      <span className="text-xs font-black text-orange-600 uppercase tracking-wider block mb-2">Step 1 of 5</span>
+                      <h4 className="text-xl font-extrabold text-slate-900 mb-2">Identify 5 things you can see</h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">Focus on small, stationary objects in your line of sight.</p>
                     </div>
                   )}
                   {groundingStep === 4 && (
-                    <div className="animate-in zoom-in duration-300">
-                      <span className="text-5xl mb-4 block">🖐️</span>
-                      <h4 className="text-lg font-black text-rose-600 mb-1">4 things you can TOUCH</h4>
-                      <p className="text-gray-500 font-medium max-w-xs">A chair, clothing, the desk, or cool air on your skin.</p>
+                    <div className="animate-in fade-in duration-300">
+                      <span className="text-xs font-black text-orange-600 uppercase tracking-wider block mb-2">Step 2 of 5</span>
+                      <h4 className="text-xl font-extrabold text-slate-900 mb-2">Identify 4 things you can touch</h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">Notice the texture of fabric, wood surfaces, or your breathing muscles.</p>
                     </div>
                   )}
                   {groundingStep === 3 && (
-                    <div className="animate-in zoom-in duration-300">
-                      <span className="text-5xl mb-4 block">👂</span>
-                      <h4 className="text-lg font-black text-rose-600 mb-1">3 things you can HEAR</h4>
-                      <p className="text-gray-500 font-medium max-w-xs">Traffic outside, birds, ambient music, or your own breath.</p>
+                    <div className="animate-in fade-in duration-300">
+                      <span className="text-xs font-black text-orange-600 uppercase tracking-wider block mb-2">Step 3 of 5</span>
+                      <h4 className="text-xl font-extrabold text-slate-900 mb-2">Identify 3 things you can hear</h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">Listen for distant traffic, ambient hums, or the rustle of leaves.</p>
                     </div>
                   )}
                   {groundingStep === 2 && (
-                    <div className="animate-in zoom-in duration-300">
-                      <span className="text-5xl mb-4 block">👃</span>
-                      <h4 className="text-lg font-black text-rose-600 mb-1">2 things you can SMELL</h4>
-                      <p className="text-gray-500 font-medium max-w-xs">Coffee, soap, fresh rain, or a clean room.</p>
+                    <div className="animate-in fade-in duration-300">
+                      <span className="text-xs font-black text-orange-600 uppercase tracking-wider block mb-2">Step 4 of 5</span>
+                      <h4 className="text-xl font-extrabold text-slate-900 mb-2">Identify 2 things you can smell</h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">Sniff the air, hand soap, clothing, or a book.</p>
                     </div>
                   )}
                   {groundingStep === 1 && (
-                    <div className="animate-in zoom-in duration-300">
-                      <span className="text-5xl mb-4 block">👅</span>
-                      <h4 className="text-lg font-black text-rose-600 mb-1">1 thing you can TASTE</h4>
-                      <p className="text-gray-500 font-medium max-w-xs">Toothpaste, water, or the lingering taste of food.</p>
+                    <div className="animate-in fade-in duration-300">
+                      <span className="text-xs font-black text-orange-600 uppercase tracking-wider block mb-2">Step 5 of 5</span>
+                      <h4 className="text-xl font-extrabold text-slate-900 mb-2">Identify 1 thing you can taste</h4>
+                      <p className="text-slate-400 text-xs font-medium max-w-xs mx-auto leading-relaxed">Notice the natural taste in your mouth, or take a sip of cool water.</p>
                     </div>
                   )}
                 </div>
 
-                <div className="flex justify-between items-center mt-6">
+                <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-50">
                   <button
                     disabled={groundingStep === 5}
                     onClick={() => setGroundingStep((prev) => prev + 1)}
-                    className="px-4 py-2 border border-gray-100 rounded-xl font-bold text-xs text-gray-500 disabled:opacity-30"
+                    className="px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold text-xs text-slate-500 disabled:opacity-30 transition-all"
                   >
                     Previous
                   </button>
@@ -411,37 +428,34 @@ export default function LibraryPage() {
                         setGroundingStep((prev) => prev - 1)
                       }
                     }}
-                    className="px-6 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-black text-xs uppercase tracking-wider"
+                    className="px-6 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-black text-xs uppercase tracking-wider transition-all"
                   >
-                    {groundingStep === 1 ? "Start Over" : "Next Sense"}
+                    {groundingStep === 1 ? "Start Over" : "Next Step"}
                   </button>
                 </div>
               </div>
 
-              {/* Call hotlines */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
-                <h3 className="font-extrabold text-xl text-gray-900">Verified Support Helplines</h3>
-                <p className="text-gray-400 font-medium text-sm">
-                  If you are in immediate distress or crisis, reach out to these support lines immediately.
-                </p>
-
+              {/* Support Hotlines */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
+                <h3 className="font-extrabold text-xl text-slate-900">Verified Support Lines</h3>
+                
                 <div className="space-y-4">
                   {[
-                    { name: "Tele MANAS National Hotline", number: "14416", desc: "Available 24/7 across India." },
-                    { name: "KIRAN Mental Health Support", number: "1800-599-0019", desc: "Government counseling service." },
-                    { name: "Vandrevala Foundation", number: "9999 666 555", desc: "Crisis and suicide helpline support." }
+                    { name: "Tele MANAS Helpline", number: "14416", desc: "Available 24/7. National crisis response support." },
+                    { name: "KIRAN Support", number: "1800-599-0019", desc: "Government mental health service." },
+                    { name: "Vandrevala Foundation", number: "9999 666 555", desc: "Crisis and trauma counseling helpline." }
                   ].map((line, idx) => (
-                    <div key={idx} className="p-5 rounded-2xl bg-rose-50/50 border border-rose-100/50 flex items-center justify-between">
+                    <div key={idx} className="p-5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                       <div>
-                        <h4 className="font-extrabold text-gray-900 text-base">{line.name}</h4>
-                        <span className="text-lg font-black text-rose-600 mt-1 block">{line.number}</span>
-                        <p className="text-xs text-gray-400 font-medium mt-1">{line.desc}</p>
+                        <h4 className="font-black text-slate-800 text-sm">{line.name}</h4>
+                        <span className="text-base font-black text-orange-600 mt-0.5 block">{line.number}</span>
+                        <p className="text-[10px] text-slate-400 font-semibold mt-1">{line.desc}</p>
                       </div>
                       <a
                         href={`tel:${line.number.replace(/\s+/g, "")}`}
-                        className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-black text-xs tracking-wider"
+                        className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-full font-black text-xs tracking-wider"
                       >
-                        CALL NOW
+                        CALL
                       </a>
                     </div>
                   ))}
@@ -453,99 +467,95 @@ export default function LibraryPage() {
 
         {/* --- 3. UNDERSTANDING MENTAL ILLNESS MODULE --- */}
         {activeTab === "illness" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
-            {/* Special Population Selection */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-              <h3 className="font-extrabold text-xl mb-6 text-gray-900">Tips for Special Populations</h3>
+          <div className="space-y-8 animate-in fade-in duration-300">
+            
+            {/* Special Populations */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <h3 className="font-extrabold text-xl mb-6 text-slate-900">Tips for Special Populations</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="p-6 rounded-2xl bg-[#f0f9ff] border border-blue-100 flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shrink-0">
-                    <span className="text-white text-xl">🧒</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">Children & Adolescents</h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                      Understand developmental mood shifts, support emotional literacy, and build clear structure at home.
-                    </p>
-                  </div>
+                
+                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                  <span className="text-[10px] font-black text-teal-600 uppercase tracking-wider block mb-1">Adolescents</span>
+                  <h4 className="font-bold text-slate-900 text-base mb-1">Children & Teenagers</h4>
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                    Identify developmental mood shifts, foster verbal emotional outlets, and support structured home patterns.
+                  </p>
                 </div>
 
-                <div className="p-6 rounded-2xl bg-[#fef2f2] border border-red-100 flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-red-500 flex items-center justify-center shrink-0">
-                    <span className="text-white text-xl">👵</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900">Elders & Seniors</h4>
-                    <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                      Address geriatric loneliness, retirement anxiety, memory support, and routine check-ins.
-                    </p>
-                  </div>
+                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100">
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block mb-1">Geriatric</span>
+                  <h4 className="font-bold text-slate-900 text-base mb-1">Elders & Seniors</h4>
+                  <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                    Address retirement isolation, early-stage cognitive memory shifts, and routine physical checks.
+                  </p>
                 </div>
+
               </div>
             </div>
 
-            {/* Articles List */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-              <h3 className="font-extrabold text-xl mb-6 text-gray-900">Key Articles</h3>
-              <div className="divide-y divide-gray-100">
+            {/* Reference Articles */}
+            <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+              <h3 className="font-extrabold text-xl mb-6 text-slate-900">Condition Reference Articles</h3>
+              <div className="divide-y divide-slate-100">
                 {[
-                  { title: "Gender And Mental Health", desc: "Understanding the different patterns of mental health struggles across genders." },
-                  { title: "How To Support Someone Who Is Struggling With Mental Health", desc: "Key conversational dos and don'ts when listening to close friends." }
+                  { title: "Gender Patterns in Mental Health", desc: "Understanding the unique socio-cultural and diagnostic trends in mental health." },
+                  { title: "Active Listening and Peer Support", desc: "How to effectively listen and support someone struggling with their mental health." }
                 ].map((article, i) => (
                   <div key={i} className="py-4 first:pt-0 last:pb-0 flex justify-between items-center gap-4">
                     <div>
-                      <h4 className="font-bold text-gray-900 hover:text-amber-600 transition-colors cursor-pointer">{article.title}</h4>
-                      <p className="text-xs text-gray-400 mt-1">{article.desc}</p>
+                      <h4 className="font-bold text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer text-sm">{article.title}</h4>
+                      <p className="text-xs text-slate-400 font-medium mt-1">{article.desc}</p>
                     </div>
-                    <span className="text-xs text-gray-300 font-bold hover:text-amber-500 cursor-pointer">Bookmark</span>
+                    <span className="text-[10px] font-black text-slate-400 hover:text-slate-600 cursor-pointer uppercase tracking-wider">Read File</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Symptom Cards Grid */}
+            {/* Symptom Clusters */}
             <div className="space-y-4">
-              <h3 className="font-extrabold text-xl text-gray-900">Recognizing Symptom Clusters</h3>
+              <h3 className="font-extrabold text-xl text-slate-900">Recognizing Symptom Clusters</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 {[
-                  { label: "Behavioral Problems", icon: "🎭", desc: "Extreme shifts in action, withdrawal." },
-                  { label: "Physical Symptoms", icon: "💓", desc: "Tight chest, fatigue, rapid pulse." },
-                  { label: "Social Problems", icon: "🙅‍♀️", desc: "Difficulty interacting, conflict." },
-                  { label: "Substance Use", icon: "🍷", desc: "Dependence, risky escape routes." },
-                  { label: "Reality Loss", icon: "🌀", desc: "Delusions, severe dissociation." },
-                  { label: "Memory Problems", icon: "🗒️", desc: "Brain fog, high forgetfulness." }
+                  { label: "Behavioral Problems", desc: "Noticeable shifts in sleep pattern, dietary logs, and routine participation." },
+                  { label: "Physical Symptoms", desc: "Chest compression feelings, continuous muscle tension, heart rate spikes." },
+                  { label: "Social Withdrawal", desc: "Hesitation to return texts, avoidance of team sessions or family calls." },
+                  { label: "Substance Dependence", desc: "Relying on escape behaviors or dependencies to manage daily stress." },
+                  { label: "Cognitive Dissociation", desc: "Feeling detached from environments or losing touch with immediate tasks." },
+                  { label: "Executive Dysfunction", desc: "Continuous memory blocks, daily plan delays, high overwhelm." }
                 ].map((symptom, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center">
-                    <span className="text-3xl mb-3 block">{symptom.icon}</span>
-                    <h4 className="font-bold text-gray-900 text-sm mb-1">{symptom.label}</h4>
-                    <p className="text-xs text-gray-400 font-medium">{symptom.desc}</p>
+                  <div key={i} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                    <span className="text-[9px] font-black text-indigo-600 uppercase tracking-widest block mb-2">Category {i + 1}</span>
+                    <h4 className="font-bold text-slate-900 text-sm mb-2">{symptom.label}</h4>
+                    <p className="text-xs text-slate-400 font-medium leading-relaxed">{symptom.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
         )}
 
         {/* --- 4. SUCCESS STORIES --- */}
         {activeTab === "stories" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {[
-                { name: "Rahul S.", age: "28", text: "Working with therapy and daily meditation completely changed my perspective on work stress.", mood: "Recovered 🌟" },
-                { name: "Priya M.", age: "34", text: "Finding the right grounding tools helped me manage panic attacks. I'm finally back in control.", mood: "Resilient 🌱" },
-                { name: "Anil K.", age: "42", text: "Connecting with professional guidance saved my relationship and gave me hope during burnout.", mood: "Balanced ⚖️" }
+                { name: "Rahul S.", age: "28", text: "Daily mindfulness work completely resolved my workplace anxiety cycles.", tag: "Recovered" },
+                { name: "Priya M.", age: "34", text: "Revisiting visual grounding steps helped me manage panic triggers. I feel in control again.", tag: "Resilient" },
+                { name: "Anil K.", age: "42", text: "Finding clinical counseling options early gave me strong coping tools for burnout.", tag: "Balanced" }
               ].map((story, idx) => (
-                <div key={idx} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col justify-between">
-                  <p className="text-gray-600 font-medium italic leading-relaxed mb-6">
+                <div key={idx} className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between">
+                  <p className="text-slate-500 font-medium italic leading-relaxed mb-6 text-sm">
                     "{story.text}"
                   </p>
-                  <div className="flex items-center justify-between border-t border-gray-50 pt-4">
+                  <div className="flex items-center justify-between border-t border-slate-50 pt-4">
                     <div>
-                      <h4 className="font-black text-gray-900">{story.name}</h4>
-                      <span className="text-xs text-gray-400 font-semibold">Age {story.age}</span>
+                      <h4 className="font-bold text-slate-950 text-sm">{story.name}</h4>
+                      <span className="text-[10px] text-slate-400 font-semibold">Age {story.age}</span>
                     </div>
-                    <span className="px-3.5 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wide">
-                      {story.mood}
+                    <span className="px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-black uppercase tracking-wider">
+                      {story.tag}
                     </span>
                   </div>
                 </div>
@@ -556,38 +566,37 @@ export default function LibraryPage() {
 
         {/* --- 5. SELF HELP MODULE --- */}
         {activeTab === "selfhelp" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
+          <div className="space-y-8 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Interactive Self-Assessment Quiz */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-                <h3 className="font-extrabold text-xl mb-2 text-gray-900">Self Assessment Capsule</h3>
-                <p className="text-gray-400 font-medium text-sm mb-6">
-                  Answer the following questions to receive immediate wellness tips.
-                </p>
+              
+              {/* Assessment Quiz */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+                <h3 className="font-extrabold text-xl mb-1 text-slate-900">Self Assessment</h3>
+                <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest block mb-6">Wellness Assessment</span>
 
                 {quizScore === null ? (
                   <form onSubmit={handleQuizSubmit} className="space-y-6">
                     {[
-                      { id: 1, text: "How often have you felt down, depressed, or hopeless lately?" },
-                      { id: 2, text: "How often have you had trouble relaxing or felt on edge?" },
-                      { id: 3, text: "Are you finding it difficult to focus on work or daily tasks?" }
+                      { id: 1, text: "How often have you felt down, fatigued, or hopeless lately?" },
+                      { id: 2, text: "How often have you felt on edge or had difficulty relaxing?" },
+                      { id: 3, text: "Are you struggling to complete everyday focus tasks?" }
                     ].map((q) => (
                       <div key={q.id} className="space-y-3">
-                        <p className="font-bold text-gray-800 text-sm">{q.id}. {q.text}</p>
+                        <p className="font-bold text-slate-800 text-xs">{q.id}. {q.text}</p>
                         <div className="grid grid-cols-3 gap-2">
                           {[
                             { label: "Not at all", val: 0 },
-                            { label: "Several days", val: 1 },
-                            { label: "Nearly daily", val: 2 }
+                            { label: "Occasionally", val: 1 },
+                            { label: "Regularly", val: 2 }
                           ].map((opt, i) => (
                             <button
                               key={i}
                               type="button"
                               onClick={() => setQuizAnswers({ ...quizAnswers, [q.id]: opt.val })}
-                              className={`py-2 px-3 text-xs font-bold rounded-xl border text-center transition-all ${
+                              className={`py-2 px-3 text-[10px] font-black rounded-xl border text-center transition-all ${
                                 quizAnswers[q.id] === opt.val
-                                  ? "bg-emerald-500 text-white border-emerald-500"
-                                  : "bg-white text-gray-500 border-gray-100 hover:bg-gray-50"
+                                  ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
+                                  : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
                               }`}
                             >
                               {opt.label}
@@ -599,73 +608,72 @@ export default function LibraryPage() {
                     <button
                       type="submit"
                       disabled={Object.keys(quizAnswers).length < 3}
-                      className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-30 disabled:hover:bg-emerald-500 text-white font-black text-sm rounded-xl uppercase tracking-wider shadow-md shadow-emerald-500/10"
+                      className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-30 text-white font-black text-xs rounded-xl uppercase tracking-wider transition-all"
                     >
-                      Show Score & Tips
+                      Calculate Report
                     </button>
                   </form>
                 ) : (
                   <div className="text-center py-6 animate-in zoom-in duration-300">
-                    <span className="text-5xl mb-4 block">📈</span>
-                    <h4 className="text-lg font-black text-gray-900 mb-1">Your Capsule Score: {quizScore} / 6</h4>
-                    <p className="text-gray-500 font-medium max-w-sm mx-auto mt-2 leading-relaxed text-sm">
-                      {quizScore <= 2 && "Feeling stable! Continue your current daily mindfulness habits and stay connected."}
-                      {quizScore > 2 && quizScore <= 4 && "Moderate stress detected. We recommend trying out the Grounding Tool in 'Distress Signals' or speaking to Pragya AI."}
-                      {quizScore > 4 && "High tension detected. Consider scheduling a session with one of our licensed counselors."}
+                    <span className="text-xs font-black text-emerald-600 uppercase tracking-widest block mb-2">Results</span>
+                    <h4 className="text-lg font-extrabold text-slate-900 mb-2">Wellness Index: {quizScore} / 6</h4>
+                    <p className="text-slate-400 text-xs font-medium max-w-sm mx-auto leading-relaxed">
+                      {quizScore <= 2 && "Minimal stress patterns. Keep up your active routine check-ins."}
+                      {quizScore > 2 && quizScore <= 4 && "Moderate tension. Grounding exercises and deep breathing tools are recommended."}
+                      {quizScore > 4 && "High tension patterns. We advise reviewing schedule options with your counselor."}
                     </p>
                     <button
                       onClick={() => {
                         setQuizScore(null)
                         setQuizAnswers({})
                       }}
-                      className="mt-6 px-6 py-2.5 border border-emerald-100 text-emerald-600 hover:bg-emerald-50 font-bold text-xs rounded-xl"
+                      className="mt-6 px-6 py-2.5 border border-emerald-200 text-emerald-600 hover:bg-emerald-50 font-bold text-xs rounded-xl transition-all"
                     >
-                      Retake Test
+                      Reset Quiz
                     </button>
                   </div>
                 )}
               </div>
 
-              {/* Downloads list */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm space-y-6">
-                <h3 className="font-extrabold text-xl text-gray-900">Self Help Guides (PDF)</h3>
+              {/* PDF Downloads */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
+                <h3 className="font-extrabold text-xl text-slate-900">Worksheet Files</h3>
                 
                 <div className="space-y-4">
                   {[
-                    { title: "Cognitive Distortions Worksheet", size: "1.2 MB" },
+                    { title: "Cognitive Distortions Guide", size: "1.2 MB" },
                     { title: "Daily Anxiety Tracker Log", size: "640 KB" },
-                    { title: "Sleep Hygiene Guidelines Guide", size: "820 KB" }
+                    { title: "Sleep Hygiene Check-list", size: "820 KB" }
                   ].map((doc, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-50/50 flex items-center justify-between">
+                    <div key={idx} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                       <div>
-                        <h4 className="font-bold text-gray-900 text-sm">{doc.title}</h4>
-                        <span className="text-[10px] text-gray-400 font-bold mt-1 block">{doc.size}</span>
+                        <h4 className="font-bold text-slate-900 text-xs">{doc.title}</h4>
+                        <span className="text-[9px] text-slate-400 font-bold mt-0.5 block">{doc.size}</span>
                       </div>
-                      <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/10">
-                        <span>📥</span> Download
+                      <button className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-sm transition-all">
+                        Download
                       </button>
                     </div>
                   ))}
                 </div>
               </div>
+
             </div>
           </div>
         )}
 
         {/* --- 6. BRAIN FOOD ROOM --- */}
         {activeTab === "brainfood" && (
-          <div className="space-y-8 animate-in slide-in-from-bottom-5 duration-500">
-            {/* Sudoku & Mood Diary Grid */}
+          <div className="space-y-8 animate-in fade-in duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Brain Busters: Sudoku */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col items-center">
-                <h3 className="font-extrabold text-xl mb-1 text-gray-900">Brain Busters: Sudoku</h3>
-                <p className="text-gray-400 font-medium text-xs mb-6 text-center max-w-sm">
-                  Focus your mind on numbers to distract from stressful or anxious cycles.
-                </p>
+              
+              {/* Sudoku */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center">
+                <h3 className="font-extrabold text-xl mb-1 text-slate-900">Brain Busters: Sudoku</h3>
+                <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-6">Cognitive Focus</span>
 
                 {/* Grid */}
-                <div className="grid grid-cols-9 gap-1 border-2 border-gray-800 p-1 bg-gray-800 rounded-lg shadow-md">
+                <div className="grid grid-cols-9 gap-1 border-2 border-slate-800 p-1 bg-slate-800 rounded-lg shadow-md">
                   {sudokuGrid.map((row, rIdx) =>
                     row.map((val, cIdx) => (
                       <input
@@ -674,10 +682,10 @@ export default function LibraryPage() {
                         maxLength={1}
                         value={val === 0 ? "" : val}
                         onChange={(e) => handleSudokuChange(rIdx, cIdx, e.target.value)}
-                        className={`w-8 h-8 md:w-9 md:h-9 text-center font-bold text-sm border-0 focus:ring-2 focus:ring-purple-400 rounded transition-all ${
+                        className={`w-8 h-8 md:w-9 md:h-9 text-center font-bold text-sm border-0 focus:ring-2 focus:ring-rose-400 rounded transition-all ${
                           sudokuInitial[rIdx][cIdx]
-                            ? "bg-gray-100 text-gray-800 font-extrabold cursor-not-allowed"
-                            : "bg-white text-purple-700 font-medium"
+                            ? "bg-slate-100 text-slate-800 font-extrabold cursor-not-allowed"
+                            : "bg-white text-rose-600 font-medium"
                         }`}
                       />
                     ))
@@ -685,29 +693,26 @@ export default function LibraryPage() {
                 </div>
               </div>
 
-              {/* My Thought Diary */}
-              <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col">
-                <h3 className="font-extrabold text-xl mb-1 text-gray-900">My Thought Diary</h3>
-                <p className="text-gray-400 font-medium text-xs mb-6">
-                  Log your daily mood and thoughts. Your entries are stored locally.
-                </p>
+              {/* Thought Diary */}
+              <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col">
+                <h3 className="font-extrabold text-xl mb-1 text-slate-900">Thought Diary</h3>
+                <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-6">Local Journal Log</span>
 
-                {/* Entry Form */}
                 <form onSubmit={handleJournalSave} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      Current Mood
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                      Current Mood State
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {["Calm 🍃", "Happy 😊", "Tired 🥱", "Anxious ⚡", "Sad 😢"].map((mood) => (
+                      {["Calm", "Happy", "Tired", "Anxious", "Sad"].map((mood) => (
                         <button
                           key={mood}
                           type="button"
                           onClick={() => setSelectedMood(mood)}
-                          className={`py-1.5 px-3 rounded-full text-xs font-bold border transition-all ${
+                          className={`py-1.5 px-3.5 rounded-full text-[10px] font-black border transition-all ${
                             selectedMood === mood
-                              ? "bg-purple-500 text-white border-purple-500"
-                              : "bg-white text-gray-500 border-gray-100 hover:bg-gray-50"
+                              ? "bg-rose-500 text-white border-rose-500"
+                              : "bg-white text-slate-500 border-slate-100 hover:bg-slate-50"
                           }`}
                         >
                           {mood}
@@ -717,45 +722,48 @@ export default function LibraryPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      Thoughts & Feelings
+                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                      Observations & Reflections
                     </label>
                     <textarea
                       rows={3}
                       value={journalText}
                       onChange={(e) => setJournalText(e.target.value)}
                       placeholder="Write whatever is on your mind..."
-                      className="w-full bg-white border border-gray-100 rounded-2xl p-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent placeholder:text-gray-300"
+                      className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-transparent placeholder:text-slate-300"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-purple-500 hover:bg-purple-600 text-white font-black text-sm rounded-xl uppercase tracking-wider shadow-md shadow-purple-500/10"
+                    className="w-full py-3.5 bg-rose-500 hover:bg-rose-600 text-white font-black text-xs rounded-xl uppercase tracking-wider transition-all"
                   >
-                    Save Diary Entry
+                    Save Entry
                   </button>
                 </form>
 
-                {/* Entry History */}
+                {/* Diary History */}
                 <div className="mt-8 flex-1">
-                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Diary History</h4>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-3">Diary History</h4>
                   <div className="space-y-3 max-h-40 overflow-y-auto pr-2 scrollbar-thin">
                     {journalEntries.map((entry) => (
-                      <div key={entry.id} className="p-3 bg-gray-50/50 border border-gray-50 rounded-xl">
+                      <div key={entry.id} className="p-3 bg-slate-50 border border-slate-100 rounded-xl">
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-[11px] font-bold text-gray-400">{entry.date}</span>
-                          <span className="text-xs font-bold bg-white px-2 py-0.5 rounded-full shadow-sm">{entry.mood}</span>
+                          <span className="text-[10px] font-bold text-slate-400">{entry.date}</span>
+                          <span className="text-[10px] font-black bg-white px-2 py-0.5 rounded-full border border-slate-100">{entry.mood}</span>
                         </div>
-                        <p className="text-xs text-gray-600 font-medium leading-relaxed">{entry.text}</p>
+                        <p className="text-xs text-slate-600 font-medium leading-relaxed">{entry.text}</p>
                       </div>
                     ))}
                   </div>
                 </div>
+
               </div>
+
             </div>
           </div>
         )}
+
       </div>
     </div>
   )
