@@ -81,7 +81,8 @@ const ChatLoadingIndicator = () => {
 export default function TryPragyaChat({
   sessionId,
   initialPlan = "FREE",
-  initialChatCount = 0
+  initialChatCount = 0,
+  userName = ""
 }: {
   sessionId: string;
   initialPlan?: string;
