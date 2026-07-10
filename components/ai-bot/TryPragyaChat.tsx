@@ -15,14 +15,14 @@ interface ChatMode {
   description: string
 }
 
-const TypewriterText = ({ 
-  text, 
-  speed = 30, 
+const TypewriterText = ({
+  text,
+  speed = 30,
   onComplete,
   onCharacterTyped
-}: { 
-  text: string; 
-  speed?: number; 
+}: {
+  text: string;
+  speed?: number;
   onComplete?: () => void;
   onCharacterTyped?: () => void;
 }) => {
@@ -132,7 +132,7 @@ export default function TryPragyaChat({
   const [isTyping, setIsTyping] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
   const [lastUserMessage, setLastUserMessage] = useState("")
-  
+
   const [summarizing, setSummarizing] = useState(false)
   const [summaryOpen, setSummaryOpen] = useState(false)
   const [summaryReport, setSummaryReport] = useState<string | null>(null)
@@ -228,7 +228,7 @@ export default function TryPragyaChat({
         if (typeof data.currentCount === "number") setChatCount(data.currentCount)
         if (typeof data.plan === "string") setPlan(data.plan)
       }
-      
+
       const reply = typeof data.reply === "string" ? data.reply : "Sorry, I didn't quite get that. Could you please rephrase?"
 
       // Artificial delay to simulate typing/reading time (min 1.5s, max 4s)
@@ -241,7 +241,7 @@ export default function TryPragyaChat({
       if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions)
       }
-      
+
     } catch (error: any) {
       console.error("Chat error:", error)
       const errorMessage = error.message || "Sorry, I'm having trouble connecting to the backend right now."
@@ -328,7 +328,7 @@ export default function TryPragyaChat({
           backgroundSize: '100% 100%, 100% 100%, 20px 20px'
         }}></div>
         <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto overflow-hidden relative h-full z-10">
-          
+
           {/* Mobile Header (Visible only on small screens) */}
           <div className="md:hidden w-full relative shrink-0 z-20 overflow-hidden bg-transparent">
             <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
@@ -346,7 +346,7 @@ export default function TryPragyaChat({
                 className={`p-2 rounded-full transition-colors border shadow-sm backdrop-blur-md ${summarizing || !hasStarted || messages.length === 0
                   ? "text-gray-400 bg-white/30 border-white/20 cursor-not-allowed"
                   : "text-white bg-orange-500 border-orange-400 hover:bg-orange-600"
-                }`}
+                  }`}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
               </button>
@@ -470,7 +470,7 @@ export default function TryPragyaChat({
 
           {/* Main Content Area */}
           <div className={`flex-1 flex justify-center bg-transparent relative overflow-y-auto ${limitData.isLimitReached ? 'overflow-hidden' : ''}`}>
-            
+
             {/* LIMIT REACHED MODAL OVERLAY */}
             {limitData.isLimitReached && (
               <div className="absolute inset-0 z-50 backdrop-blur-md bg-white/30 flex items-center justify-center p-6 animate-in fade-in duration-500">
@@ -484,8 +484,8 @@ export default function TryPragyaChat({
                   <p className="text-gray-500 mb-8 font-medium">
                     You've used all {limitData.maxChats} chats for your current plan today. Upgrade to continue chatting!
                   </p>
-                  
-                <div className="space-y-4">
+
+                  <div className="space-y-4">
                     <a
                       href="/patient/billing"
                       className="block w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-500/30 transition-all hover:-translate-y-1 active:scale-[0.98]"
@@ -506,10 +506,10 @@ export default function TryPragyaChat({
                 <div className="flex flex-col items-start leading-tight">
                   <span className="text-[9px] text-gray-400 uppercase tracking-widest font-black">Available</span>
                   <span className="text-sm font-bold text-gray-800">
-                    {plan === "FREE" 
-                      ? `${limitData.remaining} / 10 Chats` 
+                    {plan === "FREE"
+                      ? `${limitData.remaining} / 10 Chats`
                       : plan === "ESSENTIAL"
-                        ? `${limitData.remaining} / 25 Chats` 
+                        ? `${limitData.remaining} / 25 Chats`
                         : "Unlimited Chats"}
                   </span>
                 </div>
@@ -518,27 +518,25 @@ export default function TryPragyaChat({
 
             {/* Unified Chat Layout with Smooth Transitions */}
             <div className="w-full max-w-4xl mx-auto flex flex-col h-full bg-transparent overflow-hidden relative">
-              
+
               {/* Header / Mode Toggle Area */}
-              <div 
-                className={`transition-all duration-700 ease-in-out w-full flex flex-col shrink-0 relative z-10 ${
-                  !hasStarted 
-                    ? 'flex-1 items-center justify-center mt-[-8vh]' 
+              <div
+                className={`transition-all duration-700 ease-in-out w-full flex flex-col shrink-0 relative z-10 ${!hasStarted
+                    ? 'flex-1 items-center justify-center mt-[-8vh]'
                     : 'pt-8 pb-4'
-                }`}
+                  }`}
               >
                 {/* Big Title */}
-                <div 
-                  className={`text-center transition-all duration-700 ease-in-out overflow-hidden ${
-                    !hasStarted 
-                      ? 'opacity-100 max-h-[200px] mb-12 scale-100' 
+                <div
+                  className={`text-center transition-all duration-700 ease-in-out overflow-hidden ${!hasStarted
+                      ? 'opacity-100 max-h-[200px] mb-12 scale-100'
                       : 'opacity-0 max-h-0 mb-0 scale-95 pointer-events-none'
-                  }`}
+                    }`}
                 >
                   <h2 className="text-[14px] md:text-[16px] uppercase tracking-[0.2em] font-black text-gray-700 mb-6">
-                    HELLO {userName ? userName.toUpperCase() : "THERE"} !
+                    HELLO {userName ? userName.toUpperCase() : "THERE"}!
                   </h2>
-                  <h1 className="text-[28px] md:text-[40px] font-bold text-gray-900 leading-tight max-w-2xl mx-auto">
+                  <h1 className="text-[28px] md:text-[40px] font-bold text-gray-900 leading-tight">
                     I'm here to listen and support you between sessions.
                   </h1>
                 </div>
@@ -557,11 +555,10 @@ export default function TryPragyaChat({
                           }
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-full text-[12px] md:px-4 md:py-2 md:text-[13px] font-medium transition-all duration-300 shadow-sm whitespace-nowrap ${
-                        selectedMode === mode.id
+                      className={`px-3 py-1.5 rounded-full text-[12px] md:px-4 md:py-2 md:text-[13px] font-medium transition-all duration-300 shadow-sm whitespace-nowrap ${selectedMode === mode.id
                           ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 scale-105'
                           : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-orange-200 hover:text-orange-500'
-                      }`}
+                        }`}
                     >
                       {mode.title}
                     </button>
@@ -570,10 +567,9 @@ export default function TryPragyaChat({
               </div>
 
               {/* Chat Messages */}
-              <div 
-                className={`overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-transparent transition-all duration-700 ease-in-out ${
-                  !hasStarted ? 'flex-none opacity-0 h-0 p-0 md:p-0' : 'flex-1 opacity-100'
-                }`}
+              <div
+                className={`overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-transparent transition-all duration-700 ease-in-out ${!hasStarted ? 'flex-none opacity-0 h-0 p-0 md:p-0' : 'flex-1 opacity-100'
+                  }`}
               >
                 {messages.map((msg, idx) => (
                   <div
@@ -589,8 +585,8 @@ export default function TryPragyaChat({
                         }`}
                     >
                       {msg.role === "assistant" && !msg.isError && idx === messages.length - 1 ? (
-                        <TypewriterText 
-                          text={msg.content} 
+                        <TypewriterText
+                          text={msg.content}
                           onCharacterTyped={() => {
                             messagesEndRef.current?.scrollIntoView({ behavior: "auto" })
                           }}
@@ -626,8 +622,8 @@ export default function TryPragyaChat({
                   {suggestions.length > 0 && showSuggestions && !isTyping && !isLoading && hasStarted && (
                     <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
                       {suggestions.map((s, i) => (
-                        <button 
-                          key={i} 
+                        <button
+                          key={i}
                           type="button"
                           onClick={() => handleSuggestionClick(s)}
                           className="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 text-orange-600 rounded-full text-[13px] font-medium shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
@@ -637,13 +633,13 @@ export default function TryPragyaChat({
                       ))}
                     </div>
                   )}
-                  
+
                   <div className={`transition-all duration-700 ${!hasStarted ? 'opacity-0 h-0 overflow-hidden mb-0' : 'flex justify-between items-center mb-2 px-2 md:hidden opacity-100 h-auto'}`}>
                     <span className="text-[12px] text-gray-400 font-bold">
                       {plan !== "PRO" ? `${limitData.remaining} chats remaining today` : ""}
                     </span>
                   </div>
-                  
+
                   <form onSubmit={sendMessage} className="relative flex items-center">
                     <input
                       type="text"
@@ -670,7 +666,7 @@ export default function TryPragyaChat({
                     </div>
                   </form>
                 </div>
-                
+
                 <div className={`transition-all duration-700 ${!hasStarted ? 'opacity-0 h-0 overflow-hidden mt-0' : 'flex justify-center items-center mt-4 text-[11px] text-gray-500 font-medium opacity-100 h-auto'}`}>
                   <p className="hidden md:block">Pragya may produce inaccurate information about people, places, or facts.</p>
                   <button
@@ -755,8 +751,8 @@ export default function TryPragyaChat({
               </button>
             </div>
             <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-1 overflow-y-auto p-6 bg-gray-50/30">
-              
-                <div className="space-y-4">
+
+              <div className="space-y-4">
                 {isHistoryLoading ? (
                   <div className="flex justify-center p-8">
                     <div className="w-8 h-8 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>

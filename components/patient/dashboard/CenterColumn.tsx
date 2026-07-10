@@ -36,15 +36,18 @@ export default function CenterColumn({ displayName, plan, upcomingAppointments, 
     return (
         <div className="flex-1 h-full overflow-y-auto w-full px-6 md:px-8 xl:px-10 py-8 md:py-10 bg-[#fafdfc] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
             {/* Header */}
-            <header className="flex items-start justify-between w-full mb-6">
-                <div>
-                    <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">Hi, {displayName}.</h1>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                        <span className="text-gray-500 font-medium tracking-wide">Let's track your health daily!</span>
-                        <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                            {planLabelMap[normalizedPlan] ?? normalizedPlan.replace(/_/g, " ")}
-                        </span>
-                    </div>
+            <header className="flex flex-col items-center justify-center w-full text-center mb-10 mt-4">
+                <h2 className="text-[14px] md:text-[16px] uppercase tracking-[0.2em] font-black text-gray-700 mb-4">
+                    HELLO {displayName ? displayName.toUpperCase() : "THERE"} !
+                </h2>
+                <h1 className="text-[28px] md:text-[36px] font-bold text-gray-900 leading-tight max-w-2xl mx-auto mb-4">
+                    I'm here to listen and support you between sessions.
+                </h1>
+                <div className="flex items-center gap-2">
+                    <span className="text-gray-500 font-medium tracking-wide">Let's track your health daily!</span>
+                    <span className="inline-flex items-center rounded-full bg-orange-100 text-orange-800 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+                        {planLabelMap[normalizedPlan] ?? normalizedPlan.replace(/_/g, " ")}
+                    </span>
                 </div>
             </header>
 
