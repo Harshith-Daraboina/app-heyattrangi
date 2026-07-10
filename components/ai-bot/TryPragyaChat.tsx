@@ -284,6 +284,15 @@ export default function TryPragyaChat({
   return (
     <>
       <div className="flex flex-col h-full bg-white text-gray-800 overflow-hidden font-sans relative">
+        {/* Subtle grid pattern + soft radial ambient glow */}
+        <div className="absolute inset-0 pointer-events-none z-0 opacity-40" style={{
+          backgroundImage: `
+            radial-gradient(circle at 100% 0%, rgba(254, 215, 170, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 0% 100%, rgba(254, 243, 199, 0.15) 0%, transparent 50%),
+            radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '100% 100%, 100% 100%, 20px 20px'
+        }}></div>
         <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto overflow-hidden relative h-full z-10">
           
           {/* Mobile Header (Visible only on small screens) */}
