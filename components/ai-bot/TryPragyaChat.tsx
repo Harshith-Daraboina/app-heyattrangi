@@ -112,7 +112,6 @@ export default function TryPragyaChat({
   const [plan, setPlan] = useState(initialPlan)
   const [chatCount, setChatCount] = useState(initialChatCount)
   const [showMemoryPolicy, setShowMemoryPolicy] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -134,26 +133,6 @@ export default function TryPragyaChat({
     const isLimitReached = maxChats !== Infinity && remaining <= 0
     return { isLimitReached, maxChats, remaining }
   }, [plan, chatCount])
-
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(err => {
-        console.log(`Error attempting to enable fullscreen: ${err.message}`)
-      })
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      }
-    }
-  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -304,29 +283,12 @@ export default function TryPragyaChat({
 
   return (
     <>
-      <div className="flex flex-col h-full bg-orange-50/20 text-gray-800 overflow-hidden font-sans relative">
-        {/* Soft Orange Mesh Background (Moved to parent for full-screen effect) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-orange-200/30 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
-          <div className="absolute top-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-orange-300/20 mix-blend-multiply filter blur-[120px] animate-pulse" style={{ animationDuration: '12s' }}></div>
-          <div className="absolute -bottom-[20%] left-[20%] w-[70%] h-[60%] rounded-full bg-orange-100/40 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }}></div>
-        </div>
+      <div className="flex flex-col h-full bg-white text-gray-800 overflow-hidden font-sans relative">
         <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto overflow-hidden relative h-full z-10">
           
           {/* Mobile Header (Visible only on small screens) */}
           <div className="md:hidden w-full relative shrink-0 z-20 overflow-hidden bg-transparent">
             <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
-              <button
-                onClick={toggleFullscreen}
-                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                className="p-2 text-gray-500 hover:text-orange-500 rounded-full bg-white/40 backdrop-blur-md hover:bg-white transition-colors border border-white/40 shadow-sm"
-              >
-                {isFullscreen ? (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 14h4v4M4 14l5 5M14 4h4v4M14 4l5-5M4 10h4V6M4 10l5-5M20 14h-4v4M20 14l-5 5" /></svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                )}
-              </button>
               <button
                 onClick={resetChat}
                 title="Reset Chat"
@@ -560,21 +522,6 @@ export default function TryPragyaChat({
                       {mode.title}
                     </button>
                   ))}
-
-                  {/* Fullscreen toggle */}
-                  <div className={`transition-opacity duration-700 ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                    <button
-                      onClick={toggleFullscreen}
-                      title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                      className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:text-orange-500 rounded-full bg-white transition-colors border border-gray-200 shadow-sm"
-                    >
-                      {isFullscreen ? (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 14h4v4M4 14l5 5M14 4h4v4M14 4l5-5M4 10h4V6M4 10l5-5M20 14h-4v4M20 14l-5 5" /></svg>
-                      ) : (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
-                      )}
-                    </button>
-                  </div>
                 </div>
               </div>
 
