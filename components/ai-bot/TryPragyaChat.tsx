@@ -458,7 +458,14 @@ export default function TryPragyaChat({
           </div>
 
           {/* Main Content Area */}
-          <div className={`flex-1 flex justify-center bg-white relative overflow-y-auto ${limitData.isLimitReached ? 'overflow-hidden' : ''}`}>
+          <div className={`flex-1 flex justify-center bg-orange-50/20 relative overflow-y-auto ${limitData.isLimitReached ? 'overflow-hidden' : ''}`}>
+            
+            {/* Soft Orange Mesh Background */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+              <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-orange-200/30 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
+              <div className="absolute top-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-orange-300/20 mix-blend-multiply filter blur-[120px] animate-pulse" style={{ animationDuration: '12s' }}></div>
+              <div className="absolute -bottom-[20%] left-[20%] w-[70%] h-[60%] rounded-full bg-orange-100/40 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }}></div>
+            </div>
             
             {/* LIMIT REACHED MODAL OVERLAY */}
             {limitData.isLimitReached && (
