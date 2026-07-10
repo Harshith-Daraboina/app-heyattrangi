@@ -46,10 +46,10 @@ const getBotExpression = (text: string): string => {
 }
 
 const LOADING_MESSAGES = [
-  "Retrieving medical data...",
-  "Accessing cognitive layer...",
-  "Trying to understand...",
-  "Synthesizing response..."
+  "Listening...",
+  "Thinking...",
+  "Reflecting...",
+  "Typing..."
 ]
 
 const ChatLoadingIndicator = () => {
@@ -217,6 +217,10 @@ export default function TryPragyaChat({
       }
       
       const reply = typeof data.reply === "string" ? data.reply : "Sorry, I didn't quite get that. Could you please rephrase?"
+
+      // Artificial delay to simulate typing/reading time (min 1.5s, max 4s)
+      const delayMs = Math.max(1500, Math.min(4000, reply.length * 20))
+      await new Promise(resolve => setTimeout(resolve, delayMs))
 
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
       setBotExpression(getBotExpression(reply))
