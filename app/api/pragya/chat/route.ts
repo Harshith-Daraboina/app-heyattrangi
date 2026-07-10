@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Expected JSON object" }, { status: 400 })
   }
 
-  const { session_id, message } = body as Record<string, unknown>
+  const { session_id, message, generate_suggestions } = body as Record<string, unknown>
   if (typeof session_id !== "string" || !session_id.trim()) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 })
   }
@@ -90,7 +90,12 @@ export async function POST(req: Request) {
   const upstream = await fetch(`${getPragyaUpstreamBase()}/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: session_id.trim(), message: message.trim(), user_name: nameToUse }),
+    body: JSON.stringify({
+      session_id: session_id.trim(),
+      message: message.trim(),
+      user_name: nameToUse,
+      generate_suggestions: typeof generate_suggestions === "boolean" ? generate_suggestions : true
+    }),
   })
 
   const text = await upstream.text()

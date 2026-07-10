@@ -15,6 +15,16 @@ interface ChatMode {
   description: string
 }
 
+const SUGGESTION_POOL = [
+  "I'd like to explore this a bit more.",
+  "Can you help me understand why I feel this way?",
+  "Actually, I just need to vent for a moment.",
+  "Let's focus on finding some coping strategies.",
+  "I'm feeling a bit overwhelmed right now.",
+  "What can I do to feel more grounded?",
+  "Can we talk about how to manage this?"
+]
+
 const TypewriterText = ({
   text,
   speed = 30,
@@ -128,6 +138,7 @@ export default function TryPragyaChat({
   const [inputMessage, setInputMessage] = useState("")
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isSuggestionsLoading, setIsSuggestionsLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
@@ -184,6 +195,31 @@ export default function TryPragyaChat({
     }
   }
 
+  const handleShowSuggestions = async () => {
+    setIsSuggestionsLoading(true)
+    setShowSuggestions(true)
+    setSuggestions([])
+    try {
+      const res = await fetch("/api/pragya/suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSuggestions(data.suggestions || [])
+      } else {
+        const shuffled = [...SUGGESTION_POOL].sort(() => 0.5 - Math.random())
+        setSuggestions(shuffled.slice(0, 3))
+      }
+    } catch {
+      const shuffled = [...SUGGESTION_POOL].sort(() => 0.5 - Math.random())
+      setSuggestions(shuffled.slice(0, 3))
+    } finally {
+      setIsSuggestionsLoading(false)
+    }
+  }
+
   const handleSuggestionClick = (suggestion: string) => {
     setInputMessage("")
     setLastUserMessage(suggestion)
@@ -214,7 +250,11 @@ export default function TryPragyaChat({
       const res = await fetch("/api/pragya/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ session_id: sessionId, message: userMsg }),
+        body: JSON.stringify({ 
+          session_id: sessionId, 
+          message: userMsg,
+          generate_suggestions: false
+        }),
       })
 
       if (!res.ok) {
@@ -568,7 +608,7 @@ export default function TryPragyaChat({
 
               {/* Chat Messages */}
               <div
-                className={`overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-transparent transition-all duration-700 ease-in-out ${!hasStarted ? 'flex-none opacity-0 h-0 p-0 md:p-0' : 'flex-1 opacity-100'
+                className={`overflow-y-auto p-6 md:p-8 space-y-6 no-scrollbar bg-transparent transition-all duration-700 ease-in-out ${!hasStarted ? 'flex-none opacity-0 h-0 p-0 md:p-0' : 'flex-1 opacity-100'
                   }`}
               >
                 {messages.map((msg, idx) => (
@@ -619,19 +659,60 @@ export default function TryPragyaChat({
               {/* Chat Input Field */}
               <div className="p-4 md:p-6 pb-8 z-10 bg-transparent shrink-0">
                 <div className="max-w-4xl mx-auto relative">
-                  {suggestions.length > 0 && showSuggestions && !isTyping && !isLoading && hasStarted && (messages.filter((m) => m.role === "user").length > 0 && messages.filter((m) => m.role === "user").length % 3 === 0) && (
-                    <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
-                      {suggestions.map((s, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => handleSuggestionClick(s)}
-                          className="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 text-orange-600 rounded-full text-[13px] font-medium shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
-                        >
-                          {s}
-                        </button>
-                      ))}
+                  {showSuggestions && !isTyping && !isLoading && hasStarted ? (
+                    <div className="absolute bottom-full mb-3 left-0 right-0 flex items-center justify-between gap-2 px-2 z-20">
+                      {isSuggestionsLoading ? (
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-orange-100 rounded-full text-[13px] text-orange-600 font-medium shadow-[0_2px_8px_rgba(249,107,19,0.1)]">
+                          <div className="flex gap-1">
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="w-1.5 h-1.5 bg-orange-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                          </div>
+                          <span>Generating suggestions...</span>
+                        </div>
+                      ) : suggestions.length > 0 ? (
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 flex-1">
+                          {suggestions.map((s, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => handleSuggestionClick(s)}
+                              className="whitespace-nowrap px-4 py-2 bg-white border border-orange-200 text-orange-600 rounded-full text-[13px] font-medium shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSuggestions([])
+                          setShowSuggestions(false)
+                        }}
+                        className="p-1.5 bg-white border border-orange-200 text-orange-400 hover:text-orange-600 rounded-full shadow-[0_2px_8px_rgba(249,107,19,0.15)] hover:bg-orange-50 transition-all flex items-center justify-center shrink-0"
+                        title="Dismiss suggestions"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
                     </div>
+                  ) : (
+                    !isTyping && !isLoading && hasStarted && (
+                      <div className="absolute bottom-full mb-3 left-2 z-20">
+                        <button
+                          type="button"
+                          onClick={handleShowSuggestions}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-orange-200 text-orange-600 rounded-full text-[12px] font-bold shadow-[0_2px_8px_rgba(249,107,19,0.1)] hover:bg-orange-50 hover:-translate-y-0.5 transition-all"
+                        >
+                          <svg className="w-3.5 h-3.5 text-orange-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                          </svg>
+                          Suggestions ✨
+                        </button>
+                      </div>
+                    )
                   )}
 
                   <div className={`transition-all duration-700 ${!hasStarted ? 'opacity-0 h-0 overflow-hidden mb-0' : 'flex justify-between items-center mb-2 px-2 md:hidden opacity-100 h-auto'}`}>
@@ -750,7 +831,7 @@ export default function TryPragyaChat({
                 </svg>
               </button>
             </div>
-            <div className="scrollbar-thin scrollbar-thumb-gray-200 flex-1 overflow-y-auto p-6 bg-gray-50/30">
+            <div className="no-scrollbar flex-1 overflow-y-auto p-6 bg-gray-50/30">
 
               <div className="space-y-4">
                 {isHistoryLoading ? (
