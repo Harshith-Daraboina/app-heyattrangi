@@ -659,7 +659,7 @@ export default function TryPragyaChat({
               {/* Chat Input Field */}
               <div className="p-4 md:p-6 pb-8 z-10 bg-transparent shrink-0">
                 <div className="max-w-4xl mx-auto relative">
-                  {showSuggestions && !isTyping && !isLoading && hasStarted ? (
+                  {showSuggestions && (isSuggestionsLoading || suggestions.length > 0) && !isTyping && !isLoading && hasStarted ? (
                     <div className="absolute bottom-full mb-3 left-0 right-0 flex items-center justify-between gap-2 px-2 z-20">
                       {isSuggestionsLoading ? (
                         <div className="flex items-center gap-2 px-4 py-2 bg-white border border-orange-100 rounded-full text-[13px] text-orange-600 font-medium shadow-[0_2px_8px_rgba(249,107,19,0.1)]">
