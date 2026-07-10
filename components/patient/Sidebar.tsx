@@ -141,7 +141,7 @@ export default function Sidebar() {
             <aside className={`flex flex-col h-full py-6 overflow-y-auto overflow-x-hidden shadow-inner ${isCollapsed ? "px-3 md:px-0" : "pl-3 pr-5"}`}>
 
                 {/* Header / Logo */}
-                <Link href="/patient/ai-bot" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-6 gap-3"}`}>
+                <Link href="/patient/dashboard" className={`flex items-center transition-all ${isCollapsed ? "justify-center mt-6 mb-10" : "pl-0 mb-6 gap-3"}`}>
                     <div className="shrink-0">
                         <Image
                             src="/images/logo.png"
