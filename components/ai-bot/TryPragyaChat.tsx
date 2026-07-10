@@ -543,7 +543,7 @@ export default function TryPragyaChat({
               </div>
             ) : (
               /* Active Chat Layout */
-              <div className="w-full max-w-4xl flex flex-col h-full md:h-[90vh] md:my-auto bg-white md:rounded-3xl md:border md:border-gray-100 md:shadow-[0_20px_60px_rgba(0,0,0,0.06)] overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+              <div className="w-full max-w-4xl mx-auto flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
                 
                 {/* Chat Limit Badge for Desktop inside Chat Container */}
                 <div className="absolute right-6 top-6 z-50 hidden lg:flex items-center pointer-events-none">
@@ -565,7 +565,7 @@ export default function TryPragyaChat({
                 </div>
 
                 {/* Mode Toggle Header */}
-                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 p-4 border-b border-gray-100 bg-white/50 backdrop-blur-md z-10 shrink-0 relative pr-16 md:pr-4">
+                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 p-4 pt-8 z-10 shrink-0 relative pr-16 md:pr-4 bg-transparent">
                   {CHAT_MODES.map((mode) => (
                     <button
                       key={mode.id}
@@ -598,7 +598,7 @@ export default function TryPragyaChat({
                 </div>
 
                 {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-[#fafcfd]">
+                <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent bg-transparent">
                   {messages.map((msg, idx) => (
                     <div
                       key={idx}
@@ -630,7 +630,7 @@ export default function TryPragyaChat({
                 </div>
 
                 {/* Chat Input Field */}
-                <div className="p-4 md:p-6 bg-white border-t border-gray-100 shadow-[0_-10px_30px_rgba(0,0,0,0.02)] z-10">
+                <div className="p-4 md:p-6 pb-8 z-10 bg-transparent">
                   <div className="max-w-4xl mx-auto relative">
                     {suggestions.length > 0 && showSuggestions && !isLoading && (
                       <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
