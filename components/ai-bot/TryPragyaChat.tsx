@@ -536,9 +536,9 @@ export default function TryPragyaChat({
                   }`}
                 >
                   <h2 className="text-[14px] md:text-[16px] uppercase tracking-[0.2em] font-black text-gray-700 mb-6">
-                    HELLO {userName ? userName.toUpperCase() : "THERE"}!
+                    HELLO {userName ? userName.toUpperCase() : "THERE"} !
                   </h2>
-                  <h1 className="text-[28px] md:text-[40px] font-bold text-gray-900 leading-tight">
+                  <h1 className="text-[28px] md:text-[40px] font-bold text-gray-900 leading-tight max-w-2xl mx-auto">
                     I'm here to listen and support you between sessions.
                   </h1>
                 </div>
