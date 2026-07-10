@@ -188,7 +188,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("wellness")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#4facfe] to-[#00f2fe] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 120C120 100 200 180 400 130V200H0V120Z" fill="white" />
                   <path d="M0 150C150 130 250 190 400 160V200H0V150Z" fill="white" opacity="0.5" />
                 </svg>
@@ -209,7 +209,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("distress")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#ff5858] to-[#f09819] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 100 Q 50 150 100 100 T 200 100 T 300 100 T 400 100 V200 H0 Z" fill="white" />
                   <path d="M0 130 Q 70 170 140 130 T 280 130 T 400 130 V200 H0 Z" fill="white" opacity="0.4" />
                 </svg>
@@ -230,7 +230,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("illness")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#30cfd0] to-[#330867] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="340" cy="180" r="100" fill="white" />
                   <circle cx="280" cy="140" r="60" fill="white" opacity="0.4" />
                   <circle cx="380" cy="80" r="80" fill="white" opacity="0.3" />
@@ -252,7 +252,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("stories")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#7f53ac] to-[#647dec] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 180 L 150 100 L 300 140 L 400 60 V200 H0 Z" fill="white" />
                   <path d="M0 190 L 120 130 L 250 160 L 400 100 V200 H0 Z" fill="white" opacity="0.4" />
                 </svg>
@@ -273,7 +273,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("selfhelp")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#11998e] to-[#38ef7d] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M300 200 C300 130 350 100 400 100 V200 H300 Z" fill="white" />
                   <path d="M220 200 C220 150 280 120 350 120 V200 H220 Z" fill="white" opacity="0.4" />
                 </svg>
@@ -294,7 +294,7 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("brainfood")}
                 className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#f857a6] to-[#ff5858] text-white"
               >
-                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M 280 200 L 330 110 L 400 160 V 200 Z" fill="white" opacity="0.3" />
                   <path d="M 200 200 L 290 80 L 360 140 L 400 120 V 200 Z" fill="white" opacity="0.4" />
                 </svg>
