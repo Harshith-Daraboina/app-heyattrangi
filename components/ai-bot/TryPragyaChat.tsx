@@ -304,11 +304,17 @@ export default function TryPragyaChat({
 
   return (
     <>
-      <div className="flex flex-col h-full bg-white text-gray-800 overflow-hidden font-sans relative">
-        <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto overflow-hidden relative h-full">
+      <div className="flex flex-col h-full bg-orange-50/20 text-gray-800 overflow-hidden font-sans relative">
+        {/* Soft Orange Mesh Background (Moved to parent for full-screen effect) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-orange-200/30 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
+          <div className="absolute top-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-orange-300/20 mix-blend-multiply filter blur-[120px] animate-pulse" style={{ animationDuration: '12s' }}></div>
+          <div className="absolute -bottom-[20%] left-[20%] w-[70%] h-[60%] rounded-full bg-orange-100/40 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }}></div>
+        </div>
+        <div className="flex-1 flex flex-col md:flex-row w-full max-w-[1600px] mx-auto overflow-hidden relative h-full z-10">
           
           {/* Mobile Header (Visible only on small screens) */}
-          <div className="md:hidden w-full relative shrink-0 z-20 overflow-hidden" style={{ backgroundColor: '#eddfd3' }}>
+          <div className="md:hidden w-full relative shrink-0 z-20 overflow-hidden bg-transparent">
             <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
               <button
                 onClick={toggleFullscreen}
@@ -369,7 +375,7 @@ export default function TryPragyaChat({
           </div>
 
           {/* Left Sidebar */}
-          <div className="hidden md:flex w-[360px] md:w-[400px] bg-white/90 backdrop-blur-md border-r border-gray-200 flex-col items-center py-8 px-6 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 relative">
+          <div className="hidden md:flex w-[360px] md:w-[400px] bg-transparent border-r border-orange-100 flex-col items-center py-8 px-6 shrink-0 z-10 relative">
             <div className="flex-1 flex flex-col items-center justify-center w-full pb-12">
               <h1 className="text-xl font-bold text-gray-800 tracking-wide mb-8">Hey Attrangi</h1>
 
@@ -458,14 +464,7 @@ export default function TryPragyaChat({
           </div>
 
           {/* Main Content Area */}
-          <div className={`flex-1 flex justify-center bg-orange-50/20 relative overflow-y-auto ${limitData.isLimitReached ? 'overflow-hidden' : ''}`}>
-            
-            {/* Soft Orange Mesh Background */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-              <div className="absolute -top-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-orange-200/30 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '8s' }}></div>
-              <div className="absolute top-[20%] -right-[10%] w-[50%] h-[70%] rounded-full bg-orange-300/20 mix-blend-multiply filter blur-[120px] animate-pulse" style={{ animationDuration: '12s' }}></div>
-              <div className="absolute -bottom-[20%] left-[20%] w-[70%] h-[60%] rounded-full bg-orange-100/40 mix-blend-multiply filter blur-[100px] animate-pulse" style={{ animationDuration: '10s' }}></div>
-            </div>
+          <div className={`flex-1 flex justify-center bg-transparent relative overflow-y-auto ${limitData.isLimitReached ? 'overflow-hidden' : ''}`}>
             
             {/* LIMIT REACHED MODAL OVERLAY */}
             {limitData.isLimitReached && (
