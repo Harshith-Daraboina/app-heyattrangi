@@ -375,7 +375,7 @@ export default function TryPragyaChat({
           </div>
 
           {/* Left Sidebar */}
-          <div className="hidden md:flex w-[360px] md:w-[400px] bg-transparent border-r border-orange-100 flex-col items-center py-8 px-6 shrink-0 z-10 relative">
+          <div className="hidden md:flex w-[360px] md:w-[400px] bg-white border-r border-gray-100 flex-col items-center py-8 px-6 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 relative">
             <div className="flex-1 flex flex-col items-center justify-center w-full pb-12">
               <h1 className="text-xl font-bold text-gray-800 tracking-wide mb-8">Hey Attrangi</h1>
 
