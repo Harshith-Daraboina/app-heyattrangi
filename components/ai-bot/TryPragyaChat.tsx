@@ -86,6 +86,7 @@ export default function TryPragyaChat({
   sessionId: string;
   initialPlan?: string;
   initialChatCount?: number;
+  userName?: string;
 }) {
   const [hasStarted, setHasStarted] = useState(false)
   const [preferredName, setPreferredName] = useState("")
@@ -157,15 +158,7 @@ export default function TryPragyaChat({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  useEffect(() => {
-    if (!hasStarted && selectedMode) {
-      setHasStarted(true)
-      const modeDetails = CHAT_MODES.find(m => m.id === selectedMode)
-      const initialMsg = `Hi! I'm setting my mode to: ${modeDetails?.title}. How can I help you today?`
-      setMessages([{ role: "assistant", content: initialMsg }])
-      setBotExpression("NEUTRAL")
-    }
-  }, [hasStarted, selectedMode])
+  // Removed auto-start useEffect so the user can see the pre-chat screen.
 
   const handleStartChat = () => {
     if (selectedMode) {
@@ -187,6 +180,10 @@ export default function TryPragyaChat({
   const sendMessage = async (e?: FormEvent, retryMsg?: string) => {
     e?.preventDefault()
     if ((!inputMessage.trim() && !retryMsg) || isLoading || limitData.isLimitReached) return
+
+    if (!hasStarted) {
+      setHasStarted(true)
+    }
 
     const userMsg = retryMsg || inputMessage
     if (!retryMsg) {
@@ -486,38 +483,57 @@ export default function TryPragyaChat({
 
             {!hasStarted ? (
               /* Pre-chat Setup Layout */
-              <div className="w-full max-w-xl px-4 md:px-8 flex flex-col justify-center h-full min-h-[min(100%,700px)] animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out py-8 md:py-12 overflow-y-auto">
-                <h2 className="text-[24px] md:text-[28px] font-bold text-gray-800 mb-6 md:mb-8 tracking-tight md:ml-1 text-center md:text-left">How can I help you today?</h2>
+              <div className="w-full h-full flex flex-col justify-between items-center py-10 px-4 md:px-8 animate-in fade-in duration-700 bg-gradient-to-b from-gray-50 to-white">
+                <div className="flex-1 flex flex-col items-center justify-center text-center w-full max-w-2xl mt-[-8vh]">
+                  <h2 className="text-[14px] md:text-[16px] uppercase tracking-[0.2em] font-black text-gray-700 mb-6">
+                    HELLO {userName ? userName.toUpperCase() : "THERE"}!
+                  </h2>
+                  <h1 className="text-[28px] md:text-[40px] font-bold text-gray-900 leading-tight mb-12">
+                    I'm here to listen and support you between sessions.
+                  </h1>
 
-                
-                <div className="space-y-4">
-                  {CHAT_MODES.map((mode) => (
-                    <div
-                      key={mode.id}
-                      onClick={() => setSelectedMode(mode.id)}
-                      className={`w-full px-6 py-5 rounded-2xl border-2 cursor-pointer transition-all duration-300 ease-out flex flex-col justify-center ${selectedMode === mode.id
-                        ? 'bg-orange-50 border-orange-400 shadow-[0_8px_20px_rgba(249,107,19,0.15)] ring-1 ring-orange-400/20 translate-x-2'
-                        : 'bg-white border-gray-100 hover:border-orange-200 hover:bg-orange-50/30 hover:shadow-sm'
+                  <div className="flex flex-wrap justify-center gap-3">
+                    {CHAT_MODES.map((mode) => (
+                      <button
+                        key={mode.id}
+                        onClick={() => setSelectedMode(mode.id)}
+                        className={`px-6 py-3 rounded-full text-[15px] font-bold transition-all duration-300 shadow-sm ${
+                          selectedMode === mode.id
+                            ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 scale-105'
+                            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-orange-200 hover:text-orange-500'
                         }`}
-                    >
-                      <h3 className={`text-[16px] font-bold mb-1 ${selectedMode === mode.id ? 'text-orange-700' : 'text-gray-800'}`}>{mode.title}</h3>
-                      <p className="text-[14px] text-gray-500 font-medium">{mode.description}</p>
-                    </div>
-                  ))}
+                      >
+                        {mode.title}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="mt-10 flex justify-end w-full">
-                  <button
-                    onClick={handleStartChat}
-                    disabled={!selectedMode}
-                    className={`px-8 py-4 rounded-xl font-bold transition-all duration-300 flex items-center gap-2 ${selectedMode
-                      ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-[0_8px_20px_rgba(249,107,19,0.3)] hover:-translate-y-1'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
-                      }`}
-                  >
-                    Start Chatting
-                    {selectedMode && <svg className="w-5 h-5 ml-1 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>}
-                  </button>
+                <div className="w-full max-w-3xl pb-8">
+                  <form onSubmit={sendMessage} className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={inputMessage}
+                      onChange={(e) => setInputMessage(e.target.value)}
+                      placeholder="Tell me what's been on your mind..."
+                      className="w-full bg-white text-gray-800 placeholder-gray-400 rounded-full py-5 pl-8 pr-32 border border-orange-100 shadow-[0_10px_40px_rgba(249,107,19,0.08)] focus:outline-none focus:border-orange-300 focus:ring-4 focus:ring-orange-100 transition-all text-[16px] font-medium"
+                      disabled={isLoading}
+                    />
+                    <div className="absolute right-3 top-3 bottom-3 flex items-center">
+                      <button
+                        type="submit"
+                        disabled={isLoading || !inputMessage.trim()}
+                        className={`px-6 rounded-full h-full font-bold transition-all duration-300 flex items-center gap-2 ${
+                          isLoading || !inputMessage.trim()
+                            ? "text-orange-300 bg-orange-100/50"
+                            : "text-white bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 shadow-md hover:-translate-y-0.5"
+                        }`}
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                        Speak
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             ) : (
