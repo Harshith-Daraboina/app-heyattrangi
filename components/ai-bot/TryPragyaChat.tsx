@@ -493,6 +493,25 @@ export default function TryPragyaChat({
               </div>
             )}
 
+            {/* Chat Limit Badge */}
+            <div className={`absolute right-4 md:right-8 top-4 md:top-8 z-50 hidden lg:flex items-center transition-all duration-700 ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+              <div className="flex items-center gap-3 bg-white border border-gray-200 shadow-sm rounded-full pl-2 pr-5 py-1.5 backdrop-blur-sm bg-white/90 pointer-events-auto">
+                <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
+                </div>
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="text-[9px] text-gray-400 uppercase tracking-widest font-black">Available</span>
+                  <span className="text-sm font-bold text-gray-800">
+                    {plan === "FREE" 
+                      ? `${limitData.remaining} / 10 Chats` 
+                      : plan === "ESSENTIAL"
+                        ? `${limitData.remaining} / 25 Chats` 
+                        : "Unlimited Chats"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
             {/* Unified Chat Layout with Smooth Transitions */}
             <div className="w-full max-w-4xl mx-auto flex flex-col h-full bg-transparent overflow-hidden relative">
               
@@ -556,25 +575,6 @@ export default function TryPragyaChat({
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
                       )}
                     </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Limit Badge */}
-              <div className={`absolute right-6 top-6 z-50 hidden lg:flex items-center transition-all duration-700 ${hasStarted ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <div className="flex items-center gap-3 bg-white border border-gray-200 shadow-sm rounded-full pl-2 pr-5 py-1.5 backdrop-blur-sm bg-white/90 pointer-events-auto">
-                  <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-500">
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>
-                  </div>
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[9px] text-gray-400 uppercase tracking-widest font-black">Available</span>
-                    <span className="text-sm font-bold text-gray-800">
-                      {plan === "FREE" 
-                        ? `${limitData.remaining} / 10 Chats` 
-                        : plan === "ESSENTIAL"
-                          ? `${limitData.remaining} / 25 Chats` 
-                          : "Unlimited Chats"}
-                    </span>
                   </div>
                 </div>
               </div>
