@@ -526,7 +526,7 @@ export default function TryPragyaChat({
                           }
                         }
                       }}
-                      className={`px-4 py-2 rounded-full text-[13px] md:px-6 md:py-3 md:text-[15px] font-bold transition-all duration-300 shadow-sm ${
+                      className={`px-4 py-2 rounded-full text-[13px] md:px-6 md:py-3 md:text-[15px] font-medium transition-all duration-300 shadow-sm ${
                         selectedMode === mode.id
                           ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 scale-105'
                           : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-orange-200 hover:text-orange-500'
