@@ -15,6 +15,38 @@ interface ChatMode {
   description: string
 }
 
+const TypewriterText = ({ 
+  text, 
+  speed = 12, 
+  onComplete,
+  onCharacterTyped
+}: { 
+  text: string; 
+  speed?: number; 
+  onComplete?: () => void;
+  onCharacterTyped?: () => void;
+}) => {
+  const [displayedText, setDisplayedText] = useState("")
+
+  useEffect(() => {
+    let index = 0
+    setDisplayedText("")
+    const interval = setInterval(() => {
+      setDisplayedText((prev) => prev + text.charAt(index))
+      index++
+      onCharacterTyped?.()
+      if (index >= text.length) {
+        clearInterval(interval)
+        onComplete?.()
+      }
+    }, speed)
+
+    return () => clearInterval(interval)
+  }, [text, speed])
+
+  return <>{displayedText}</>
+}
+
 const CHAT_MODES: ChatMode[] = [
   { id: "listen", title: "Just Listen", description: "I'll hear you out and validate your feelings." },
   { id: "reflect", title: "Reflect", description: "I'll help you see patterns and clarify thoughts." },
@@ -97,6 +129,7 @@ export default function TryPragyaChat({
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [botExpression, setBotExpression] = useState("NEUTRAL")
   const [lastUserMessage, setLastUserMessage] = useState("")
   
@@ -145,6 +178,7 @@ export default function TryPragyaChat({
       setHasStarted(true)
       const modeDetails = CHAT_MODES.find(m => m.id === selectedMode)
       const initialMsg = `Hi! I'm setting my mode to: ${modeDetails?.title}. How can I help you today?`
+      setIsTyping(true)
       setMessages([{ role: "assistant", content: initialMsg }])
       setBotExpression("NEUTRAL")
     }
@@ -201,11 +235,11 @@ export default function TryPragyaChat({
       const delayMs = Math.max(1500, Math.min(4000, reply.length * 20))
       await new Promise(resolve => setTimeout(resolve, delayMs))
 
+      setIsTyping(true)
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
       setBotExpression(getBotExpression(reply))
       if (data.suggestions && Array.isArray(data.suggestions)) {
         setSuggestions(data.suggestions)
-        setTimeout(() => setShowSuggestions(true), 3000)
       }
       
     } catch (error: any) {
@@ -518,6 +552,7 @@ export default function TryPragyaChat({
                         if (selectedMode !== mode.id) {
                           setSelectedMode(mode.id);
                           if (hasStarted) {
+                            setIsTyping(true)
                             setMessages(prev => [...prev, { role: "assistant", content: `I've switched to **${mode.title}** mode. ${mode.description}` }]);
                           }
                         }
@@ -553,7 +588,20 @@ export default function TryPragyaChat({
                           : "bg-white text-gray-800 rounded-tl-sm border border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.04)]"
                         }`}
                     >
-                      {msg.content}
+                      {msg.role === "assistant" && !msg.isError && idx === messages.length - 1 ? (
+                        <TypewriterText 
+                          text={msg.content} 
+                          onCharacterTyped={() => {
+                            messagesEndRef.current?.scrollIntoView({ behavior: "auto" })
+                          }}
+                          onComplete={() => {
+                            setIsTyping(false)
+                            setShowSuggestions(true)
+                          }}
+                        />
+                      ) : (
+                        msg.content
+                      )}
                       {msg.isError && lastUserMessage && (
                         <button
                           onClick={() => sendMessage(undefined, lastUserMessage)}
@@ -573,7 +621,7 @@ export default function TryPragyaChat({
               {/* Chat Input Field */}
               <div className="p-4 md:p-6 pb-8 z-10 bg-transparent shrink-0">
                 <div className="max-w-4xl mx-auto relative">
-                  {suggestions.length > 0 && showSuggestions && !isLoading && hasStarted && (
+                  {suggestions.length > 0 && showSuggestions && !isTyping && !isLoading && hasStarted && (
                     <div className="absolute bottom-full mb-3 left-0 right-0 flex gap-2 px-2 overflow-x-auto no-scrollbar pb-1 z-20">
                       {suggestions.map((s, i) => (
                         <button 
