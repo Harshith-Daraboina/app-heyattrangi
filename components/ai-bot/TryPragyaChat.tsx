@@ -17,7 +17,7 @@ interface ChatMode {
 
 const TypewriterText = ({ 
   text, 
-  speed = 12, 
+  speed = 30, 
   onComplete,
   onCharacterTyped
 }: { 
@@ -596,7 +596,9 @@ export default function TryPragyaChat({
                           }}
                           onComplete={() => {
                             setIsTyping(false)
-                            setShowSuggestions(true)
+                            setTimeout(() => {
+                              setShowSuggestions(true)
+                            }, 3000)
                           }}
                         />
                       ) : (
