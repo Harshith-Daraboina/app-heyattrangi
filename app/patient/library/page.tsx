@@ -276,22 +276,6 @@ export default function LibraryPage() {
               </button>
             </div>
 
-            {/* Quick Banner */}
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-[32px] p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg shadow-orange-500/10">
-              <div className="z-10 text-center md:text-left">
-                <h3 className="text-2xl font-black mb-2">Need to speak with someone right away?</h3>
-                <p className="text-orange-100 font-medium max-w-xl">
-                  Pragya AI is available 24/7. Or connect immediately with our verified counselors.
-                </p>
-              </div>
-              <Link
-                href="/patient/ai-bot"
-                className="z-10 shrink-0 bg-white text-orange-600 px-8 py-3.5 rounded-full font-black text-sm hover:bg-orange-50 transition-colors shadow-md shadow-black/5"
-              >
-                Try Pragya Chat
-              </Link>
-              <div className="absolute right-[-5%] top-[-20%] w-[250px] h-[250px] rounded-full bg-white/10 blur-3xl pointer-events-none"></div>
-            </div>
           </div>
         )}
 
