@@ -188,16 +188,18 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("wellness")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#4facfe] to-[#00f2fe] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <div className="absolute -right-4 -top-4 w-24 h-24 border border-white/10 rounded-full pointer-events-none"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 120C120 100 200 180 400 130V200H0V120Z" fill="white" />
+                  <path d="M0 150C150 130 250 190 400 160V200H0V150Z" fill="white" opacity="0.5" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   5 mins
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Mental Wellness</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Mental Wellness</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Guided breathing, relaxation scripts, and calming guides.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-teal-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-teal-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
@@ -207,16 +209,18 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("distress")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#ff5858] to-[#f09819] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <div className="absolute -left-4 -bottom-4 w-20 h-20 border border-white/10 rounded-full pointer-events-none"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 100 Q 50 150 100 100 T 200 100 T 300 100 T 400 100 V200 H0 Z" fill="white" />
+                  <path d="M0 130 Q 70 170 140 130 T 280 130 T 400 130 V200 H0 Z" fill="white" opacity="0.4" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   Immediate
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Distress Signals</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Distress Signals</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Urgent help contacts and active grounding techniques.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-orange-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-orange-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
@@ -226,15 +230,19 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("illness")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#30cfd0] to-[#330867] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="340" cy="180" r="100" fill="white" />
+                  <circle cx="280" cy="140" r="60" fill="white" opacity="0.4" />
+                  <circle cx="380" cy="80" r="80" fill="white" opacity="0.3" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   Resource Capsule
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Understanding Illness</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Understanding Illness</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Condition reference files and special population checklists.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-[#330867] font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-[#330867] font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
@@ -244,15 +252,18 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("stories")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#7f53ac] to-[#647dec] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0 180 L 150 100 L 300 140 L 400 60 V200 H0 Z" fill="white" />
+                  <path d="M0 190 L 120 130 L 250 160 L 400 100 V200 H0 Z" fill="white" opacity="0.4" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   Community
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Success Stories</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Success Stories</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Real narratives from people who reclaimed their peace of mind.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-indigo-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-indigo-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
@@ -262,15 +273,18 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("selfhelp")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#11998e] to-[#38ef7d] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M300 200 C300 130 350 100 400 100 V200 H300 Z" fill="white" />
+                  <path d="M220 200 C220 150 280 120 350 120 V200 H220 Z" fill="white" opacity="0.4" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   Tools
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Self Help</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Self Help</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Interactive self-diagnostics, files, and printable tracking logs.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-emerald-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-emerald-600 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
@@ -280,15 +294,18 @@ export default function LibraryPage() {
                 onClick={() => setActiveTab("brainfood")}
                 className="relative overflow-hidden rounded-[28px] p-6 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[220px] bg-gradient-to-br from-[#f857a6] to-[#ff5858] text-white"
               >
-                <div className="absolute right-0 bottom-0 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none group-hover:scale-110 transition-transform"></div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
+                <svg className="absolute right-0 bottom-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 280 200 L 330 110 L 400 160 V 200 Z" fill="white" opacity="0.3" />
+                  <path d="M 200 200 L 290 80 L 360 140 L 400 120 V 200 Z" fill="white" opacity="0.4" />
+                </svg>
+                <span className="z-10 inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black tracking-wider uppercase mb-8 self-start">
                   10 mins
                 </span>
-                <h3 className="font-extrabold text-xl mb-1.5 tracking-tight">Brain Food Room</h3>
-                <p className="text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
+                <h3 className="z-10 font-extrabold text-xl mb-1.5 tracking-tight">Brain Food Room</h3>
+                <p className="z-10 text-white/80 font-medium text-xs leading-relaxed max-w-[200px]">
                   Focus training games, ambient sound, and a thought diary log.
                 </p>
-                <div className="mt-auto self-end flex items-center justify-center bg-white text-rose-500 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
+                <div className="z-10 mt-auto self-end flex items-center justify-center bg-white text-rose-500 font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm gap-1 hover:bg-slate-50 transition-colors">
                   Start <span>→</span>
                 </div>
               </button>
