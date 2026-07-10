@@ -186,7 +186,7 @@ export default function LibraryPage() {
               {/* Category Card: Mental Wellness */}
               <button
                 onClick={() => setActiveTab("wellness")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#4facfe] to-[#00f2fe] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#1d4d4f] to-[#357276] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 120C120 100 200 180 400 130V200H0V120Z" fill="white" />
@@ -207,7 +207,7 @@ export default function LibraryPage() {
               {/* Category Card: Distress Signals */}
               <button
                 onClick={() => setActiveTab("distress")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#ff5858] to-[#f09819] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#8e4a39] to-[#b36a57] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 100 Q 50 150 100 100 T 200 100 T 300 100 T 400 100 V200 H0 Z" fill="white" />
@@ -228,7 +228,7 @@ export default function LibraryPage() {
               {/* Category Card: Understanding Mental Illness */}
               <button
                 onClick={() => setActiveTab("illness")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#30cfd0] to-[#330867] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#2d4a3e] to-[#486f5f] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="340" cy="180" r="100" fill="white" />
@@ -250,7 +250,7 @@ export default function LibraryPage() {
               {/* Category Card: Our Success Stories */}
               <button
                 onClick={() => setActiveTab("stories")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#7f53ac] to-[#647dec] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#513c66] to-[#775e91] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M0 180 L 150 100 L 300 140 L 400 60 V200 H0 Z" fill="white" />
@@ -271,7 +271,7 @@ export default function LibraryPage() {
               {/* Category Card: Self Help */}
               <button
                 onClick={() => setActiveTab("selfhelp")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#11998e] to-[#38ef7d] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#233554] to-[#3d5a80] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M300 200 C300 130 350 100 400 100 V200 H300 Z" fill="white" />
@@ -292,7 +292,7 @@ export default function LibraryPage() {
               {/* Category Card: Brain Food Room */}
               <button
                 onClick={() => setActiveTab("brainfood")}
-                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#f857a6] to-[#ff5858] text-white"
+                className="relative overflow-hidden rounded-[32px] p-8 shadow-sm hover:shadow-md hover:scale-[1.01] transition-all flex flex-col text-left group min-h-[240px] bg-gradient-to-br from-[#8d5462] to-[#b57a87] text-white"
               >
                 <svg className="absolute inset-0 w-full h-full opacity-15 pointer-events-none" viewBox="0 0 400 200" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M 280 200 L 330 110 L 400 160 V 200 Z" fill="white" opacity="0.3" />
