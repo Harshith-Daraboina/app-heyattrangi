@@ -41,13 +41,20 @@ const TypewriterText = ({
   useEffect(() => {
     let index = 0
     setDisplayedText("")
+    
+    // Dynamically calculate chunk size to ensure typing finishes within ~750ms
+    const totalTicks = 50
+    const increment = Math.max(1, Math.ceil(text.length / totalTicks))
+
     const interval = setInterval(() => {
-      setDisplayedText((prev) => prev + text.charAt(index))
-      index++
-      onCharacterTyped?.()
+      index += increment
       if (index >= text.length) {
+        setDisplayedText(text)
         clearInterval(interval)
         onComplete?.()
+      } else {
+        setDisplayedText(text.slice(0, index))
+        onCharacterTyped?.()
       }
     }, speed)
 
@@ -270,10 +277,6 @@ export default function TryPragyaChat({
       }
 
       const reply = typeof data.reply === "string" ? data.reply : "Sorry, I didn't quite get that. Could you please rephrase?"
-
-      // Artificial delay to simulate typing/reading time (min 1.5s, max 4s)
-      const delayMs = Math.max(1500, Math.min(4000, reply.length * 20))
-      await new Promise(resolve => setTimeout(resolve, delayMs))
 
       setIsTyping(true)
       setMessages((prev) => [...prev, { role: "assistant", content: reply }])
