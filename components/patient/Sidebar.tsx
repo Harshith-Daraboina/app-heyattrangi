@@ -143,7 +143,10 @@ export default function Sidebar() {
     const { data: session } = useSession()
 
     return (
-        <div className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 bg-gradient-to-b from-white via-white to-orange-50 border-r border-orange-100 z-40`}>
+        <div 
+            className={`relative h-full transition-all duration-300 ${isCollapsed ? "w-[90px]" : "w-[260px]"} shrink-0 z-40`}
+            style={{ backgroundImage: 'linear-gradient(to bottom, #4A3020, #26150C)' }}
+        >
 
             {/* Toggle Button centered on the vertical border */}
             {/* <button
@@ -170,7 +173,7 @@ export default function Sidebar() {
                     </div>
                     {!isCollapsed && (
                         <div className="flex items-center gap-0.5 tracking-tighter">
-                            <span className="text-2xl font-black text-gray-900">hey</span>
+                            <span className="text-2xl font-black text-white">hey</span>
                             <span className="text-2xl font-black text-[var(--color-brand)]">attrangi</span>
                         </div>
                     )}
@@ -179,7 +182,7 @@ export default function Sidebar() {
                 {/* General Section */}
                 {generalItems.length > 0 && (
                     <div className={`mb-8 ${isCollapsed ? "px-2" : "pl-2"}`}>
-                        {!isCollapsed && <h3 className="text-[11px] font-bold text-gray-400 mb-3 px-2 uppercase tracking-wide">General</h3>}
+                        {!isCollapsed && <h3 className="text-[11px] font-bold text-orange-200/50 mb-3 px-2 uppercase tracking-wide">General</h3>}
                         <nav className="flex flex-col gap-1.5">
                             {generalItems.map((item) => {
                                 const isActive = pathname === item.href || (item.href !== '/patient/dashboard' && pathname.startsWith(item.href.split('?')[0]) && item.label !== "Calendar")
@@ -193,12 +196,12 @@ export default function Sidebar() {
                                             ${isCollapsed ? "w-12 h-12 mx-auto justify-center" : "px-4 py-3 justify-between"}
                                             ${isActive
                                                 ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/20"
-                                                : "text-gray-500 hover:text-gray-900 hover:bg-orange-50/50"
+                                                : "text-orange-100/60 hover:text-white hover:bg-white/10"
                                             }
                                         `}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`${isActive ? "text-white" : "text-gray-400"}`}>
+                                            <div className="flex items-center justify-center">
                                                 {item.icon}
                                             </div>
                                             {!isCollapsed && <span className="text-sm whitespace-nowrap">{item.label}</span>}
@@ -212,7 +215,7 @@ export default function Sidebar() {
 
                 {/* Tools Section */}
                 <div className={`mb-8 w-full flex-1 flex flex-col justify-center ${isCollapsed ? "px-2" : "pl-2"}`}>
-                    {!isCollapsed && <h3 className="text-[11px] font-bold text-gray-400 mb-3 px-2 uppercase tracking-wide">Tools</h3>}
+                    {!isCollapsed && <h3 className="text-[11px] font-bold text-orange-200/50 mb-3 px-2 uppercase tracking-wide">Tools</h3>}
                     <nav className={`flex flex-col ${isCollapsed ? "gap-6" : "gap-1.5"}`}>
                         {toolItems.map((item) => {
                             const isActive = pathname === item.href
@@ -226,12 +229,12 @@ export default function Sidebar() {
                                         ${isCollapsed ? "w-12 h-12 mx-auto justify-center" : "px-4 py-3 justify-between"}
                                         ${isActive
                                             ? "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/20"
-                                            : "text-gray-500 hover:text-gray-900 hover:bg-orange-50/50"
+                                            : "text-orange-100/60 hover:text-white hover:bg-white/10"
                                         }
                                     `}
                                 >
                                     <div className={`flex items-center ${isCollapsed ? "justify-center w-full" : "gap-3"}`}>
-                                        <div className={`flex items-center justify-center ${isActive ? "text-white" : "text-gray-400"}`}>
+                                        <div className="flex items-center justify-center">
                                             {item.icon}
                                         </div>
                                         {!isCollapsed && <span className="text-sm whitespace-nowrap">{item.label}</span>}
@@ -252,9 +255,9 @@ export default function Sidebar() {
                     <div className="mt-auto mb-6 mx-4">
                         <Link
                             href="/patient/profile"
-                            className="flex items-center gap-3 p-3 bg-white hover:bg-orange-50 rounded-2xl border border-gray-100 transition-all duration-300 group shadow-sm select-none cursor-pointer"
+                            className="flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/10 transition-all duration-300 group shadow-sm select-none cursor-pointer"
                         >
-                            <div className="w-10 h-10 rounded-xl overflow-hidden relative bg-gray-100 shrink-0 border border-gray-200 shadow-sm flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden relative bg-black/20 shrink-0 border border-white/10 shadow-sm flex items-center justify-center">
                                 {session?.user?.image ? (
                                     <Image
                                         src={session.user.image}
@@ -263,16 +266,16 @@ export default function Sidebar() {
                                         className="object-cover"
                                     />
                                 ) : (
-                                    <span className="text-sm font-bold text-gray-400">
+                                    <span className="text-sm font-bold text-orange-100/60">
                                         {session?.user?.name ? session.user.name[0].toUpperCase() : "U"}
                                     </span>
                                 )}
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-sm font-black text-gray-900 leading-none tracking-wide truncate">
+                                <span className="text-sm font-black text-white leading-none tracking-wide truncate">
                                     {session?.user?.name || "Patient"}
                                 </span>
-                                <span className="text-[11px] font-bold text-orange-500 mt-1 uppercase tracking-wider leading-none">
+                                <span className="text-[11px] font-bold text-orange-300 mt-1 uppercase tracking-wider leading-none">
                                     View Profile
                                 </span>
                             </div>
@@ -282,7 +285,7 @@ export default function Sidebar() {
                     <div className="mt-auto mb-6 mx-auto w-full flex justify-center px-2">
                         <Link
                             href="/patient/profile"
-                            className="w-12 h-12 rounded-2xl overflow-hidden relative bg-white hover:bg-orange-50 border border-gray-100 transition-all duration-300 group flex items-center justify-center shadow-sm cursor-pointer shrink-0"
+                            className="w-12 h-12 rounded-2xl overflow-hidden relative bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 group flex items-center justify-center shadow-sm cursor-pointer shrink-0"
                             title={session?.user?.name || "Profile"}
                         >
                             {session?.user?.image ? (
@@ -293,7 +296,7 @@ export default function Sidebar() {
                                     className="object-cover"
                                 />
                             ) : (
-                                <span className="text-base font-black text-gray-500">
+                                <span className="text-base font-black text-orange-100/60">
                                     {session?.user?.name ? session.user.name[0].toUpperCase() : "U"}
                                 </span>
                             )}
