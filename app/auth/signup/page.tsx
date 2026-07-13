@@ -57,10 +57,7 @@ export default function SignUpPage() {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user) {
-      const timer = setTimeout(() => {
-        checkAndRedirect()
-      }, 2000)
-      return () => clearTimeout(timer)
+      checkAndRedirect()
     }
   }, [session, status])
 
@@ -72,9 +69,13 @@ export default function SignUpPage() {
         const role = data.role
         switch (role) {
           case "PATIENT":
-          case "CAREGIVER": router.push("/patient/ai-bot"); break
+          case "CAREGIVER": router.push("/patient/dashboard"); break
           case "DOCTOR": router.push("/doctor/dashboard"); break
           case "ADMIN": router.push("/admin/dashboard"); break
+        }
+      } else {
+        if (data.role) {
+          router.push(`/onboarding?role=${data.role}`)
         }
       }
     } catch (error) {
@@ -82,9 +83,15 @@ export default function SignUpPage() {
     }
   }
 
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [isCredentialsLoading, setIsCredentialsLoading] = useState(false)
+
   const handleGoogleSignUp = async () => {
     if (!selectedRole) return
     setIsLoading(true)
+    setError("")
     try {
       await signIn("google", {
         callbackUrl: `/auth/callback?signup=true&role=${selectedRole}`,
@@ -96,8 +103,60 @@ export default function SignUpPage() {
     }
   }
 
+  const handleCredentialsSignUp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedRole) {
+      setError("Please select a role first")
+      return
+    }
+    
+    setIsCredentialsLoading(true)
+    setError("")
+    
+    try {
+      // Register user
+      const registerRes = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          role: selectedRole,
+        }),
+      })
+
+      const registerData = await registerRes.json()
+
+      if (!registerRes.ok) {
+        setError(registerData.message || "Something went wrong")
+        setIsCredentialsLoading(false)
+        return
+      }
+
+      // Sign in after successful registration
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError("Registration successful, but sign in failed. Please try signing in.")
+        setIsCredentialsLoading(false)
+      } else {
+        router.push(`/auth/callback?signup=true&role=${selectedRole}`)
+      }
+    } catch (error) {
+      console.error("Sign up error:", error)
+      setError("An unexpected error occurred")
+      setIsCredentialsLoading(false)
+    }
+  }
+
   const signedIn = status === "authenticated" && !!session?.user
-  const actionsDisabled = isLoading || signedIn
+  const actionsDisabled = isLoading || isCredentialsLoading || signedIn
   const googleDisabled = actionsDisabled || !selectedRole
 
   return (
@@ -168,32 +227,10 @@ export default function SignUpPage() {
           </div>
 
           {signedIn && session?.user ? (
-            <div className="mb-8 w-full p-5 bg-[#fff8e7] border border-[#f4b860]/30 rounded-2xl text-left shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-[#f4b860]/20 flex items-center justify-center shrink-0">
-                  <span className="text-[#d89332] text-xl">⚠️</span>
-                </div>
-                <div className="flex-1 min-w-0 pt-0.5">
-                  <h3 className="text-sm font-bold text-gray-900 mb-1">
-                    Already Signed In
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-4">
-                    You're signed in as <strong className="text-gray-900">{session.user.email}</strong>.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await signOut({ redirect: false })
-                        window.location.reload()
-                      }}
-                      className="text-sm bg-gray-100 text-gray-700 px-5 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition-colors shadow-sm text-center"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </div>
+            <div className="mb-8 w-full flex flex-col items-center justify-center py-10">
+              <div className="w-12 h-12 border-4 border-gray-100 border-t-[#d89332] rounded-full animate-spin mb-4"></div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">Authenticating...</h3>
+              <p className="text-sm text-gray-500">Getting your dashboard ready</p>
             </div>
           ) : (
             <div className="space-y-8">
@@ -248,19 +285,49 @@ export default function SignUpPage() {
                   )}
                 </button>
 
-                <button
-                  type="button"
-                  disabled
-                  className="w-full flex items-center justify-center gap-3 bg-gray-50 text-gray-400 border-2 border-gray-100 rounded-[20px] py-4 cursor-not-allowed relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(0,0,0,0.02)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] animate-[shine-sweep_3s_infinite_linear]"></div>
-                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <span className="font-bold text-base flex items-center gap-2">
-                    Continue with Phone <span className="text-[10px] uppercase tracking-wider bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full ml-1 font-black">Coming Soon</span>
-                  </span>
-                </button>
+                <form onSubmit={handleCredentialsSignUp} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1" htmlFor="email">Email</label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={!selectedRole}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all disabled:opacity-50 disabled:bg-gray-50"
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1" htmlFor="password">Password</label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      disabled={!selectedRole}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none transition-all disabled:opacity-50 disabled:bg-gray-50"
+                      placeholder="••••••••"
+                      required
+                    />
+                  </div>
+                  {error && <p className="text-red-500 text-sm font-medium">{error}</p>}
+                  <button
+                    type="submit"
+                    disabled={googleDisabled || isCredentialsLoading}
+                    className={`w-full flex items-center justify-center gap-3 transition-all rounded-[20px] py-4 shadow-sm font-bold text-base border-2 ${!selectedRole
+                        ? 'bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed'
+                        : 'bg-gray-900 text-white border-gray-900 hover:bg-gray-800 hover:border-gray-800 hover:shadow-md cursor-pointer group'
+                      }`}
+                  >
+                    {isCredentialsLoading ? (
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <span>{selectedRole ? 'Sign Up with Email' : 'Select a role to continue'}</span>
+                    )}
+                  </button>
+                </form>
 
                 <div className="relative flex items-center py-2">
                   <div className="flex-grow border-t border-gray-200"></div>
