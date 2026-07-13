@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
           data: {
             userId: user.id,
             fullName: user.name || "Doctor",
-            status: "PENDING",
+            status: "PENDING_PROFILE",
             consultationFee: 0,
           },
         })

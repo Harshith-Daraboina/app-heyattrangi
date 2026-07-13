@@ -1,48 +1,39 @@
-import Sidebar from "@/components/patient/Sidebar"
-import WellnessScreeningForm from "@/components/ai-bot/WellnessScreeningForm"
+import { Suspense } from "react"
 import { auth } from "@/auth.config"
-import { redirect } from "next/navigation"
+import TryPragyaChat from "@/components/ai-bot/TryPragyaChat"
+import AIBotSkeleton from "@/components/ai-bot/AIBotSkeleton"
+import { prisma } from "@/lib/prisma"
 
-export default async function AIBotPage() {
-    const session = await auth()
+async function AIBotContent() {
+  const session = await auth()
+  
+  if (!session?.user?.id) return null
 
-    if (!session?.user) {
-        redirect("/auth/signin")
-    }
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } })
+  if (!user) return null
 
-    return (
-        <div className="min-h-screen bg-slate-50 text-gray-900">
-            <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
-                <Sidebar />
+  const sessionId = `patient_${session.user.id}`
+  
+  const today = new Date().toISOString().split("T")[0]
+  const isSameDay = user.lastAiChatDate === today
+  const dailyAiChatCount = isSameDay ? user.dailyAiChatCount : 0
 
-                <div className="flex flex-col">
-                    {/* Header */}
-                    <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-                        <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 gap-4">
-                            <div>
-                                <h1 className="text-xl font-semibold text-slate-900">Attrangi Bot</h1>
-                                <p className="text-sm text-slate-500">Wellness Screening & Support</p>
-                            </div>
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-100 text-teal-600 font-semibold">
-                                AI
-                            </div>
-                        </div>
-                    </header>
+  return (
+    <div className="flex-1 min-w-0 h-full flex flex-col relative w-full overflow-hidden bg-[var(--color-bg)]">
+      <TryPragyaChat 
+        sessionId={sessionId} 
+        initialPlan={user.plan} 
+        initialChatCount={dailyAiChatCount}
+        userName={user.name || "User"}
+      />
+    </div>
+  )
+}
 
-                    <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="max-w-4xl mx-auto">
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-                                <div className="mb-8 p-4 bg-teal-50 rounded-xl border border-teal-100 text-teal-800 text-sm">
-                                    <p className="font-semibold mb-1">Disclaimer</p>
-                                    <p>This tool is for mental wellness screening and self-reflection only. It does not provide medical or psychological diagnoses. If you are in crisis, please seek professional help immediately.</p>
-                                </div>
-
-                                <WellnessScreeningForm />
-                            </div>
-                        </div>
-                    </main>
-                </div>
-            </div>
-        </div>
-    )
+export default function AIBotPage() {
+  return (
+    <Suspense fallback={<AIBotSkeleton />}>
+      <AIBotContent />
+    </Suspense>
+  )
 }

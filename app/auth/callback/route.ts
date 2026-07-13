@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
         where: { id: session.user.id },
         include: {
           patient: true,
-          caregiver: true,
           doctor: true,
           admin: true,
         },
@@ -39,7 +38,7 @@ export async function GET(req: NextRequest) {
     // If user still doesn't exist after retries, redirect to signup
     if (!user) {
       console.error("User not found after retries:", session.user.id)
-      return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+      return NextResponse.redirect(new URL("/auth/signup", req.url))
     }
 
     // If this is a signup and role needs to be set/updated
@@ -54,7 +53,6 @@ export async function GET(req: NextRequest) {
             },
             include: {
               patient: true,
-              caregiver: true,
               doctor: true,
               admin: true,
             },
@@ -78,7 +76,7 @@ export async function GET(req: NextRequest) {
           data: {
             userId: user.id,
             fullName: user.name || "Doctor",
-            status: "PENDING",
+            status: "PENDING_PROFILE",
             consultationFee: 0,
           },
         })
@@ -99,7 +97,6 @@ export async function GET(req: NextRequest) {
       // Redirect based on role (or default dashboard if no role)
       switch (user.role) {
         case "PATIENT":
-        case "CAREGIVER":
           return NextResponse.redirect(new URL("/patient/dashboard", req.url))
         case "DOCTOR":
           return NextResponse.redirect(new URL("/doctor/dashboard", req.url))
@@ -108,7 +105,7 @@ export async function GET(req: NextRequest) {
         default:
           // No role set - send to signup to select role
           console.log("No role set for existing user - redirecting to signup")
-          return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+          return NextResponse.redirect(new URL("/auth/signup", req.url))
       }
     }
 
@@ -123,9 +120,6 @@ export async function GET(req: NextRequest) {
     switch (user.role) {
       case "PATIENT":
         isOnboardingComplete = !!user.patient
-        break
-      case "CAREGIVER":
-        isOnboardingComplete = !!user.caregiver
         break
       case "DOCTOR":
         isOnboardingComplete = !!user.doctor
@@ -148,14 +142,13 @@ export async function GET(req: NextRequest) {
         return NextResponse.redirect(new URL(`/onboarding?role=${user.role}`, req.url))
       }
       // No role set - redirect to signup to select role
-      return NextResponse.redirect(new URL("/auth/signin?mode=signup", req.url))
+      return NextResponse.redirect(new URL("/auth/signup", req.url))
     }
 
     // Onboarding complete for signup - redirect to dashboard
     console.log("Signup onboarding complete - redirecting to dashboard:", user.role)
     switch (user.role) {
       case "PATIENT":
-      case "CAREGIVER":
         return NextResponse.redirect(new URL("/patient/dashboard", req.url))
       case "DOCTOR":
         return NextResponse.redirect(new URL("/doctor/dashboard", req.url))

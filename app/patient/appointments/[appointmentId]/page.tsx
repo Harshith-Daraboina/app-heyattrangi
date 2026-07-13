@@ -1,181 +1,132 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/auth.config"
+import { Suspense } from "react"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
-import SignOutButton from "@/components/auth/SignOutButton"
-import AppointmentDetailsPanel from "@/components/appointments/AppointmentDetailsPanel"
+import DetailView from "./DetailView"
+import { format, isSameDay } from "date-fns"
 
-export default async function AppointmentDetailPage({
-  params,
-}: {
-  params: Promise<{ appointmentId: string }> | { appointmentId: string }
-}) {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
+async function AppointmentDetailContent({ appointmentId }: { appointmentId: string }) {
   const user = await getCurrentUser()
+  if (!user) redirect("/auth/signin")
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
-  }
-
-  // Handle params (Next.js 16 compatibility)
-  let appointmentId: string
-  try {
-    const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params))
-    appointmentId = resolvedParams.appointmentId
-  } catch (error) {
-    console.error("Error resolving params:", error)
-    redirect("/patient/appointments")
-  }
-
-  if (!appointmentId) {
-    redirect("/patient/appointments")
-  }
-
-  // Fetch appointment details with all related data
   const appointment = await prisma.appointment.findUnique({
     where: { id: appointmentId },
     include: {
       doctor: {
         include: {
           user: {
-            select: {
-              name: true,
-              email: true,
-              image: true,
-            },
+            select: { name: true, email: true, image: true },
           },
         },
       },
       patient: {
         include: {
           user: {
-            select: {
-              name: true,
-              email: true,
-            },
+            select: { name: true, email: true },
           },
         },
       },
       payment: true,
-      timeSlot: true,
     },
   })
 
-  if (!appointment) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-        <nav className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <SignOutButton />
-            </div>
-          </div>
-        </nav>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Appointment Not Found</h2>
-            <p className="text-gray-600 mb-6">
-              The appointment you're looking for doesn't exist.
-            </p>
-            <Link
-              href="/patient/appointments"
-              className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
-            >
-              View My Appointments
-            </Link>
-          </div>
-        </main>
-      </div>
-    )
-  }
+  if (!appointment) notFound()
 
-  // Verify the appointment belongs to the current user
-  const patient = await prisma.patient.findUnique({
-    where: { userId: user.id },
-  })
-
-  if (!patient || appointment.patientId !== patient.id) {
-    redirect("/auth/unauthorized")
-  }
-
-  // Check if appointment is past or upcoming
-  const now = new Date()
   const appointmentDate = new Date(appointment.appointmentDate)
-  const isUpcoming = appointmentDate > now
-  const isPast = appointmentDate <= now
+  const isToday = isSameDay(appointmentDate, new Date())
+
+  // Prepare data for the client component
+  const appointmentData = {
+    id: appointment.id,
+    status: appointment.status,
+    meetingLink: appointment.meetingLink,
+    formattedDate: format(appointmentDate, "EEEE, MMM d, yyyy"),
+    formattedTime: format(appointmentDate, "hh:mm a"),
+    isToday,
+    formattedAlertDate: format(appointmentDate, "EEEE, MMMM d, yyyy 'at' hh:mm a"),
+    formattedBookingDate: format(new Date(appointment.createdAt), "PPP"),
+    doctor: {
+      id: appointment.doctor.id,
+      fullName: appointment.doctor.fullName,
+      primarySpecialization: appointment.doctor.primarySpecialization,
+      specialization: appointment.doctor.specialization,
+      consultationFee: appointment.doctor.consultationFee,
+      user: {
+        name: appointment.doctor.user.name,
+        image: appointment.doctor.user.image,
+      },
+    },
+    patient: {
+      name: appointment.patient?.user?.name || null,
+      email: appointment.patient?.user?.email || null,
+    },
+    payment: appointment.payment ? {
+      id: appointment.payment.id,
+      amount: appointment.payment.amount,
+      status: appointment.payment.status,
+      formattedPaymentDate: format(new Date(appointment.payment.createdAt), "PPP"),
+    } : null,
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-6">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <div className="hidden md:flex gap-4">
-                <Link
-                  href="/patient/dashboard"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/patient/therapists"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Find Therapist
-                </Link>
-                <Link
-                  href="/patient/appointments"
-                  className="text-sm font-medium text-teal-600"
-                >
-                  Appointments
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {session.user.name || session.user.email}
-              </span>
-              <SignOutButton />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <Link
+    <div className="flex-1 min-h-full overflow-y-auto selection:bg-orange-100 selection:text-orange-900 pb-20 px-4 sm:px-6 md:px-8 xl:px-10 pt-10">
+      <main className="w-full h-full flex flex-col">
+        {/* Navigation & Header */}
+        <div className="mb-10">
+          <Link 
             href="/patient/appointments"
-            className="text-sm text-gray-600 hover:text-gray-800 mb-4 inline-block"
+            className="inline-flex items-center gap-2 text-gray-400 hover:text-gray-600 font-bold mb-4 transition-colors group text-sm"
           >
-            ← Back to Appointments
+            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path d="M15 19l-7-7 7-7"/></svg>
+            Back to schedule
           </Link>
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Appointment Details
-          </h1>
-          <p className="text-gray-600">
-            View your appointment information, session details, and payment history
-          </p>
+          <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight leading-tight mb-2">Appointment Details</h1>
+          <p className="text-gray-400 font-bold text-[14px] sm:text-[15px]">View your appointment information, session details, and payment history.</p>
         </div>
 
-        <AppointmentDetailsPanel 
-          appointment={appointment} 
-          isUpcoming={isUpcoming}
-          isPast={isPast}
-        />
+        <DetailView appointment={appointmentData} />
       </main>
     </div>
   )
 }
 
+function Skeleton({ className }: { className?: string }) {
+  return <div className={`animate-pulse bg-gray-200 rounded-2xl ${className}`} />
+}
+
+function DetailSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#F8F9FA] px-6 py-10 pb-24">
+      <div className="w-full space-y-10">
+        <div className="space-y-4">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-5 w-80" />
+        </div>
+        <Skeleton className="h-[200px] rounded-[32px]" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-14 w-full rounded-2xl" />
+              <Skeleton className="h-[400px] rounded-[32px]" />
+           </div>
+           <Skeleton className="h-[400px] rounded-[32px]" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function AppointmentDetailPage({ params }: { params: Promise<{ appointmentId: string }> | { appointmentId: string } }) {
+  return (
+    <Suspense fallback={<DetailSkeleton />}>
+      <AppointmentDetailWrapper params={params} />
+    </Suspense>
+  )
+}
+
+async function AppointmentDetailWrapper({ params }: { params: Promise<{ appointmentId: string }> | { appointmentId: string } }) {
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params))
+  const { appointmentId } = resolvedParams
+  return <AppointmentDetailContent appointmentId={appointmentId} />
+}

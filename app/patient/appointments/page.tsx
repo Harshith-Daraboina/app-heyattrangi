@@ -1,151 +1,105 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/auth.config"
+import { Suspense } from "react"
 import { getCurrentUser } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
-import SignOutButton from "@/components/auth/SignOutButton"
 import AppointmentsList from "@/components/appointments/AppointmentsList"
+import ScheduleSkeleton from "@/components/appointments/ScheduleSkeleton"
+import { redirect } from "next/navigation"
 
-export default async function AppointmentsPage() {
-  const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
+async function AppointmentsContent() {
   const user = await getCurrentUser()
+  if (!user) redirect("/auth/signin")
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
-  }
-
-  // Find patient profile
   const patient = await prisma.patient.findUnique({
-    where: { userId: user.id },
+    where: { userId: user?.id || "" },
   })
 
   if (!patient) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-        <nav className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <SignOutButton />
-            </div>
-          </div>
-        </nav>
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-xl shadow-lg p-8 border border-gray-100 text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Profile Not Found</h2>
-            <p className="text-gray-600 mb-6">
-              Please complete your patient profile to view appointments.
-            </p>
-            <Link
-              href="/patient/profile"
-              className="inline-block px-6 py-3 bg-teal-600 text-white rounded-lg font-medium hover:bg-teal-700 transition-colors"
-            >
-              Complete Profile
-            </Link>
-          </div>
-        </main>
+      <div className="min-h-screen bg-[#F7F8FA] flex items-center justify-center">
+        <div className="text-center bg-white rounded-[40px] border border-gray-100 p-12 shadow-sm">
+          <h2 className="text-2xl font-black text-gray-900 mb-3">Finish setting up your profile</h2>
+          <p className="text-gray-400 font-bold mb-8">Add a few details so we can show your appointments here when you book.</p>
+          <Link
+            href="/patient/profile"
+            className="inline-flex items-center px-8 py-4 bg-orange-500 text-white font-black rounded-2xl hover:bg-orange-600 transition-all shadow-lg shadow-orange-100"
+          >
+            Complete profile
+          </Link>
+        </div>
       </div>
     )
   }
 
-  // Fetch all appointments for this patient
-  const appointments = await prisma.appointment.findMany({
+  const now = new Date()
+
+  // Fetch upcoming appointments
+  const upcomingAppointments = await prisma.appointment.findMany({
     where: {
       patientId: patient.id,
+      appointmentDate: { gt: now },
+      status: { not: "CANCELLED" },
     },
     include: {
       doctor: {
         include: {
           user: {
-            select: {
-              name: true,
-              email: true,
-              image: true,
-            },
+            select: { name: true, email: true, image: true },
           },
         },
       },
       payment: {
-        select: {
-          id: true,
-          amount: true,
-          status: true,
-          createdAt: true,
-        },
+        select: { id: true, amount: true, status: true, createdAt: true },
       },
     },
-    orderBy: {
-      appointmentDate: "desc",
-    },
+    orderBy: { appointmentDate: "asc" },
   })
 
-  // Separate upcoming and past appointments
-  const now = new Date()
-  const upcomingAppointments = appointments.filter(
-    (apt) => new Date(apt.appointmentDate) > now && apt.status !== "CANCELLED"
-  )
-  const pastAppointments = appointments.filter(
-    (apt) => new Date(apt.appointmentDate) <= now || apt.status === "COMPLETED" || apt.status === "CANCELLED"
-  )
+  // Fetch past appointments
+  const pastAppointments = await prisma.appointment.findMany({
+    where: {
+      patientId: patient.id,
+      OR: [
+        { appointmentDate: { lte: now } },
+        { status: "COMPLETED" },
+        { status: "CANCELLED" },
+      ],
+    },
+    include: {
+      doctor: {
+        include: {
+          user: {
+            select: { name: true, email: true, image: true },
+          },
+        },
+      },
+      payment: {
+        select: { id: true, amount: true, status: true, createdAt: true },
+      },
+    },
+    orderBy: { appointmentDate: "desc" },
+  })
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-6">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800">
-                Attrangi
-              </Link>
-              <div className="hidden md:flex gap-4">
-                <Link
-                  href="/patient/dashboard"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/patient/therapists"
-                  className="text-sm text-gray-600 hover:text-gray-800"
-                >
-                  Find Therapist
-                </Link>
-                <Link
-                  href="/patient/appointments"
-                  className="text-sm font-medium text-teal-600"
-                >
-                  Appointments
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">
-                {session.user.name || session.user.email}
-              </span>
-              <SignOutButton />
-            </div>
+    <div className="min-h-screen bg-[#F7F8FA] selection:bg-orange-100 selection:text-orange-600">
+      <main className="mx-auto max-w-[1440px] px-8 pt-12">
+        <div className="mb-12 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-2">Schedule</h1>
+            <p className="text-gray-400 font-bold text-lg">Manage your upcoming and past therapy sessions</p>
           </div>
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            My Appointments
-          </h1>
-          <p className="text-gray-600">
-            Manage your upcoming and past therapy sessions
-          </p>
+          <Link
+            href="/patient/therapists"
+            className="flex items-center gap-2 rounded-2xl bg-[#F97316] px-6 py-4 text-white shadow-lg shadow-orange-100 transition-all hover:bg-orange-600"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-[14px] font-black">Book a session</span>
+          </Link>
         </div>
 
-        <AppointmentsList 
+        <AppointmentsList
           upcomingAppointments={upcomingAppointments}
           pastAppointments={pastAppointments}
         />
@@ -154,3 +108,10 @@ export default async function AppointmentsPage() {
   )
 }
 
+export default function AppointmentsPage() {
+  return (
+    <Suspense fallback={<ScheduleSkeleton />}>
+      <AppointmentsContent />
+    </Suspense>
+  )
+}

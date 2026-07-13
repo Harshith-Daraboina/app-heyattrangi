@@ -35,7 +35,7 @@ async function createMissingDoctorProfiles() {
           data: {
             userId: user.id,
             fullName: user.name || 'Doctor',
-            status: 'PENDING',
+            status: 'PENDING_PROFILE',
             consultationFee: 0,
           },
         })

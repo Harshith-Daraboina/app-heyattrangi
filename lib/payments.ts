@@ -30,6 +30,7 @@ export interface PaymentDetails {
   doctorId: string
   appointmentId: string
   patientId: string
+  razorpayAccountId?: string | null
 }
 
 export function calculatePlatformFee(amount: number): {
@@ -46,10 +47,10 @@ export function calculatePlatformFee(amount: number): {
 }
 
 export async function createRazorpayOrder(details: PaymentDetails) {
-  const { amount, appointmentId } = details
+  const { amount, appointmentId, razorpayAccountId } = details
   const razorpay = await getRazorpayInstance()
   
-  const order = await razorpay.orders.create({
+  const options: any = {
     amount: Math.round(amount * 100), // Razorpay expects amount in paise
     currency: "INR",
     receipt: `appt_${appointmentId}`,
@@ -58,6 +59,37 @@ export async function createRazorpayOrder(details: PaymentDetails) {
       doctorId: details.doctorId,
       patientId: details.patientId,
     },
+  }
+
+  if (razorpayAccountId) {
+    const { doctorAmount } = calculatePlatformFee(amount)
+    options.transfers = [
+      {
+        account: razorpayAccountId,
+        amount: Math.round(doctorAmount * 100),
+        currency: "INR",
+        notes: {
+          name: "Therapist Fee",
+          appointmentId
+        },
+        linked_account_notes: ["appointmentId"],
+        on_hold: 0
+      }
+    ]
+  }
+
+  const order = await razorpay.orders.create(options)
+  return order
+}
+
+export async function createGenericRazorpayOrder(amount: number, receiptId: string, notes: Record<string, string>) {
+  const razorpay = await getRazorpayInstance()
+  
+  const order = await razorpay.orders.create({
+    amount: Math.round(amount * 100), // Razorpay expects amount in paise
+    currency: "INR",
+    receipt: receiptId,
+    notes,
   })
 
   return order

@@ -1,60 +1,102 @@
 @import "tailwindcss";
 
 :root {
-  /* Soft, muted color palette for mental health platform */
-  --background: #fafafa;
-  --foreground: #2d3748;
-  --muted: #f7fafc;
-  --muted-foreground: #718096;
-  
-  /* Accent colors - soft teal/blue-green */
-  --accent: #7dd3c0;
-  --accent-foreground: #234e52;
-  --accent-light: #b2f5ea;
-  
-  /* Secondary accent - muted purple */
-  --secondary: #d6bcfa;
-  --secondary-foreground: #553c9a;
-  
-  /* Tertiary - gentle green */
-  --tertiary: #9ae6b4;
-  --tertiary-foreground: #22543d;
-  
-  /* Border and divider */
-  --border: #e2e8f0;
-  --ring: #7dd3c0;
-  
-  /* Text colors */
-  --text-primary: #2d3748;
-  --text-secondary: #4a5568;
-  --text-muted: #718096;
+  /* Brand */
+  --color-brand:          #E8722A;
+  --color-brand-light:    #FFF3E8;
+  --color-brand-dark:     #C05C1A;
+
+  /* Accent */
+  --color-accent:         #1A6B6B;
+  --color-accent-light:   #E8F5F5;
+
+  /* Backgrounds */
+  --color-bg:             #F9F5F0;
+  --color-surface:        #FFFFFF;
+  --color-surface-raised: #FFF8F4;
+
+  /* Text */
+  --color-text-primary:   #1A1A2E;
+  --color-text-secondary: #666666;
+  --color-text-muted:     #999999;
+
+  /* Borders */
+  --color-border:         #E8E0D8;
+  --color-border-strong:  #C8C0B8;
+
+  /* Semantic — errors only, never decorative */
+  --color-error:          #C0392B;
+  --color-success:        #0F6E56;
+  --color-warning:        #C8A800;
+
+  /* Radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+
+  /* Type scale */
+  --text-xs:   12px;  --text-sm:   14px;  --text-base: 16px;
+  --text-lg:   18px;  --text-xl:   22px;  --text-2xl:  28px;
+  --text-3xl:  36px;
+  --leading-tight: 1.25;
+  --leading-base:  1.6;
+  --leading-loose: 1.8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text-primary);
+  --font-sans: var(--font-quicksand), var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-  line-height: 1.6;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  -webkit-font-smoothing: antialiased;
+  line-height: var(--leading-base);
+}
+
+/* Auth / signup forms — use on input, select, textarea */
+.auth-form-control {
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: var(--text-base);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.auth-form-control:focus,
+.auth-form-control:focus-visible {
+  border-color: var(--color-brand);
+  outline: none;
 }
 
 /* Soft shadows and rounded corners for calming feel */
 .card {
-  background: white;
+  background: var(--color-surface);
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
 }
 
-/* Smooth transitions */
+/* Smooth transitions — minimum 300ms for calm UI (sprint polish) */
 * {
   transition-property: color, background-color, border-color, opacity, transform;
-  transition-duration: 200ms;
+  transition-duration: 300ms;
   transition-timing-function: ease-in-out;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
 }

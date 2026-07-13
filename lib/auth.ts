@@ -14,7 +14,6 @@ export async function getCurrentUser() {
       where: { id: session.user.id },
       include: {
         patient: true,
-        caregiver: true,
         doctor: true,
         admin: true,
       },

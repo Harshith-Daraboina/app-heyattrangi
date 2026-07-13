@@ -224,7 +224,7 @@ export async function POST(req: NextRequest) {
         specialization: primarySpecialization,
         experience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
         licenseVerified: false,
-        status: "PENDING", // Needs admin approval
+        status: "PENDING_PROFILE", // Needs admin approval
       },
       update: {
         // Update all fields if doctor profile already exists
@@ -269,7 +269,7 @@ export async function POST(req: NextRequest) {
         specialization: primarySpecialization,
         experience: yearsOfExperience ? parseInt(yearsOfExperience) : null,
         licenseVerified: false,
-        status: "PENDING",
+        status: "PENDING_PROFILE",
       },
     })
 

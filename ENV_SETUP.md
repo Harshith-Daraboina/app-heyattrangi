@@ -29,7 +29,12 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # Razorpay
 RAZORPAY_KEY_ID="your-razorpay-key-id"
 RAZORPAY_KEY_SECRET="your-razorpay-key-secret"
+
+# Pragya chatbot (optional — defaults to Hugging Face Space)
+# BOT_API_URL="https://your-bot-host.example.com"
 ```
+
+The patient **AI Bot** page calls `POST /api/pragya/chat`, which forwards to `{BOT_API_URL}/chat` with body `{ session_id, message }`. **End & Summarize** uses `POST /api/pragya/summary` → `{BOT_API_URL}/summary` with `{ session_id }` (same base URL). If `BOT_API_URL` is unset, the app defaults to **Bot-Heyattrangi-V4** on Hugging Face (`https://heyattrangi-spaces-bot-heyattrangi-v4.hf.space`).
 
 ## 🚨 Important Notes
 

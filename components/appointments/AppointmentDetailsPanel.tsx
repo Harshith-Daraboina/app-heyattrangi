@@ -1,8 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
+import { motion, AnimatePresence } from "framer-motion"
 
 interface Appointment {
   id: string
@@ -18,6 +20,14 @@ interface Appointment {
     primarySpecialization: string | null
     specialization: string | null
     consultationFee: number
+    availability: {
+      availableDays: string[]
+      startTime: string | null
+      endTime: string | null
+    } | null
+    appointments: {
+      appointmentDate: Date
+    }[]
     user: {
       name: string | null
       email: string | null
@@ -60,7 +70,136 @@ export default function AppointmentDetailsPanel({
   isPast,
 }: AppointmentDetailsPanelProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"details" | "session" | "payment">("details")
+  const { data: session } = useSession()
+  const [activeTab, setActiveTab] = useState<"details" | "session" | "payment">("session")
+
+  // Rescheduling state
+  const [isRescheduling, setIsRescheduling] = useState(false)
+  const [selectedDate, setSelectedDate] = useState<string>("")
+  const [selectedTime, setSelectedTime] = useState<string>("")
+  const [availableSlots, setAvailableSlots] = useState<{ time: string; isBooked: boolean }[]>([])
+  const [isUpdating, setIsUpdating] = useState(false)
+  const [now, setNow] = useState<Date | null>(null)
+
+  useEffect(() => {
+    setNow(new Date())
+    const timer = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(timer)
+  }, [])
+
+  // Helper to generate slots for a specific date (UTC Sync)
+  const getSlotsForDate = (dateStr: string) => {
+    const slots: { time: string; isBooked: boolean }[] = []
+    if (!now || !appointment.doctor.availability) return slots
+
+    const startTime = appointment.doctor.availability.startTime || "09:00"
+    const endTime = appointment.doctor.availability.endTime || "17:00"
+    const duration = 30 // therapist duration
+
+    const [startHour, startMin] = startTime.split(":").map(Number)
+    const [endHour, endMin] = endTime.split(":").map(Number)
+
+    const [y_sel, m_sel, d_sel] = dateStr.split("-").map(Number)
+    const isToday = now.getUTCFullYear() === y_sel &&
+      now.getUTCMonth() === m_sel - 1 &&
+      now.getUTCDate() === d_sel
+
+    const nowTime = now.getTime()
+    const bufferTime = nowTime + (60 * 60 * 1000)
+
+    for (let h = startHour; h <= endHour; h++) {
+      for (let m = 0; m < 60; m += duration) {
+        if (h === startHour && m < startMin) continue
+        if (h === endHour && m >= endMin) break
+
+        const slotTime = new Date(Date.UTC(y_sel, m_sel - 1, d_sel, h, m))
+        const timeStr = slotTime.toLocaleTimeString("en-US", {
+          hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC"
+        })
+
+        const isPastSlot = isToday && (slotTime.getTime() < bufferTime)
+        const isBooked = isPastSlot || appointment.doctor.appointments?.some(appt => {
+          const apptDate = new Date(appt.appointmentDate)
+          return Math.abs(apptDate.getTime() - slotTime.getTime()) < 1000
+        }) || false
+
+        slots.push({ time: timeStr, isBooked })
+      }
+    }
+    return slots
+  }
+
+  // Generate available dates (next 14 days)
+  const availableDates = (() => {
+    const dates: { date: string; dayName: string; dayNum: number; isFull: boolean }[] = []
+    if (!appointment.doctor.availability) return dates
+    const today = new Date()
+
+    const dayNameMap: { [key: number]: string } = {
+      0: "SUNDAY", 1: "MONDAY", 2: "TUESDAY", 3: "WEDNESDAY",
+      4: "THURSDAY", 5: "FRIDAY", 6: "SATURDAY",
+    }
+
+    for (let i = 0; i <= 14; i++) {
+      const date = new Date(today)
+      date.setDate(today.getDate() + i)
+      const dateStr = date.toISOString().split("T")[0]
+      const dayName = dayNameMap[date.getDay()]
+
+      if (appointment.doctor.availability.availableDays?.includes(dayName)) {
+        const daySlots = getSlotsForDate(dateStr)
+        const isFull = daySlots.length > 0 && daySlots.every(s => s.isBooked)
+        dates.push({
+          date: dateStr,
+          dayName: i === 0 ? "TODAY" : date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
+          dayNum: date.getDate(),
+          isFull
+        })
+      }
+    }
+    return dates
+  })()
+
+  useEffect(() => {
+    if (selectedDate) {
+      setAvailableSlots(getSlotsForDate(selectedDate))
+      setSelectedTime("")
+    }
+  }, [selectedDate, now])
+
+  const handleReschedule = async () => {
+    if (!selectedDate || !selectedTime) return
+    setIsUpdating(true)
+    try {
+      const timeMatch = selectedTime.match(/(\d+):(\d+)\s*(AM|PM)/i)
+      if (!timeMatch) return
+      const [, hours, minutes, period] = timeMatch
+      let hour24 = parseInt(hours)
+      if (period.toUpperCase() === "PM" && hour24 !== 12) hour24 += 12
+      else if (period.toUpperCase() === "AM" && hour24 === 12) hour24 = 0
+
+      const [y, m, d] = selectedDate.split("-").map(Number)
+      const newDate = new Date(Date.UTC(y, m - 1, d, hour24, parseInt(minutes)))
+
+      const response = await fetch(`/api/appointments/${appointment.id}/reschedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newDate: newDate.toISOString() }),
+      })
+
+      if (response.ok) {
+        setIsRescheduling(false)
+        router.refresh()
+      } else {
+        alert("Failed to reschedule. Please try again.")
+      }
+    } catch (error) {
+      console.error(error)
+      alert("An error occurred")
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const doctorName = appointment.doctor.fullName || appointment.doctor.user.name || "Doctor"
   const specialization = appointment.doctor.primarySpecialization || appointment.doctor.specialization || "Therapist"
@@ -102,9 +241,10 @@ export default function AppointmentDetailsPanel({
   return (
     <div className="space-y-6">
       {/* Appointment Header */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-        <div className="flex items-start gap-6 mb-6">
-          <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-teal-200 bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center flex-shrink-0">
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-gray-100 relative overflow-hidden mb-8">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-teal-50 rounded-full blur-3xl -mr-20 -mt-20 opacity-60"></div>
+        <div className="flex items-start gap-6 relative z-10">
+          <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-md bg-gradient-to-br from-teal-400 to-emerald-400 flex items-center justify-center flex-shrink-0 ring-4 ring-teal-50">
             {displayPhoto ? (
               <img
                 src={displayPhoto}
@@ -139,7 +279,7 @@ export default function AppointmentDetailsPanel({
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm">
               <div>
                 <span className="text-gray-500">Date:</span>
@@ -173,36 +313,33 @@ export default function AppointmentDetailsPanel({
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex -mb-px">
-            <button
-              onClick={() => setActiveTab("details")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "details"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
-            >
-              Appointment Details
-            </button>
+      <div className="bg-white rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+          <nav className="flex flex-wrap gap-2 bg-gray-200/50 p-1.5 rounded-xl w-fit">
             <button
               onClick={() => setActiveTab("session")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "session"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "session"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               {isUpcoming ? "Session" : "Session History"}
             </button>
             <button
+              onClick={() => setActiveTab("details")}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "details"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
+            >
+              Appointment Details
+            </button>
+            <button
               onClick={() => setActiveTab("payment")}
-              className={`flex-1 px-6 py-4 text-sm font-medium text-center border-b-2 transition-colors ${
-                activeTab === "payment"
-                  ? "border-teal-500 text-teal-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }`}
+              className={`px-6 py-2.5 text-sm font-semibold rounded-lg transition-all ${activeTab === "payment"
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-500 hover:text-gray-700"
+                }`}
             >
               Payment History
             </button>
@@ -267,7 +404,7 @@ export default function AppointmentDetailsPanel({
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
                 {isUpcoming ? "Session Details" : "Session History"}
               </h3>
-              
+
               {isUpcoming ? (
                 <div className="space-y-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -310,13 +447,108 @@ export default function AppointmentDetailsPanel({
                   )}
 
                   {appointment.status === "CONFIRMED" && (
-                    <div className="flex gap-3">
-                      <button className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-emerald-600 transition-all">
-                        Join Session
-                      </button>
-                      <button className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
-                        Cancel Appointment
-                      </button>
+                    <div className="flex flex-col gap-4 mt-6">
+                      {!isRescheduling ? (
+                        <div className="flex gap-3">
+                          <a
+                            href={`https://meet-heyattrangi.vercel.app/${appointment.id}/lobby?user=${encodeURIComponent(session?.user?.name || appointment.patient?.user?.name || "Patient")}&audio=true&video=true`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white rounded-lg font-medium hover:from-teal-600 hover:to-emerald-600 transition-all text-center"
+                          >
+                            Join Session
+                          </a>
+                          <button
+                            onClick={() => setIsRescheduling(true)}
+                            className="px-6 py-3 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-all shadow-lg shadow-orange-100"
+                          >
+                            Reschedule
+                          </button>
+                        </div>
+                      ) : (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-gray-50 rounded-2xl p-6 border-2 border-orange-100"
+                        >
+                          <div className="flex justify-between items-center mb-6">
+                            <h4 className="text-lg font-bold text-gray-900">Select New Slot</h4>
+                            <button
+                              onClick={() => setIsRescheduling(false)}
+                              className="text-gray-400 hover:text-gray-600 text-sm font-medium"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+
+                          <div className="space-y-6">
+                            {/* Date Selector */}
+                            <div>
+                              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Choose Day</p>
+                              <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                                {availableDates.map((item) => (
+                                  <button
+                                    key={item.date}
+                                    onClick={() => setSelectedDate(item.date)}
+                                    className={`flex-shrink-0 w-14 h-16 rounded-xl border-2 flex flex-col items-center justify-center transition-all ${selectedDate === item.date
+                                        ? "border-orange-500 bg-orange-500 text-white"
+                                        : item.isFull
+                                          ? "border-red-200 bg-white opacity-40 grayscale"
+                                          : "border-green-300 bg-white hover:border-green-400"
+                                      }`}
+                                  >
+                                    <span className={`text-[8px] font-black mb-0.5 ${selectedDate === item.date ? "text-white" : "text-gray-400"}`}>{item.dayName}</span>
+                                    <span className="text-base font-black">{item.dayNum}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Time Selector */}
+                            {selectedDate && (
+                              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                                <div className="flex justify-between items-end mb-3">
+                                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Choose Time</p>
+                                  {now && (
+                                    <span className="text-[8px] font-bold text-red-400 uppercase animate-pulse">UTC: {now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "UTC" })}</span>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                  {availableSlots.map((slot) => (
+                                    <button
+                                      key={slot.time}
+                                      disabled={slot.isBooked}
+                                      onClick={() => setSelectedTime(slot.time)}
+                                      className={`py-2.5 rounded-full border-2 text-[11px] font-bold transition-all ${selectedTime === slot.time
+                                          ? "border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-100"
+                                          : slot.isBooked
+                                            ? "border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed"
+                                            : "border-green-300 bg-white hover:border-green-400"
+                                        }`}
+                                    >
+                                      {slot.time}
+                                    </button>
+                                  ))}
+                                </div>
+                              </motion.div>
+                            )}
+
+                            <button
+                              onClick={handleReschedule}
+                              disabled={isUpdating || !selectedDate || !selectedTime}
+                              className="w-full py-4 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl font-bold text-sm shadow-xl shadow-orange-100 transition-all flex items-center justify-center gap-2"
+                            >
+                              {isUpdating ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : "Confirm Reschedule"}
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      {!isRescheduling && (
+                        <button className="px-4 py-3 bg-gray-100 text-gray-500 rounded-lg text-sm font-medium hover:bg-gray-200 transition-all">
+                          Cancel Appointment
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -337,7 +569,7 @@ export default function AppointmentDetailsPanel({
                           })}
                         </p>
                       </div>
-                      
+
                       {appointment.meetingLink && (
                         <div className="bg-white border-2 border-gray-200 rounded-lg p-4">
                           <p className="text-sm font-medium text-gray-700 mb-2">Session Recording</p>
@@ -363,7 +595,7 @@ export default function AppointmentDetailsPanel({
           {activeTab === "payment" && (
             <div className="space-y-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment History</h3>
-              
+
               {appointment.payment ? (
                 <div className="space-y-4">
                   <div className="bg-white border-2 border-gray-200 rounded-lg p-6">

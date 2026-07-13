@@ -37,8 +37,8 @@ export default async function AdminDoctorsPage() {
   })
 
   // Get counts
-  const pendingCount = doctors.filter(d => d.status === "PENDING").length
-  const approvedCount = doctors.filter(d => d.status === "APPROVED").length
+  const pendingCount = doctors.filter(d => d.status === "PENDING_PROFILE" || d.status === "PENDING_DOCUMENTS" || d.status === "PENDING_REVIEW").length
+  const approvedCount = doctors.filter(d => d.status === "VERIFIED").length
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-slate-50">
@@ -159,10 +159,10 @@ export default async function AdminDoctorsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            doctor.status === "APPROVED"
+                            doctor.status === "VERIFIED"
                               ? "bg-green-100 text-green-800"
-                              : doctor.status === "PENDING"
-                              ? "bg-orange-100 text-orange-800"
+                              : doctor.status === "PENDING_PROFILE" || doctor.status === "PENDING_DOCUMENTS" || doctor.status === "PENDING_REVIEW"
+                              ? "bg-yellow-100 text-yellow-800"
                               : doctor.status === "REJECTED"
                               ? "bg-red-100 text-red-800"
                               : "bg-gray-100 text-gray-800"

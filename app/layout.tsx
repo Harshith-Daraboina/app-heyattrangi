@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Quicksand } from "next/font/google";
 import "./globals.css";
-import SessionProvider from "@/components/providers/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,22 +12,37 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Attrangi - Mental Health & Wellness Platform",
+  title: "Dashboard",
   description: "Comprehensive mental health support platform connecting patients, caregivers, and therapists",
+  icons: {
+    icon: "/images/logo_light.png",
+  },
 };
 
-export default function RootLayout({
+import SessionProvider from "@/components/providers/SessionProvider";
+import { auth } from "@/auth.config";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${quicksand.variable} antialiased`}
+        suppressHydrationWarning
       >
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider session={session}>{children}</SessionProvider>
       </body>
     </html>
   );

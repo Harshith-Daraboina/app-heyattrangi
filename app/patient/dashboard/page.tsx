@@ -1,279 +1,68 @@
-import type { ReactNode } from "react"
-import { redirect } from "next/navigation"
+import { Suspense } from "react"
 import { auth } from "@/auth.config"
 import { getCurrentUser } from "@/lib/auth"
-import Link from "next/link"
-import SignOutButton from "@/components/auth/SignOutButton"
+import { prisma } from "@/lib/prisma"
+import CenterColumn from "@/components/patient/dashboard/CenterColumn"
+import RightColumn from "@/components/patient/dashboard/RightColumn"
+import BotPopup from "@/components/patient/dashboard/BotPopup"
+import DailyRewardPopup from "@/components/patient/dashboard/DailyRewardPopup"
+import DashboardSkeleton from "@/components/patient/dashboard/DashboardSkeleton"
 
-type IconProps = { className?: string }
-
-// Icons and navItems moved to Sidebar component
-
-const iconBase = "h-5 w-5 stroke-[1.6]"
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    stroke="currentColor"
-    className={`${iconBase} ${className ?? ""}`}
-  >
-    <path d="M12 3.5 14.6 9l6 .5-4.6 3.9 1.4 6-5.4-3.3L6.6 19l1.4-6L3.4 9.5l6-.5z" />
-  </svg>
-)
-
-const featuredTherapists = [
-  {
-    name: "Dr. Maya Rao",
-    specialty: "Therapist • Anxiety, CBT",
-    rating: "4.97 (55 reviews)",
-    price: "₹1499 / session",
-    accent: "from-orange-200 via-amber-200 to-orange-100",
-  },
-  {
-    name: "Dr. Arjun Sen",
-    specialty: "Therapist • Trauma, Mindfulness",
-    rating: "4.95 (61 reviews)",
-    price: "₹1299 / session",
-    accent: "from-blue-200 via-sky-200 to-cyan-100",
-  },
-  {
-    name: "Dr. Leena Shah",
-    specialty: "Therapist • Couples, Family",
-    rating: "4.93 (48 reviews)",
-    price: "₹1399 / session",
-    accent: "from-emerald-200 via-teal-200 to-green-100",
-  },
-]
-
-const quickActions = [
-  {
-    title: "Find a therapist",
-    description: "Browse experts and book a session",
-    href: "/patient/therapists",
-    accent: "from-teal-500 to-emerald-500",
-  },
-  {
-    title: "Daily wellness",
-    description: "Light tasks to keep you on track",
-    href: "/patient/tasks",
-    accent: "from-purple-500 to-pink-500",
-  },
-  {
-    title: "Resource library",
-    description: "Guides, tools, and exercises",
-    href: "/patient/resources",
-    accent: "from-blue-500 to-cyan-500",
-  },
-  {
-    title: "My appointments",
-    description: "Upcoming and past sessions",
-    href: "/patient/appointments",
-    accent: "from-indigo-500 to-purple-500",
-  },
-]
-
-import Sidebar from "@/components/patient/Sidebar"
-
-// ... imports ...
-
-export default async function PatientDashboard() {
+async function DashboardContent() {
   const session = await auth()
-
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
   const user = await getCurrentUser()
+  
+  if (!user?.id) return null
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
+  const displayName = session?.user?.name || "You"
+  const plan = user?.plan || "FREE"
+  const patient = await prisma.patient.findUnique({ where: { userId: user?.id || "" } })
+
+  let upcomingAppointments: any[] = []
+  let dailyTasks: any[] = []
+
+  if (patient) {
+    const appointments = await prisma.appointment.findMany({
+      where: { patientId: patient.id },
+      include: {
+        doctor: {
+          include: { user: { select: { name: true, image: true } } },
+        },
+      },
+      orderBy: { appointmentDate: "asc" },
+    })
+
+    const now = new Date()
+    upcomingAppointments = appointments.filter(
+      (apt) => new Date(apt.appointmentDate) > now && apt.status !== "CANCELLED"
+    )
+
+    dailyTasks = []
+
+    if (dailyTasks.length === 0) {
+        const today = new Date()
+        dailyTasks = [
+            { id: "mock-1", title: "Morning Journaling", type: "JOURNAL", dueDate: new Date(today.setHours(9, 30, 0)) },
+            { id: "mock-2", title: "Mindful Walk", type: "ACTIVITY", dueDate: new Date(today.setHours(12, 0, 0)) },
+            { id: "mock-3", title: "Deep Breathing Focus", type: "MEDITATION", dueDate: new Date(today.setHours(15, 30, 0)) },
+            { id: "mock-4", title: "Pragya AI Reflection", type: "AI_CHAT", dueDate: new Date(today.setHours(19, 0, 0)) },
+        ]
+    }
   }
-
-  const displayName = session.user.name || "You"
-  const initial = displayName.charAt(0).toUpperCase()
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900">
-      <div className="grid min-h-screen lg:grid-cols-[82px_1fr]">
-        <Sidebar />
-
-        {/* Main column */}
-        <div className="flex flex-col">
-          <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-            <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="text-sm text-slate-500">Dashboard</div>
-                <div className="hidden sm:block h-4 w-px bg-slate-200" />
-                <div className="relative">
-                  <input
-                    type="search"
-                    placeholder="Search therapists, sessions, resources"
-                    className="w-64 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm outline-none focus:border-teal-500 focus:bg-white focus:ring-2 focus:ring-teal-100"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex flex-col text-right leading-tight">
-                  <span className="text-sm font-semibold text-slate-800">{displayName}</span>
-                  <span className="text-xs text-slate-500 truncate max-w-[220px]">
-                    {session.user.email}
-                  </span>
-                </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 text-white text-lg">
-                  {initial}
-                </div>
-                <div className="sm:hidden">
-                  <SignOutButton />
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <main className="px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            {/* Welcome */}
-            <div className="rounded-2xl bg-gradient-to-r from-teal-500 via-emerald-500 to-cyan-500 text-white p-6 sm:p-8 shadow-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                  <p className="text-sm uppercase tracking-wide text-white/80">Welcome back</p>
-                  <h1 className="text-3xl sm:text-4xl font-semibold mt-1">{displayName}</h1>
-                  <p className="text-white/80 mt-2">
-                    Pick up where you left off — your next step is one click away.
-                  </p>
-                </div>
-                <Link
-                  href="/patient/appointments"
-                  className="inline-flex items-center justify-center rounded-full bg-white text-teal-700 px-4 py-2 text-sm font-semibold shadow-sm hover:bg-slate-50 transition-colors"
-                >
-                  View upcoming sessions
-                </Link>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              {[
-                { label: "Upcoming sessions", value: "0", hint: "No bookings yet", color: "text-teal-600" },
-                { label: "Tasks completed", value: "0", hint: "Stay consistent", color: "text-emerald-600" },
-                { label: "Resources viewed", value: "0", hint: "Explore the library", color: "text-blue-600" },
-                { label: "Mood check-ins", value: "—", hint: "Coming soon", color: "text-purple-600" },
-              ].map(card => (
-                <div
-                  key={card.label}
-                  className="rounded-xl bg-white border border-slate-200 p-4 shadow-sm"
-                >
-                  <p className="text-sm text-slate-500">{card.label}</p>
-                  <p className={`text-3xl font-bold mt-2 ${card.color}`}>{card.value}</p>
-                  <p className="text-xs text-slate-500 mt-1">{card.hint}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick actions */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              {quickActions.map(action => (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <div
-                    className={`absolute inset-0 opacity-10 bg-gradient-to-br ${action.accent}`}
-                    aria-hidden
-                  />
-                  <div className="relative">
-                    <p className="text-sm font-semibold text-slate-900">{action.title}</p>
-                    <p className="text-xs text-slate-600 mt-1">{action.description}</p>
-                    <span className="mt-3 inline-flex text-xs font-semibold text-teal-700">
-                      Go →
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-
-            {/* Featured therapists */}
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Recommended therapists</h2>
-                  <p className="text-sm text-slate-600">
-                    Curated for you based on your preferences
-                  </p>
-                </div>
-                <Link
-                  href="/patient/therapists"
-                  className="text-sm font-semibold text-teal-600 hover:text-teal-700"
-                >
-                  View all
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {featuredTherapists.map(item => (
-                  <div
-                    key={item.name}
-                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow"
-                  >
-                    <div className={`h-36 bg-gradient-to-br ${item.accent}`} />
-                    <div className="p-4 space-y-2">
-                      <div className="flex items-center gap-2 text-amber-600 text-sm font-semibold">
-                        <StarIcon className="h-4 w-4 text-amber-500" />
-                        <span className="text-slate-700">{item.rating}</span>
-                      </div>
-                      <h3 className="text-lg font-semibold text-slate-900">{item.name}</h3>
-                      <p className="text-sm text-slate-600">{item.specialty}</p>
-                      <p className="text-sm font-semibold text-slate-900">{item.price}</p>
-                      <Link
-                        href="/patient/therapists"
-                        className="mt-2 inline-flex w-full items-center justify-center rounded-lg bg-gradient-to-r from-teal-500 to-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:from-teal-600 hover:to-emerald-600 transition-colors"
-                      >
-                        Book now
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Resources + appointments */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-slate-900">Your next steps</h3>
-                  <Link
-                    href="/patient/tasks"
-                    className="text-sm font-semibold text-teal-600 hover:text-teal-700"
-                  >
-                    Open tasks
-                  </Link>
-                </div>
-                <div className="space-y-2 text-sm text-slate-600">
-                  <p>• Complete a 5-minute grounding exercise</p>
-                  <p>• Review progress notes from your last session</p>
-                  <p>• Bookmark one new resource for the week</p>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">Quick links</h3>
-                <div className="space-y-2 text-sm">
-                  <Link href="/patient/profile" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Update profile
-                  </Link>
-                  <Link href="/patient/appointments" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    See all appointments
-                  </Link>
-                  <Link href="/patient/resources" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Explore resources
-                  </Link>
-                  <Link href="/patient/tasks" className="block rounded-lg px-3 py-2 hover:bg-slate-100">
-                    Manage daily tasks
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </main>
-        </div>
-      </div>
+    <div className="flex flex-1 w-full relative h-full">
+      <CenterColumn displayName={displayName} plan={plan} upcomingAppointments={upcomingAppointments} dailyTasks={dailyTasks} />
+      <RightColumn upcomingAppointments={upcomingAppointments} />
+      <DailyRewardPopup />
     </div>
   )
 }
 
+export default function PatientDashboard() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
+  )
+}

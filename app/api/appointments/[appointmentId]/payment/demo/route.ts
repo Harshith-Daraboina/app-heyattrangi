@@ -74,12 +74,18 @@ export async function POST(
       },
     })
 
+    // Generate meeting link and chat channel
+    const meetingLink = `https://meet-heyattrangi.vercel.app/${appointmentId}`
+    const chatChannelId = `chat_${appointmentId}`
+
     // Update appointment status
     await prisma.appointment.update({
       where: { id: appointmentId },
       data: {
         paymentStatus: "PAID",
         status: "CONFIRMED",
+        meetingLink,
+        chatChannelId,
       },
     })
 

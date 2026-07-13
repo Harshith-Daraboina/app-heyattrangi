@@ -1,91 +1,35 @@
-import { redirect } from "next/navigation"
-import { auth } from "@/auth.config"
-import { getCurrentUser } from "@/lib/auth"
-import ProfileForm from "@/components/profile/PatientProfileForm"
+import { Suspense } from "react"
 import Link from "next/link"
-import SignOutButton from "@/components/auth/SignOutButton"
-import WellnessSummaryCard from "@/components/profile/WellnessSummaryCard"
-import { prisma } from "@/lib/prisma"
+import { getCurrentUser } from "@/lib/auth"
+import ProfileSettings from "@/components/profile/ProfileSettings"
 
-export default async function PatientProfilePage() {
-  const session = await auth()
 
-  if (!session?.user) {
-    redirect("/auth/signin")
-  }
-
+async function ProfileContent() {
   const user = await getCurrentUser()
 
-  if (!user || (user.role !== "PATIENT" && user.role !== "CAREGIVER")) {
-    redirect("/auth/unauthorized")
-  }
-
-
-  const patientData = await prisma.patient.findUnique({
-    where: { userId: user.id },
-    include: {
-      assessments: {
-        orderBy: { createdAt: 'desc' },
-        take: 1
-      }
-    }
-  })
+  if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-blue-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/patient/dashboard" className="text-xl font-semibold text-gray-800 hover:text-teal-600">
-                Attrangi
-              </Link>
-              <span className="text-gray-400">/</span>
-              <span className="text-sm text-gray-600">Profile</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/patient/dashboard"
-                className="text-sm text-gray-600 hover:text-gray-800"
-              >
-                Dashboard
-              </Link>
-              <SignOutButton />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-gray-800 mb-2">
-            Profile Settings
-          </h1>
-          <p className="text-gray-600">
-            Update your personal information and preferences
-          </p>
-        </div>
-
-        {patientData?.assessments[0] && (
-          <WellnessSummaryCard assessment={patientData.assessments[0]} />
-        )}
-
-        {user && (
-          <ProfileForm
-            user={{
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              image: user.image,
-              role: user.role,
-              patient: user.patient || undefined,
-            }}
-            role={user.role}
-          />
-        )}
-      </main>
+    <div className="flex-1 h-full w-full bg-white">
+      <ProfileSettings
+        user={{
+          ...user,
+          patient: user.patient || null,
+        }}
+      />
     </div>
   )
 }
 
+export default function PatientProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex-1 h-full flex items-center justify-center bg-white animate-pulse">
+        <div className="text-gray-400 font-medium">Loading profile...</div>
+      </div>
+    }>
+      <ProfileContent />
+    </Suspense>
+  )
+}
 
